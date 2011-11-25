@@ -28,6 +28,7 @@
 #include "fileop.h"
 #include "filebrowser.h"
 #include "cheatmgr.h"
+#include "fceunetwork.h"
 
 bool romLoaded = false;
 
@@ -133,6 +134,7 @@ int GCMemROM(int size)
 		FCEU_ResetMessages();	// Save state, status messages, etc.
 		SetupCheats();
 		ResetAudio();
+		FCEUD_NetworkConnect();
 		return 1;
 	}
 	else
