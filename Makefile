@@ -5,7 +5,7 @@ export DEVKITPRO = $(realpath ./devkitpro)
 export DEVKITPPC = $(DEVKITPRO)/devkitPPC
 endif
 
-all: wii gc
+all: wii
 
 clean: wii-clean gc-clean
 
