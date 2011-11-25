@@ -120,24 +120,6 @@ void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int32 Count)
 	GetJoy(); // check controller input
 }
 
-// Netplay
-int FCEUD_SendData(void *data, uint32 len)
-{
-    return 1;
-}
-
-int FCEUD_RecvData(void *data, uint32 len)
-{
-    return 0;
-}
-
-void FCEUD_NetworkClose(void)
-{
-}
-
-void FCEUD_NetplayText(uint8 *text)
-{
-}
 
 // dummy functions
 
