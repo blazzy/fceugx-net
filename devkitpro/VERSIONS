@@ -1,0 +1,13 @@
+extracted to libogc:
+  libogc-1.8.8.tar.bz2
+  libfat-ogc-1.0.10.tar.bz2
+
+extracted to portlibs:
+  zlib-1.2.5-ppc.tar.bz2
+  freetype-2.4.2-ppc.tar.bz2
+  mxml-2.6-ppc.tar.bz2
+  tremor-lowmem-ppc.tar.bz2
+  libpng-1.5.4-ppc.tar.bz2
+
+examples:
+  wii-examples-20110620.tar.bz2
