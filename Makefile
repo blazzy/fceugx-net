@@ -1,5 +1,10 @@
 .PHONY = all wii gc wii-clean gc-clean wii-run gc-run
 
+ifeq ($(strip $(DEVKITPRO)),)
+export DEVKITPRO = $(realpath ./devkitpro)
+export DEVKITPPC = $(DEVKITPRO)/devkitPPC
+endif
+
 all: wii gc
 
 clean: wii-clean gc-clean
