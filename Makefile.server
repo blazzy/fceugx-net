@@ -1,0 +1,30 @@
+CXX := g++
+
+BUILDDIR  := build_server
+TARGETDIR := executables
+SOURCEDIR := source/server
+
+OBJECTS     := md5.o throttle.o server.o
+
+OBJECTS_OUT := $(addprefix $(BUILDDIR)/, $(OBJECTS))
+DEPENDS	    := $(OBJECTS_OUT:.o=.o.d)
+
+.PHONY: default clean
+
+
+default: $(BUILDDIR) $(TARGETDIR)/fceux-server
+
+$(TARGETDIR)/fceux-server: $(OBJECTS_OUT)
+	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR)
+	$(CXX) $(LDFLAGS) -o $@ $^
+
+$(BUILDDIR)/%.o : $(SOURCEDIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<  -MMD -MF $@.d
+
+$(BUILDDIR):
+	@[ -d $(BUILDDIR) ] || mkdir -p $(BUILDDIR)
+
+clean:
+	rm -rf $(BUILDDIR) $(TARGETDIR)/fceux-server
+
+-include $(DEPENDS)

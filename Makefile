@@ -5,11 +5,11 @@ export DEVKITPRO = $(realpath ./devkitpro)
 export DEVKITPPC = $(DEVKITPRO)/devkitPPC
 endif
 
-default: wii
+default: wii server
 
-all: wii gc
+all: wii gc server
 
-clean: wii-clean gc-clean
+clean: wii-clean gc-clean server
 
 wii:
 	$(MAKE) -f Makefile.wii
@@ -28,3 +28,9 @@ gc-clean:
 
 gc-run:
 	$(MAKE) -f Makefile.gc run
+
+server:
+	$(MAKE) --no-print-directory -f Makefile.server
+
+server-clean:
+	$(MAKE) --no-print-directory -f Makefile.server clean
