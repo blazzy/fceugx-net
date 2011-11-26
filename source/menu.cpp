@@ -6,7 +6,22 @@
  *
  * menu.cpp
  *
- * Main menu flow control
+ * Description:  Main menu flow control
+ *
+ * TODO:
+ *      1.  Something is wrong with the data entry process.  Enter one char
+ *          for SMB Share IP and watch garbage be displayed on the GUI.
+ *          Either garbage is being copied into the buffer, or \0 is missing,
+ *          or the GUI is reading past \0 and displaying uninitialized
+ *          buffer.
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      11/25/2011  Netplay:  Added options to Network menu.
+ *                         MenuSettingsNetwork():  use sizeof() instead of
+ *                         hardcoded lengths.
  ****************************************************************************/
 
 #include <gccore.h>
@@ -3687,6 +3702,21 @@ static int MenuSettingsNetwork()
 	int i = 0;
 	bool firstRun = true;
 	OptionList options;
+	//char blah[17] = {'\0'};
+	//OnScreenKeyboard(blah, (u32)17);
+	const u32 SIZE_NETPLAY_IP   = (u32) sizeof(GCSettings.netplayIp),
+	          SIZE_NETPLAY_PORT = (u32) sizeof(GCSettings.netplayPort),
+	          SIZE_NETPLAY_PWD  = (u32) sizeof(GCSettings.netplayPwd),
+	          SIZE_NETPLAY_NAME = (u32) sizeof(GCSettings.netplayName),
+	          SIZE_SMB_IP       = (u32) sizeof(GCSettings.smbip),
+	          SIZE_SMB_SHARE    = (u32) sizeof(GCSettings.smbshare),
+	          SIZE_SMB_USER     = (u32) sizeof(GCSettings.smbuser),
+	          SIZE_SMB_PWD      = (u32) sizeof(GCSettings.smbpwd);
+
+	sprintf(options.name[i++], "Netplay IP");
+	sprintf(options.name[i++], "Netplay Port");
+	sprintf(options.name[i++], "Netplay Password");
+	sprintf(options.name[i++], "Netplay Player Name");
 	sprintf(options.name[i++], "SMB Share IP");
 	sprintf(options.name[i++], "SMB Share Name");
 	sprintf(options.name[i++], "SMB Share Username");
@@ -3742,29 +3772,50 @@ static int MenuSettingsNetwork()
 		switch (ret)
 		{
 			case 0:
-				OnScreenKeyboard(GCSettings.smbip, 80);
+				OnScreenKeyboard(GCSettings.netplayIp, SIZE_NETPLAY_IP);
 				break;
 
 			case 1:
-				OnScreenKeyboard(GCSettings.smbshare, 20);
+				OnScreenKeyboard(GCSettings.netplayPort, SIZE_NETPLAY_PORT);
 				break;
 
 			case 2:
-				OnScreenKeyboard(GCSettings.smbuser, 20);
+				OnScreenKeyboard(GCSettings.netplayPwd, SIZE_NETPLAY_PWD);
 				break;
 
 			case 3:
-				OnScreenKeyboard(GCSettings.smbpwd, 20);
+				OnScreenKeyboard(GCSettings.netplayName, SIZE_NETPLAY_NAME);
+				break;
+
+			case 4:
+				OnScreenKeyboard(GCSettings.smbip, SIZE_SMB_IP);
+				break;
+
+			case 5:
+				OnScreenKeyboard(GCSettings.smbshare, SIZE_SMB_SHARE);
+				break;
+
+			case 6:
+				OnScreenKeyboard(GCSettings.smbuser, SIZE_SMB_USER);
+				break;
+
+			case 7:
+				OnScreenKeyboard(GCSettings.smbpwd, SIZE_SMB_PWD);
 				break;
 		}
 
 		if(ret >= 0 || firstRun)
 		{
 			firstRun = false;
-			snprintf (options.value[0], 25, "%s", GCSettings.smbip);
-			snprintf (options.value[1], 19, "%s", GCSettings.smbshare);
-			snprintf (options.value[2], 19, "%s", GCSettings.smbuser);
-			snprintf (options.value[3], 19, "%s", GCSettings.smbpwd);
+			snprintf (options.value[0], SIZE_NETPLAY_IP   - 1, "%s", GCSettings.netplayIp);
+			snprintf (options.value[1], SIZE_NETPLAY_PORT - 1, "%s", GCSettings.netplayPort);
+			snprintf (options.value[2], SIZE_NETPLAY_PWD  - 1, "%s", GCSettings.netplayPwd);
+			snprintf (options.value[3], SIZE_NETPLAY_NAME - 1, "%s", GCSettings.netplayName);
+
+			snprintf (options.value[4], 25, "%s", GCSettings.smbip);   // midnak:  Why didn't he use (size - 1) here like he did with the others?  Question 2:  why's the array so big to begin with?
+			snprintf (options.value[5], SIZE_SMB_SHARE - 1, "%s", GCSettings.smbshare);
+			snprintf (options.value[6], SIZE_SMB_USER  - 1, "%s", GCSettings.smbuser);
+			snprintf (options.value[7], SIZE_SMB_PWD   - 1, "%s", GCSettings.smbpwd);
 			optionBrowser.TriggerUpdate();
 		}
 

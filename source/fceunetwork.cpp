@@ -1,3 +1,19 @@
+/****************************************************************************
+ * FCEUGX-Net
+ * Nintendo Wii/Gamecube Port
+ *
+ * fceunetwork.cpp
+ *
+ * Description:
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * blazzy      11/24/2011  New file
+ * midnak      11/25/2011  Netplay:  Get netplay settings from GUI.
+ ****************************************************************************/
+
 #include <gctypes.h>
 #include <network.h>
 
@@ -9,10 +25,10 @@ static int Socket = -1;
 
 int FCEUD_NetworkConnect() {
 	//TODO get these from the gui
-	const char *host     = "192.168.1.53";
-	const char *name     = "hardcode";
-	const char *password = "";
-	u32 port             = 4046;
+	const char *host     = GCSettings.netplayIp;
+	const char *name     = GCSettings.netplayName;
+	const char *password = GCSettings.netplayPwd;
+	const u32 port       = (u32) strtol(GCSettings.netplayPort, NULL, 10);
 	uint8 local_players  = 1;
 
 

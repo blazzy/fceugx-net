@@ -6,7 +6,14 @@
  *
  * fceugx.h
  *
- * This file controls overall program flow. Most things start and end here!
+ * Description:  This file controls overall program flow. Most things start
+ *               and end here!
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      11/25/2011  Netplay:  Added connectIp
  ****************************************************************************/
 
 #ifndef _FCEUGX_H_
@@ -82,6 +89,13 @@ struct SGCSettings{
 	char	LoadFolder[MAXPATHLEN]; // Path to game files
 	char	SaveFolder[MAXPATHLEN]; // Path to save files
 	char	CheatFolder[MAXPATHLEN]; // Path to cheat files
+
+	// Netplay
+	// TODO:  Match length of netplay* variables to FCEU
+	char    netplayIp[17];  // Forward compatibility:  IPv6 IPs are 128 bits
+	char    netplayPort[6];
+	char    netplayPwd[21];
+	char    netplayName[16];
 
 	char	smbip[80];
 	char	smbuser[20];
