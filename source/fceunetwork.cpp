@@ -24,7 +24,6 @@ extern FCEUGI *GameInfo;
 static int Socket = -1;
 
 int FCEUD_NetworkConnect() {
-	//TODO get these from the gui
 	const char *host     = GCSettings.netplayIp;
 	const char *name     = GCSettings.netplayName;
 	const char *password = GCSettings.netplayPwd;
