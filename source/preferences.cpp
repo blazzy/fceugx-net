@@ -6,7 +6,14 @@
  *
  * preferences.cpp
  *
- * Preferences save/load preferences utilities
+ * Description:  Preferences save/load preferences utilities
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      11/25/2011  Netplay:  Added new vars to preparePrefsData() and
+ *                         decodePrefsData().
  ****************************************************************************/
 
 #include <gccore.h>
@@ -130,6 +137,10 @@ preparePrefsData ()
 
 	createXMLSection("Network", "Network Settings");
 
+	createXMLSetting("netplayIp", "Netplay IP Address", GCSettings.netplayIp);
+	createXMLSetting("netplayPort", "Netplay Port", GCSettings.netplayPort);
+	createXMLSetting("netplayPwd", "Netplay Password", GCSettings.netplayPwd);
+	createXMLSetting("netplayName", "Netplay User Name", GCSettings.netplayName);
 	createXMLSetting("smbip", "Share Computer IP", GCSettings.smbip);
 	createXMLSetting("smbshare", "Share Name", GCSettings.smbshare);
 	createXMLSetting("smbuser", "Share Username", GCSettings.smbuser);
@@ -302,6 +313,10 @@ decodePrefsData ()
 
 			// Network Settings
 
+			loadXMLSetting(GCSettings.netplayIp, "netplayIp", sizeof(GCSettings.netplayIp));
+			loadXMLSetting(GCSettings.netplayPort, "netplayPort", sizeof(GCSettings.netplayPort));
+			loadXMLSetting(GCSettings.netplayPwd, "netplayPwd", sizeof(GCSettings.netplayPwd));
+			loadXMLSetting(GCSettings.netplayName, "netplayName", sizeof(GCSettings.netplayName));
 			loadXMLSetting(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
 			loadXMLSetting(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
 			loadXMLSetting(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));

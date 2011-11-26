@@ -5,13 +5,21 @@
  *
  * gui_keyboard.cpp
  *
- * GUI class definitions
+ * Description:  GUI class definitions
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      11/25/2011  Added documentation of GetDisplayText()
  ***************************************************************************/
 
 #include "gui.h"
 
 static char tmptxt[MAX_KEYBOARD_DISPLAY];
 
+// Reduces user input to the maximum length the GUI can display.
+// Character are removed from the front of the string.
 static char * GetDisplayText(char * t)
 {
 	if(!t)
