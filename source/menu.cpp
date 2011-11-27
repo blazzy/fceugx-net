@@ -15,8 +15,6 @@
  *          or the GUI is reading past \0 and displaying uninitialized
  *          buffer.
  *      2.  Transalations for Netplay buttons
- *      3.  Figure out why Netplay buttons don't seem to "mouse out."  You
- *          have to
  *
  * History:
  *
@@ -964,8 +962,6 @@ static int MenuGameSelection()
 	GuiImage settingsBtnImg(&btnOutlineLong);
 	GuiImage settingsBtnImgOver(&btnOutlineOverLong);
 
-	//GuiTooltip tooltipNotConn("Not connected");
-
 	GuiButton settingsBtn(btnOutlineLong.GetWidth(), btnOutlineLong.GetHeight());
 	settingsBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
 	settingsBtn.SetPosition(90, -35);
@@ -1046,7 +1042,6 @@ static int MenuGameSelection()
 	chatBtn.SetTrigger(trig2);
 	chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
 	chatBtn.SetClickable(false);
-	//chatBtn.SetTooltip(&tooltipNotConn);
 
 	GuiText sumthinBtnTxt("?", 22, (GXColor){0, 0, 0, 255});
 	GuiImage sumthinBtnImg(&btnOutlineMicro);
@@ -1175,10 +1170,7 @@ static int MenuGameSelection()
 		}
 		else if(hostBtn.GetState() == STATE_CLICKED)
 		{
-			/*HaltGui();
-			buttonWindow.Remove(&hostBtn);
-			ResumeGui();*/
-
+			hostBtn.ResetState();
 			hostBtn.SetClickable(false);
 			hostBtn.SetVisible(false);
 
@@ -1195,10 +1187,7 @@ static int MenuGameSelection()
 		}
 		else if(joinBtn.GetState() == STATE_CLICKED)
 		{
-			/*HaltGui();
-			buttonWindow.Remove(&joinBtn);
-			ResumeGui();*/
-
+			joinBtn.ResetState();
 			joinBtn.SetClickable(false);
 			joinBtn.SetVisible(false);
 
@@ -1213,13 +1202,13 @@ static int MenuGameSelection()
 				chatBtn.SetClickable(true);
 				chatBtn.SetImageOver(&chatBtnImgOver);
 				chatBtn.SetEffectGrow();
-				chatBtn.SetTooltip(NULL);
 			}
 		}
 		else if(disconnectBtn.GetState() == STATE_CLICKED)
 		{
+			disconnectBtn.ResetState();
 			disconnectBtn.SetVisible(false);
-			//disconnectBtn.SetClickable(false);
+			disconnectBtn.SetClickable(false);
 
 			joinBtn.SetClickable(true);
 			joinBtn.SetVisible(true);
@@ -1230,15 +1219,14 @@ static int MenuGameSelection()
 			chatBtn.SetClickable(false);
 			chatBtn.SetImageOver(&chatBtnImg);
 			chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-			//chatBtn.SetTooltip(&tooltipNotConn);
 		}
 		else if(chatBtn.GetState() == STATE_CLICKED)
 		{
-			;
+			chatBtn.ResetState();
 		}
 		else if(sumthinBtn.GetState() == STATE_CLICKED)
 		{
-			;
+			sumthinBtn.ResetState();
 		}
 	}
 

@@ -28,6 +28,7 @@
 								<option id="gnu.c.compiler.option.include.paths.2089460907" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/source}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/devkitpro/libogc/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/devkitpro/devkitPPC/powerpc-eabi/include/sys}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1978193290" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
@@ -49,6 +50,7 @@
 								<option id="gnu.cpp.compiler.option.include.paths.946428527" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/source}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/devkitpro/libogc/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/devkitpro/devkitPPC/powerpc-eabi/include/sys}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.457417857" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
@@ -83,8 +85,8 @@
 					<stringMacro name="HAVE_ASPRINTF" type="VALUE_TEXT" value=""/>
 					<stringMacro name="_LZMA_OUT_READ" type="VALUE_TEXT" value=""/>
 					<stringMacro name="PATH_MAX" type="VALUE_TEXT" value="1024"/>
-					<stringMacro name="_LZMA_IN_CB" type="VALUE_TEXT" value=""/>
 					<stringMacro name="_SZ_ONE_DIRECTORY" type="VALUE_TEXT" value=""/>
+					<stringMacro name="_LZMA_IN_CB" type="VALUE_TEXT" value=""/>
 					<stringMacro name="PSS_STYLE" type="VALUE_TEXT" value="1"/>
 					<stringMacro name="FRAMESKIP" type="VALUE_TEXT" value=""/>
 				</macros>
