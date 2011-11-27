@@ -18,6 +18,7 @@
 #include <network.h>
 
 #include "fceugx.h"
+#include "fceultra/utils/endian.h"
 
 extern FCEUGI *GameInfo;
 
@@ -76,8 +77,7 @@ int FCEUD_NetworkConnect() {
 	uint8 sendbuf[sendbuf_len];
 	memset(sendbuf, 0, sendbuf_len);
 
-	uint32 length = htons(sendbuf_len - 4);
-	memcpy(sendbuf, &length, sizeof(length));
+	FCEU_en32lsb(sendbuf, sendbuf_len - 4);
 	memcpy(sendbuf + 4, &GameInfo->MD5.data, 16);
 
 	int password_len = strlen(password);
