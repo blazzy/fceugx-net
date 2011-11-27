@@ -134,7 +134,7 @@ int GCMemROM(int size)
 		FCEU_ResetMessages();	// Save state, status messages, etc.
 		SetupCheats();
 		ResetAudio();
-		FCEUD_NetworkConnect();
+
 		return 1;
 	}
 	else

@@ -14,6 +14,9 @@
  *          Either garbage is being copied into the buffer, or \0 is missing,
  *          or the GUI is reading past \0 and displaying uninitialized
  *          buffer.
+ *      2.  Transalations for Netplay buttons
+ *      3.  Figure out why Netplay buttons don't seem to "mouse out."  You
+ *          have to
  *
  * History:
  *
@@ -22,8 +25,8 @@
  * midnak      11/25/2011  Netplay:  Added options to Network menu.
  *                         MenuSettingsNetwork():  use sizeof() instead of
  *                         hardcoded lengths.
- * midnak      11/26/2011  Netplay:  Added Netplay "micro" buttons for
- *                         host/join actions
+ * midnak      11/26/2011  Netplay:  Added 'micro' buttons for host/join/chat
+ *                         actions
  ****************************************************************************/
 
 #include <gccore.h>
@@ -939,6 +942,7 @@ static int MenuGameSelection()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
+
 	GuiImageData iconHome(icon_home_png);
 	GuiImageData iconSettings(icon_settings_png);
 	GuiImageData btnOutlineLong(button_long_png);
@@ -952,11 +956,16 @@ static int MenuGameSelection()
 	trigHome.SetButtonOnlyTrigger(-1, WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME, 0);
 
 	GuiText settingsBtnTxt("Settings", 22, (GXColor){0, 0, 0, 255});
+
 	GuiImage settingsBtnIcon(&iconSettings);
 	settingsBtnIcon.SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 	settingsBtnIcon.SetPosition(14,0);
+
 	GuiImage settingsBtnImg(&btnOutlineLong);
 	GuiImage settingsBtnImgOver(&btnOutlineOverLong);
+
+	//GuiTooltip tooltipNotConn("Not connected");
+
 	GuiButton settingsBtn(btnOutlineLong.GetWidth(), btnOutlineLong.GetHeight());
 	settingsBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
 	settingsBtn.SetPosition(90, -35);
@@ -994,8 +1003,6 @@ static int MenuGameSelection()
 	GuiImage hostBtnImg(&btnOutlineMicro);
 	GuiImage hostBtnImgOver(&btnOutlineOverMicro);
 	GuiButton hostBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	/*hostBtn.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-	hostBtn.SetPosition(-10, 225);*/
 	hostBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
 	hostBtn.SetPosition(2, -58);
 	hostBtn.SetLabel(&hostBtnTxt);
@@ -1011,8 +1018,6 @@ static int MenuGameSelection()
 	GuiImage joinBtnImg(&btnOutlineMicro);
 	GuiImage joinBtnImgOver(&btnOutlineOverMicro);
 	GuiButton joinBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	/*joinBtn.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-	joinBtn.SetPosition(-10, 160);*/
 	joinBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
 	joinBtn.SetPosition(2, -17);
 	joinBtn.SetLabel(&joinBtnTxt);
@@ -1024,11 +1029,65 @@ static int MenuGameSelection()
 	joinBtn.SetTrigger(trig2);
 	joinBtn.SetEffectGrow();
 
+	// Various attributes of this button are manipulated
+	// during execution to make it appear active/inactive.
+	GuiText chatBtnTxt("Chat", 22, (GXColor){0, 0, 0, 255});
+	GuiImage chatBtnImg(&btnOutlineMicro);
+	GuiImage chatBtnImgOver(&btnOutlineOverMicro);
+	GuiButton chatBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	chatBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	chatBtn.SetPosition(0, -58);
+	chatBtn.SetLabel(&chatBtnTxt);
+	chatBtn.SetImage(&chatBtnImg);
+	chatBtn.SetImageOver(&chatBtnImg);
+	chatBtn.SetSoundOver(&btnSoundOver);
+	chatBtn.SetSoundClick(&btnSoundClick);
+	chatBtn.SetTrigger(trigA);
+	chatBtn.SetTrigger(trig2);
+	chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+	chatBtn.SetClickable(false);
+	//chatBtn.SetTooltip(&tooltipNotConn);
+
+	GuiText sumthinBtnTxt("?", 22, (GXColor){0, 0, 0, 255});
+	GuiImage sumthinBtnImg(&btnOutlineMicro);
+	GuiImage sumthinBtnImgOver(&btnOutlineOverMicro);
+	GuiButton sumthinBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	sumthinBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	sumthinBtn.SetPosition(0, -17);
+	sumthinBtn.SetLabel(&sumthinBtnTxt);
+	sumthinBtn.SetImage(&sumthinBtnImg);
+	sumthinBtn.SetImageOver(&sumthinBtnImgOver);
+	sumthinBtn.SetSoundOver(&btnSoundOver);
+	sumthinBtn.SetSoundClick(&btnSoundClick);
+	sumthinBtn.SetTrigger(trigA);
+	sumthinBtn.SetTrigger(trig2);
+	sumthinBtn.SetEffectGrow();
+
+	GuiText disconnectBtnTxt("Disconnect", 17, (GXColor){0, 0, 0, 255});
+	GuiImage disconnectBtnImg(&btnOutlineMicro);
+	GuiImage disconnectBtnImgOver(&btnOutlineOverMicro);
+	GuiButton disconnectBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	disconnectBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	disconnectBtn.SetPosition(2, -40);
+	disconnectBtn.SetLabel(&disconnectBtnTxt);
+	disconnectBtn.SetImage(&disconnectBtnImg);
+	disconnectBtn.SetImageOver(&disconnectBtnImgOver);
+	disconnectBtn.SetSoundOver(&btnSoundOver);
+	disconnectBtn.SetSoundClick(&btnSoundClick);
+	disconnectBtn.SetTrigger(trigA);
+	disconnectBtn.SetTrigger(trig2);
+	disconnectBtn.SetEffectGrow();
+	disconnectBtn.SetClickable(false);
+	disconnectBtn.SetVisible(false);
+
 	GuiWindow buttonWindow(screenwidth, screenheight);
 	buttonWindow.Append(&joinBtn);
 	buttonWindow.Append(&hostBtn);
+	buttonWindow.Append(&chatBtn);
+	buttonWindow.Append(&sumthinBtn);
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
+	buttonWindow.Append(&disconnectBtn);
 
 	GuiFileBrowser gameBrowser(424, 268);
 	gameBrowser.SetPosition(50, 98);
@@ -1116,11 +1175,70 @@ static int MenuGameSelection()
 		}
 		else if(hostBtn.GetState() == STATE_CLICKED)
 		{
-			;
+			/*HaltGui();
+			buttonWindow.Remove(&hostBtn);
+			ResumeGui();*/
+
+			hostBtn.SetClickable(false);
+			hostBtn.SetVisible(false);
+
+			joinBtn.SetClickable(false);
+			joinBtn.SetVisible(false);
+
+			disconnectBtn.SetClickable(true);
+			disconnectBtn.SetVisible(true);
+
+			// TODO:  When a client connects, enable the chat button.
+			// Of course, none of that happens in this block, but
+			// this the only relevant place to mention it at this
+			// stage of development.
 		}
 		else if(joinBtn.GetState() == STATE_CLICKED)
 		{
-			FCEUD_NetworkConnect();
+			/*HaltGui();
+			buttonWindow.Remove(&joinBtn);
+			ResumeGui();*/
+
+			joinBtn.SetClickable(false);
+			joinBtn.SetVisible(false);
+
+			hostBtn.SetClickable(false);
+			hostBtn.SetVisible(false);
+
+			disconnectBtn.SetClickable(true);
+			disconnectBtn.SetVisible(true);
+
+			if( FCEUD_NetworkConnect() )
+			{
+				chatBtn.SetClickable(true);
+				chatBtn.SetImageOver(&chatBtnImgOver);
+				chatBtn.SetEffectGrow();
+				chatBtn.SetTooltip(NULL);
+			}
+		}
+		else if(disconnectBtn.GetState() == STATE_CLICKED)
+		{
+			disconnectBtn.SetVisible(false);
+			//disconnectBtn.SetClickable(false);
+
+			joinBtn.SetClickable(true);
+			joinBtn.SetVisible(true);
+
+			hostBtn.SetClickable(true);
+			hostBtn.SetVisible(true);
+
+			chatBtn.SetClickable(false);
+			chatBtn.SetImageOver(&chatBtnImg);
+			chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+			//chatBtn.SetTooltip(&tooltipNotConn);
+		}
+		else if(chatBtn.GetState() == STATE_CLICKED)
+		{
+			;
+		}
+		else if(sumthinBtn.GetState() == STATE_CLICKED)
+		{
+			;
 		}
 	}
 
