@@ -22,6 +22,8 @@
  * midnak      11/25/2011  Netplay:  Added options to Network menu.
  *                         MenuSettingsNetwork():  use sizeof() instead of
  *                         hardcoded lengths.
+ * midnak      11/26/2011  Netplay:  Added Netplay "micro" buttons for
+ *                         host/join actions
  ****************************************************************************/
 
 #include <gccore.h>
@@ -55,6 +57,7 @@
 #include "cheatmgr.h"
 #include "gui/gui.h"
 #include "utils/gettext.h"
+#include "fceunetwork.h"
 
 #define THREAD_SLEEP 100
 
@@ -938,8 +941,12 @@ static int MenuGameSelection()
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 	GuiImageData iconHome(icon_home_png);
 	GuiImageData iconSettings(icon_settings_png);
-	GuiImageData btnOutline(button_long_png);
-	GuiImageData btnOutlineOver(button_long_over_png);
+	GuiImageData btnOutlineLong(button_long_png);
+	GuiImageData btnOutlineOverLong(button_long_over_png);
+	GuiImageData btnOutlineShort(button_short_png);
+	GuiImageData btnOutlineOverShort(button_short_over_png);
+	GuiImageData btnOutlineMicro(button_micro_png);
+	GuiImageData btnOutlineOverMicro(button_micro_over_png);
 
 	GuiTrigger trigHome;
 	trigHome.SetButtonOnlyTrigger(-1, WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME, 0);
@@ -948,9 +955,9 @@ static int MenuGameSelection()
 	GuiImage settingsBtnIcon(&iconSettings);
 	settingsBtnIcon.SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 	settingsBtnIcon.SetPosition(14,0);
-	GuiImage settingsBtnImg(&btnOutline);
-	GuiImage settingsBtnImgOver(&btnOutlineOver);
-	GuiButton settingsBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
+	GuiImage settingsBtnImg(&btnOutlineLong);
+	GuiImage settingsBtnImgOver(&btnOutlineOverLong);
+	GuiButton settingsBtn(btnOutlineLong.GetWidth(), btnOutlineLong.GetHeight());
 	settingsBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
 	settingsBtn.SetPosition(90, -35);
 	settingsBtn.SetLabel(&settingsBtnTxt);
@@ -967,9 +974,9 @@ static int MenuGameSelection()
 	GuiImage exitBtnIcon(&iconHome);
 	exitBtnIcon.SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 	exitBtnIcon.SetPosition(14,0);
-	GuiImage exitBtnImg(&btnOutline);
-	GuiImage exitBtnImgOver(&btnOutlineOver);
-	GuiButton exitBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
+	GuiImage exitBtnImg(&btnOutlineLong);
+	GuiImage exitBtnImgOver(&btnOutlineOverLong);
+	GuiButton exitBtn(btnOutlineLong.GetWidth(), btnOutlineLong.GetHeight());
 	exitBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
 	exitBtn.SetPosition(-90, -35);
 	exitBtn.SetLabel(&exitBtnTxt);
@@ -983,7 +990,43 @@ static int MenuGameSelection()
 	exitBtn.SetTrigger(&trigHome);
 	exitBtn.SetEffectGrow();
 
+	GuiText hostBtnTxt("Host", 22, (GXColor){0, 0, 0, 255});
+	GuiImage hostBtnImg(&btnOutlineMicro);
+	GuiImage hostBtnImgOver(&btnOutlineOverMicro);
+	GuiButton hostBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	/*hostBtn.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	hostBtn.SetPosition(-10, 225);*/
+	hostBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	hostBtn.SetPosition(2, -58);
+	hostBtn.SetLabel(&hostBtnTxt);
+	hostBtn.SetImage(&hostBtnImg);
+	hostBtn.SetImageOver(&hostBtnImgOver);
+	hostBtn.SetSoundOver(&btnSoundOver);
+	hostBtn.SetSoundClick(&btnSoundClick);
+	hostBtn.SetTrigger(trigA);
+	hostBtn.SetTrigger(trig2);
+	hostBtn.SetEffectGrow();
+
+	GuiText joinBtnTxt("Join", 22, (GXColor){0, 0, 0, 255});
+	GuiImage joinBtnImg(&btnOutlineMicro);
+	GuiImage joinBtnImgOver(&btnOutlineOverMicro);
+	GuiButton joinBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	/*joinBtn.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	joinBtn.SetPosition(-10, 160);*/
+	joinBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	joinBtn.SetPosition(2, -17);
+	joinBtn.SetLabel(&joinBtnTxt);
+	joinBtn.SetImage(&joinBtnImg);
+	joinBtn.SetImageOver(&joinBtnImgOver);
+	joinBtn.SetSoundOver(&btnSoundOver);
+	joinBtn.SetSoundClick(&btnSoundClick);
+	joinBtn.SetTrigger(trigA);
+	joinBtn.SetTrigger(trig2);
+	joinBtn.SetEffectGrow();
+
 	GuiWindow buttonWindow(screenwidth, screenheight);
+	buttonWindow.Append(&joinBtn);
+	buttonWindow.Append(&hostBtn);
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
 
@@ -1064,9 +1107,21 @@ static int MenuGameSelection()
 		}
 
 		if(settingsBtn.GetState() == STATE_CLICKED)
+		{
 			menu = MENU_SETTINGS;
+		}
 		else if(exitBtn.GetState() == STATE_CLICKED)
+		{
 			ExitRequested = 1;
+		}
+		else if(hostBtn.GetState() == STATE_CLICKED)
+		{
+			;
+		}
+		else if(joinBtn.GetState() == STATE_CLICKED)
+		{
+			FCEUD_NetworkConnect();
+		}
 	}
 
 	HaltParseThread(); // halt parsing

@@ -13,7 +13,7 @@
  *
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
- * midnak      11/25/2011  Netplay:  Added connectIp
+ * midnak      11/25/2011  Netplay:  Added members
  ****************************************************************************/
 
 #ifndef _FCEUGX_H_
@@ -90,7 +90,6 @@ struct SGCSettings{
 	char	SaveFolder[MAXPATHLEN]; // Path to save files
 	char	CheatFolder[MAXPATHLEN]; // Path to cheat files
 
-	// Netplay
 	// TODO:  Match length of netplay* variables to FCEU
 	char    netplayIp[17];  // Forward compatibility:  IPv6 IPs are 128 bits
 	char    netplayPort[6];

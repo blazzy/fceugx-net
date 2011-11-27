@@ -6,9 +6,15 @@
  *
  * filelist.h
  *
- * Contains a list of all of the files stored in the images/, fonts/, and
- * sounds/ folders
- ***************************************************************************/
+ * Description:  Contains a list of all of the files stored in the images/, fonts/, and
+ *               sounds/ folders
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      11/26/2011  Netplay:  Created micro button
+ ****************************************************************************/
 
 #ifndef _FILELIST_H_
 #define _FILELIST_H_
@@ -151,6 +157,12 @@ extern const u32	button_small_png_size;
 
 extern const u8		button_small_over_png[];
 extern const u32	button_small_over_png_size;
+
+extern const u8		button_micro_png[];
+extern const u32	button_micro_png_size;
+
+extern const u8		button_micro_over_png[];
+extern const u32	button_micro_over_png_size;
 
 extern const u8		button_large_png[];
 extern const u32	button_large_png_size;
