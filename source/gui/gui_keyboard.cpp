@@ -48,6 +48,7 @@ GuiKeyboard::GuiKeyboard(char * t, u32 max)
 	focus = 0; // allow focus
 	alignmentHor = ALIGN_CENTRE;
 	alignmentVert = ALIGN_MIDDLE;
+	//memset(kbtextstr, 0, 255);
 	snprintf(kbtextstr, 255, "%s", t);
 	kbtextmaxlen = max;
 
@@ -289,8 +290,11 @@ void GuiKeyboard::Update(GuiTrigger * t)
 	{
 		if(strlen(kbtextstr) < kbtextmaxlen)
 		{
-			kbtextstr[strlen(kbtextstr)] = ' ';
+			int len = strlen(kbtextstr);
+			kbtextstr[len] = ' ';
+			kbtextstr[len + 1] = '\0';
 			kbText->SetText(kbtextstr);
+			keySpace->SetLabel(new GuiText(kbtextstr));
 		}
 		keySpace->SetState(STATE_SELECTED, t->chan);
 	}
@@ -342,11 +346,15 @@ void GuiKeyboard::Update(GuiTrigger * t)
 					{
 						if(shift || caps)
 						{
-							kbtextstr[strlen(kbtextstr)] = keys[i][j].chShift;
+							int len = strlen(kbtextstr);
+							kbtextstr[len] = keys[i][j].chShift;
+							kbtextstr[len + 1] = '\0';
 						}
 						else
 						{
-							kbtextstr[strlen(kbtextstr)] = keys[i][j].ch;
+							int len = strlen(kbtextstr);
+							kbtextstr[len] = keys[i][j].ch;
+							kbtextstr[len + 1] = '\0';
 						}
 					}
 					kbText->SetText(GetDisplayText(kbtextstr));
