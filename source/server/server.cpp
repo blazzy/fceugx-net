@@ -796,6 +796,10 @@ int main(int argc, char *argv[])
  if(setsockopt(ListenSocket, SOL_SOCKET, SO_SNDBUF, &sndbufsize, sizeof(int)))
   printf("Send buffer size set failed: %s",strerror(errno));
 
+ int opt = 1;
+ if(setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)))
+  printf("SO_REUSEADDR failed: %s",strerror(errno));
+
  int tcpopt = 1;
  if(setsockopt(ListenSocket, SOL_TCP, TCP_NODELAY, &tcpopt, sizeof(int)))
  {
