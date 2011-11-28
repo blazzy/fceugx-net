@@ -82,13 +82,13 @@ int FCEUD_NetworkConnect() {
 
 	int password_len = strlen(password);
 	if (password_len) {
-			md5_context md5;
-			uint8 md5out[16];
+		md5_context md5;
+		uint8 md5out[16];
 
-			md5_starts(&md5);
-			md5_update(&md5, (uint8*)password, password_len);
-			md5_finish(&md5, md5out);
-			memcpy(sendbuf + 4 + 16, md5out, 16);
+		md5_starts(&md5);
+		md5_update(&md5, (uint8*)password, password_len);
+		md5_finish(&md5, md5out);
+		memcpy(sendbuf + 4 + 16, md5out, 16);
 	}
 
 	sendbuf[4 + 16 + 16 + 64] = (uint8)local_players;
@@ -114,33 +114,31 @@ int FCEUD_SendData(void *data, uint32 len) {
 	return 1;
 }
 
+//Run select on a single socket for 100000 microseconds
+static int select_one(int socket) {
+	static timeval tv = { 0, 100000 };
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(socket, &fds);
+
+	return net_select(socket + 1, &fds, 0, 0, &tv);
+}
+
 int FCEUD_RecvData(void *data, uint32 len) {
-	int size;
-
-	for (;;) {
-		fd_set fds;
-		struct timeval tv;
-
-		tv.tv_sec  = 0;
-		tv.tv_usec = 100000;
-
-		FD_ZERO(&fds);
-		FD_SET(Socket, &fds);
-
-		switch (net_select(Socket + 1, &fds, 0, 0, &tv)) {
+	while (true) {
+		switch (select_one(Socket)) {
 			case  0: continue;
 			case -1: return 0;
 		}
 
-		if (FD_ISSET(Socket,&fds)) {
-			size = net_recv(Socket, data, len, 0);
+		int size = net_recv(Socket, data, len, 0);
 
-			if (size == int(len)) {
-				return 1;
-			}
-
-			return 0;
+		if (size == int(len)) {
+			return 1;
 		}
+
+		return 0;
 	}
 }
 
