@@ -525,6 +525,8 @@ int main(int argc, char *argv[])
 	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 	int currentTiming = 0;
 
+	skipgfx = 0;
+
     while (1) // main loop
     {
     	// go back to checking if devices were inserted/removed
