@@ -9,12 +9,7 @@
  * Description:  Main menu flow control
  *
  * TODO:
- *      1.  Something is wrong with the data entry process.  Enter one char
- *          for SMB Share IP and watch garbage be displayed on the GUI.
- *          Either garbage is being copied into the buffer, or \0 is missing,
- *          or the GUI is reading past \0 and displaying uninitialized
- *          buffer.
- *      2.  Transalations for Netplay buttons
+ *      1.  Transalations for Netplay buttons
  *
  * History:
  *
