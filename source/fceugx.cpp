@@ -601,6 +601,11 @@ int main(int argc, char *argv[])
 
 			FCEUI_Emulate(&gfx, &sound, &ssize, fskip);
 
+			//skip rendering some frames
+			if (skipgfx) {
+				gfx   = 0;
+			}
+
 			if (!shutter_3d_mode && !anaglyph_3d_mode)
 				FCEUD_Update(gfx, sound, ssize);
 			else if (eye_3d)

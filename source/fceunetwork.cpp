@@ -24,6 +24,8 @@ extern FCEUGI *GameInfo;
 
 static int Socket = -1;
 
+int skipgfx;
+
 int FCEUD_NetworkConnect() {
 	const char *host     = GCSettings.netplayIp;
 	const char *name     = GCSettings.netplayName;
@@ -124,6 +126,7 @@ static int poll_one(int socket) {
 }
 
 int FCEUD_RecvData(void *data, uint32 len) {
+	skipgfx = 0;
 	while (true) {
 		switch (poll_one(Socket)) {
 			case  0: continue;
@@ -133,6 +136,9 @@ int FCEUD_RecvData(void *data, uint32 len) {
 		int size = net_recv(Socket, data, len, 0);
 
 		if (size == int(len)) {
+			if (poll_one(Socket)) {
+				skipgfx = 1;
+			}
 			return 1;
 		}
 

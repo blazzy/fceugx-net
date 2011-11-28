@@ -66,7 +66,7 @@ extern void FCEU_ResetPalette(void);
 #define EO_LOWPASS	512
 #define EO_AUTOHIDE	1024
 
-extern int NoWaiting;
+extern int skipgfx;
 
 extern int _sound;
 extern long soundrate;
