@@ -48,10 +48,9 @@
 #define DEFAULT_FRAMEDIVISOR 1
 #define DEFAULT_CONFIG "/etc/fceu-server.conf"
 
-// MSG_NOSIGNAL and SOL_TCP have been depreciated on osx
+// MSG_NOSIGNAL has been depreciated on osx
 #ifdef __APPLE__
 #define MSG_NOSIGNAL SO_NOSIGPIPE
-#define SOL_TCP IPPROTO_TCP
 #endif
 
 typedef struct {
@@ -801,7 +800,7 @@ int main(int argc, char *argv[])
   printf("SO_REUSEADDR failed: %s",strerror(errno));
 
  int tcpopt = 1;
- if(setsockopt(ListenSocket, SOL_TCP, TCP_NODELAY, &tcpopt, sizeof(int)))
+ if(setsockopt(ListenSocket, IPPROTO_TCP, TCP_NODELAY, &tcpopt, sizeof(int)))
  {
   printf("Nodelay fail: %s",strerror(errno));
   exit(-1);
