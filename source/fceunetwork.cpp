@@ -148,6 +148,7 @@ void FCEUD_NetworkClose(void) {
 	if (Socket != -1) {
 		close(Socket);
 	}
+	Socket = -1;
 }
 
 void FCEUD_NetplayText(uint8 *text) {
