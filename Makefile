@@ -12,25 +12,33 @@ all: wii gc server
 clean: wii-clean gc-clean server
 
 wii:
-	$(MAKE) -f Makefile.wii
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.wii
 
 wii-clean:
-	$(MAKE) -f Makefile.wii clean
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.wii clean
 
 wii-run:
-	$(MAKE) -f Makefile.wii run
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.wii run
 
 gc:
-	$(MAKE) -f Makefile.gc
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.gc
 
 gc-clean:
-	$(MAKE) -f Makefile.gc clean
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.gc clean
 
 gc-run:
-	$(MAKE) -f Makefile.gc run
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.gc run
 
 server:
-	$(MAKE) --no-print-directory -f Makefile.server
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.server
 
 server-clean:
-	$(MAKE) --no-print-directory -f Makefile.server clean
+	@echo $@
+	@$(MAKE) --no-print-directory -f Makefile.server clean
