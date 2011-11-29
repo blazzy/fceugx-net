@@ -24,6 +24,8 @@ extern FCEUGI *GameInfo;
 
 static int Socket = -1;
 
+int skipgfx;
+
 int FCEUD_NetworkConnect() {
 	const char *host     = GCSettings.netplayIp;
 	const char *name     = GCSettings.netplayName;
@@ -114,20 +116,19 @@ int FCEUD_SendData(void *data, uint32 len) {
 	return 1;
 }
 
-//Run select on a single socket for 100000 microseconds
-static int select_one(int socket) {
-	static timeval tv = { 0, 100000 };
+//Run poll a single socket for inbound data
+static int poll_one(int socket) {
+	pollsd sd;
+	sd.socket = socket;	
+	sd.events = POLLIN;
 
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(socket, &fds);
-
-	return net_select(socket + 1, &fds, 0, 0, &tv);
+	return net_poll(&sd, 1, 1);
 }
 
 int FCEUD_RecvData(void *data, uint32 len) {
+	skipgfx = 0;
 	while (true) {
-		switch (select_one(Socket)) {
+		switch (poll_one(Socket)) {
 			case  0: continue;
 			case -1: return 0;
 		}
@@ -135,6 +136,9 @@ int FCEUD_RecvData(void *data, uint32 len) {
 		int size = net_recv(Socket, data, len, 0);
 
 		if (size == int(len)) {
+			if (poll_one(Socket)) {
+				skipgfx = 1;
+			}
 			return 1;
 		}
 
@@ -147,6 +151,8 @@ void FCEUD_NetworkClose(void) {
 		close(Socket);
 	}
 	Socket = -1;
+
+	FCEUI_NetplayStop();
 }
 
 void FCEUD_NetplayText(uint8 *text) {

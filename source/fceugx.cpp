@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <gctypes.h>
 #include <ogc/system.h>
+#include <ogc/lwp_watchdog.h>
 #include <fat.h>
 #include <wiiuse/wpad.h>
 #include <malloc.h>
@@ -447,6 +448,28 @@ void Check3D()
 	old_anaglyph_3d_mode = anaglyph_3d_mode;
 }
 
+static void update_framerate(int frame, int skipgfx_count) {
+	static int last_frame = 0;
+	static int last_skipgfx = 0;
+	static u64 last_time = gettime();
+	static int emulate_rate = 0;
+	static int skip_rate = 0;
+
+	if (frame % 100 == 0) {
+		u64 now        = gettime();
+		int delta_time = diff_msec(last_time, now);
+
+		emulate_rate = ((double)(frame - last_frame) * 1000) / delta_time;
+		skip_rate    = ((double)(skipgfx_count - last_skipgfx) * 1000) / delta_time;
+
+		last_time    = now;
+		last_frame   = frame;
+		last_skipgfx = skipgfx_count;
+	}
+
+	FCEU_DispMessage("FPS %i, %i, skipgfx %i", -1, emulate_rate, skip_rate, skipgfx_count);
+}
+
 /****************************************************************************
  * main
  * This is where it all happens!
@@ -525,6 +548,10 @@ int main(int argc, char *argv[])
 	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 	int currentTiming = 0;
 
+	skipgfx = 0;
+	int skipgfx_count = 0; //number of frames we didn't render
+	int frame_count = 0;   
+
     while (1) // main loop
     {
     	// go back to checking if devices were inserted/removed
@@ -600,6 +627,14 @@ int main(int argc, char *argv[])
 			Check3D();
 
 			FCEUI_Emulate(&gfx, &sound, &ssize, fskip);
+
+			//skip rendering some frames
+			if (skipgfx) {
+				skipgfx_count++;
+				gfx   = 0;
+			}
+
+			update_framerate(frame_count++, skipgfx_count);
 
 			if (!shutter_3d_mode && !anaglyph_3d_mode)
 				FCEUD_Update(gfx, sound, ssize);
