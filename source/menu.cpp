@@ -1299,11 +1299,31 @@ static int MenuGameSelection()
 		{
 			hostBtn->ResetState();
 
-			if(true /*blazzy-socket-listen() == success*/)
+			HaltGui();
+
+			if( true /*serverInit success*/ )
 			{
+				ResumeGui();
 				showNetplayGuiComponents();
 				disconnectBtn->SetSoundOver(&btnSoundOver);
 			}
+			/*else
+			{
+				ResumeGui();
+
+				int retry = ErrorPromptRetry("Could not open a connection");
+
+				while(retry)
+				{
+					HaltGui();
+
+					if(! server init success)
+					{
+						ResumeGui();
+						retry = ErrorPromptRetry("Could not open a connection");
+					}
+				}
+			}*/
 
 			// TODO:  When a client connects, enable the chat button.
 			// Of course, none of that happens in this block, but
@@ -1313,10 +1333,30 @@ static int MenuGameSelection()
 		else if(joinBtn->GetState() == STATE_CLICKED)
 		{
 			joinBtn->ResetState();
+			HaltGui();
 
-			if(true /*FCEUD_NetworkConnect()*/ )
+			if(FCEUD_NetworkConnect())
 			{
+				ResumeGui();
 				showNetplayGuiComponents();
+				disconnectBtn->SetSoundOver(&btnSoundOver);
+			}
+			else
+			{
+				ResumeGui();
+
+				int retry = ErrorPromptRetry("Could not connect");
+
+				while(retry)
+				{
+					HaltGui();
+
+					if(!FCEUD_NetworkConnect())
+					{
+						ResumeGui();
+						retry = ErrorPromptRetry("Could not connect");
+					}
+				}
 			}
 		}
 		else if(disconnectBtn->GetState() == STATE_CLICKED)

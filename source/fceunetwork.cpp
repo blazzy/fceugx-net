@@ -26,6 +26,8 @@ static int Socket = -1;
 
 int skipgfx;
 
+// TODO:  This function needs a short timeout period.  It takes
+// 3m10s for this function to fail.  It needs to be 10 seconds.
 int FCEUD_NetworkConnect() {
 	const char *host     = GCSettings.netplayIp;
 	const char *name     = GCSettings.netplayName;
@@ -36,6 +38,8 @@ int FCEUD_NetworkConnect() {
 
 	s32 tcp_socket = net_socket(AF_INET, SOCK_STREAM, 0);
 	if (tcp_socket < 0) {
+		// TODO:  Remove this message once we are GUI-driven.  Return a unique
+		// value if you want to communicate a specific message.
 		FCEU_DispMessage("Failed to create socket.", 0);
 		return 0;
 	}
@@ -52,9 +56,13 @@ int FCEUD_NetworkConnect() {
 	
 	//A standard gethostbyname implementation would have made this unnecessary
 	if (address.sin_addr.s_addr == INADDR_BROADCAST) {
+		// TODO:  Remove this message (maybe this can be routed to
+		// some debug handler)
 		FCEU_DispMessage("Resolving DNS...", 0);
 		hostent *he = net_gethostbyname(host);
 		if (!he) {
+			// TODO:  Remove this message once we are GUI-driven.  Return a unique
+			// value if you want to communicate a specific message.
 			FCEU_DispMessage("Failed to resolve host.", 0);
 			close(tcp_socket);
 			return 0;
@@ -64,6 +72,8 @@ int FCEUD_NetworkConnect() {
 
 
 	if (net_connect(tcp_socket, (sockaddr*)&address, sizeof(address))) {
+		// TODO:  Remove this message once we are GUI-driven.  Return a unique
+		// value if you want to communicate a specific message.
 		FCEU_DispMessage("Failed to connect.", 0);
 		close(tcp_socket);
 		return 0;
@@ -103,6 +113,7 @@ int FCEUD_NetworkConnect() {
 	//TODO check if this byte is received
 	net_recv(tcp_socket, recvbuf, 1, 0);
 
+	// TODO:  Remove this message once we are GUI-driven.
 	FCEU_DispMessage("Connection established.", 0);
 	FCEUI_NetplayStart(local_players, recvbuf[0]);
 
