@@ -62,6 +62,9 @@
 
 #define THREAD_SLEEP 100
 
+static void hideNetplayGuiComponents();
+static void showNetplayGuiComponents();
+
 #ifdef HW_RVL
 static GuiImageData * pointer[4];
 #endif
@@ -935,12 +938,14 @@ static void showNetplayGuiComponents()
 	{
 		hostBtn->SetClickable(false);
 		hostBtn->SetVisible(false);
+		hostBtn->SetSoundOver(NULL);
 	}
 
 	if(joinBtn != NULL)
 	{
 		joinBtn->SetClickable(false);
 		joinBtn->SetVisible(false);
+		joinBtn->SetSoundOver(NULL);
 	}
 
 	if(disconnectBtn != NULL)
@@ -984,6 +989,7 @@ static void hideNetplayGuiComponents()
 	{
 		disconnectBtn->SetClickable(false);
 		disconnectBtn->SetVisible(false);
+		disconnectBtn->SetSoundOver(NULL);
 	}
 
 	if(readyBtn != NULL && chatBtn != NULL && playerList != NULL)
@@ -1291,6 +1297,7 @@ static int MenuGameSelection()
 			if(true /*blazzy-socket-listen() == success*/)
 			{
 				showNetplayGuiComponents();
+				disconnectBtn->SetSoundOver(&btnSoundOver);
 			}
 
 			// TODO:  When a client connects, enable the chat button.
@@ -1314,6 +1321,8 @@ static int MenuGameSelection()
 			FCEUD_NetworkClose();
 
 			hideNetplayGuiComponents();
+			hostBtn->SetSoundOver(&btnSoundOver);
+			joinBtn->SetSoundOver(&btnSoundOver);
 
 			//playerList.Clear();
 			//playerList.ResetState();
