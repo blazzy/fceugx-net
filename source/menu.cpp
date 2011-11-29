@@ -11,9 +11,6 @@
  * TODO:
  *      1.  Transalations for Netplay buttons
  *
- *      2.  GUI does not maintain state when coming back from another
- *          screen.  This is a problem for the Netplay GUI components.
- *
  * History:
  *
  * Name           Date     Description
@@ -23,7 +20,11 @@
  *                         hardcoded lengths.
  * midnak      11/26/2011  Netplay:  Added 'micro' buttons for host/join/chat
  *                         actions
- * midnak      11/29/2011  Added player list.  Added READY button.
+ * midnak      11/29/2011  Added player list.  Added READY button.  Since
+ *                         screens are drawn from scratch every time they're
+ *                         displayed, the Netplay GUI components were made
+ *                         static so they'll maintain state after navigating
+ *                         away from the main screen.
  ****************************************************************************/
 
 #include <gccore.h>
@@ -1018,8 +1019,8 @@ static int MenuGameSelection()
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,50);
 
-	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
-	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
+	static GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
+	static GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 
 	GuiImageData iconHome(icon_home_png);
 	GuiImageData iconSettings(icon_settings_png);
@@ -1027,8 +1028,8 @@ static int MenuGameSelection()
 	GuiImageData btnOutlineOverLong(button_long_over_png);
 	GuiImageData btnOutlineShort(button_short_png);
 	GuiImageData btnOutlineOverShort(button_short_over_png);
-	GuiImageData btnOutlineMicro(button_micro_png);
-	GuiImageData btnOutlineOverMicro(button_micro_over_png);
+	static GuiImageData btnOutlineMicro(button_micro_png);
+	static GuiImageData btnOutlineOverMicro(button_micro_over_png);
 
 	GuiTrigger trigHome;
 	trigHome.SetButtonOnlyTrigger(-1, WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME, 0);
@@ -1075,87 +1076,105 @@ static int MenuGameSelection()
 	exitBtn.SetTrigger(&trigHome);
 	exitBtn.SetEffectGrow();
 
-	GuiText hostBtnTxt("Host", 22, (GXColor){0, 0, 0, 255});
-	GuiImage hostBtnImg(&btnOutlineMicro);
-	GuiImage hostBtnImgOver(&btnOutlineOverMicro);
-	hostBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	hostBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-	hostBtn->SetPosition(2, -58);
-	hostBtn->SetLabel(&hostBtnTxt);
-	hostBtn->SetImage(&hostBtnImg);
-	hostBtn->SetImageOver(&hostBtnImgOver);
-	hostBtn->SetSoundOver(&btnSoundOver);
-	hostBtn->SetSoundClick(&btnSoundClick);
-	hostBtn->SetTrigger(trigA);
-	hostBtn->SetTrigger(trig2);
-	hostBtn->SetEffectGrow();
+	if(hostBtn == NULL)
+	{
+		static GuiText hostBtnTxt("Host", 22, (GXColor){0, 0, 0, 255});
+		static GuiImage hostBtnImg(&btnOutlineMicro);
+		static GuiImage hostBtnImgOver(&btnOutlineOverMicro);
 
-	GuiText joinBtnTxt("Join", 22, (GXColor){0, 0, 0, 255});
-	GuiImage joinBtnImg(&btnOutlineMicro);
-	GuiImage joinBtnImgOver(&btnOutlineOverMicro);
-	joinBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	joinBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-	joinBtn->SetPosition(2, -17);
-	joinBtn->SetLabel(&joinBtnTxt);
-	joinBtn->SetImage(&joinBtnImg);
-	joinBtn->SetImageOver(&joinBtnImgOver);
-	joinBtn->SetSoundOver(&btnSoundOver);
-	joinBtn->SetSoundClick(&btnSoundClick);
-	joinBtn->SetTrigger(trigA);
-	joinBtn->SetTrigger(trig2);
-	joinBtn->SetEffectGrow();
+		hostBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+		hostBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+		hostBtn->SetPosition(2, -58);
+		hostBtn->SetLabel(&hostBtnTxt);
+		hostBtn->SetImage(&hostBtnImg);
+		hostBtn->SetImageOver(&hostBtnImgOver);
+		hostBtn->SetSoundOver(&btnSoundOver);
+		hostBtn->SetSoundClick(&btnSoundClick);
+		hostBtn->SetTrigger(trigA);
+		hostBtn->SetTrigger(trig2);
+		hostBtn->SetEffectGrow();
+	}
 
-	// Various attributes of this button are manipulated during execution to make it appear active/inactive.
-	GuiText chatBtnTxt("Chat", 22, (GXColor){0, 0, 0, 255});
-	GuiImage chatBtnImg(&btnOutlineMicro);
-	GuiImage chatBtnImgOver(&btnOutlineOverMicro);
-	chatBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	chatBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-	chatBtn->SetPosition(0, -58);
-	chatBtn->SetLabel(&chatBtnTxt);
-	chatBtn->SetImage(&chatBtnImg);
-	chatBtn->SetImageOver(&chatBtnImgOver);
-	chatBtn->SetSoundOver(&btnSoundOver);
-	chatBtn->SetSoundClick(&btnSoundClick);
-	chatBtn->SetTrigger(trigA);
-	chatBtn->SetTrigger(trig2);
-	chatBtn->SetEffectGrow();
-	chatBtn->SetVisible(false);
+	if(joinBtn == NULL)
+	{
+		static GuiText joinBtnTxt("Join", 22, (GXColor){0, 0, 0, 255});
+		static GuiImage joinBtnImg(&btnOutlineMicro);
+		static GuiImage joinBtnImgOver(&btnOutlineOverMicro);
 
-	// Various attributes of this button are manipulated during execution to make it appear active/inactive.
-	GuiText readyBtnTxt("READY", 22, (GXColor){0, 0, 0, 255});
-	GuiImage readyBtnImg(&btnOutlineMicro);
-	GuiImage readyBtnImgOver(&btnOutlineOverMicro);
-	readyBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	readyBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-	readyBtn->SetPosition(0, -17);
-	readyBtn->SetLabel(&readyBtnTxt);
-	readyBtn->SetImage(&readyBtnImg);
-	readyBtn->SetImageOver(&readyBtnImgOver);
-	readyBtn->SetSoundOver(&btnSoundOver);
-	readyBtn->SetSoundClick(&btnSoundClick);
-	readyBtn->SetTrigger(trigA);
-	readyBtn->SetTrigger(trig2);
-	readyBtn->SetLabel(&readyBtnTxt);
-	readyBtn->SetEffectGrow();
-	readyBtn->SetVisible(false);
+		joinBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+		joinBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+		joinBtn->SetPosition(2, -17);
+		joinBtn->SetLabel(&joinBtnTxt);
+		joinBtn->SetImage(&joinBtnImg);
+		joinBtn->SetImageOver(&joinBtnImgOver);
+		joinBtn->SetSoundOver(&btnSoundOver);
+		joinBtn->SetSoundClick(&btnSoundClick);
+		joinBtn->SetTrigger(trigA);
+		joinBtn->SetTrigger(trig2);
+		joinBtn->SetEffectGrow();
+	}
 
-	GuiText disconnectBtnTxt("Disconnect", 17, (GXColor){0, 0, 0, 255});
-	GuiImage disconnectBtnImg(&btnOutlineMicro);
-	GuiImage disconnectBtnImgOver(&btnOutlineOverMicro);
-	disconnectBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	disconnectBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-	disconnectBtn->SetPosition(2, -40);
-	disconnectBtn->SetLabel(&disconnectBtnTxt);
-	disconnectBtn->SetImage(&disconnectBtnImg);
-	disconnectBtn->SetImageOver(&disconnectBtnImgOver);
-	disconnectBtn->SetSoundOver(&btnSoundOver);
-	disconnectBtn->SetSoundClick(&btnSoundClick);
-	disconnectBtn->SetTrigger(trigA);
-	disconnectBtn->SetTrigger(trig2);
-	disconnectBtn->SetEffectGrow();
-	disconnectBtn->SetClickable(false);
-	disconnectBtn->SetVisible(false);
+	if(chatBtn == NULL)
+	{
+		static GuiText chatBtnTxt("Chat", 22, (GXColor){0, 0, 0, 255});
+		static GuiImage chatBtnImg(&btnOutlineMicro);
+		static GuiImage chatBtnImgOver(&btnOutlineOverMicro);
+
+		chatBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+		chatBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+		chatBtn->SetPosition(0, -58);
+		chatBtn->SetLabel(&chatBtnTxt);
+		chatBtn->SetImage(&chatBtnImg);
+		chatBtn->SetImageOver(&chatBtnImgOver);
+		chatBtn->SetSoundOver(&btnSoundOver);
+		chatBtn->SetSoundClick(&btnSoundClick);
+		chatBtn->SetTrigger(trigA);
+		chatBtn->SetTrigger(trig2);
+		chatBtn->SetEffectGrow();
+		chatBtn->SetVisible(false);
+	}
+
+	if(readyBtn == NULL)
+	{
+		static GuiText readyBtnTxt("READY", 22, (GXColor){0, 0, 0, 255});
+		static GuiImage readyBtnImg(&btnOutlineMicro);
+		static GuiImage readyBtnImgOver(&btnOutlineOverMicro);
+
+		readyBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+		readyBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+		readyBtn->SetPosition(0, -17);
+		readyBtn->SetLabel(&readyBtnTxt);
+		readyBtn->SetImage(&readyBtnImg);
+		readyBtn->SetImageOver(&readyBtnImgOver);
+		readyBtn->SetSoundOver(&btnSoundOver);
+		readyBtn->SetSoundClick(&btnSoundClick);
+		readyBtn->SetTrigger(trigA);
+		readyBtn->SetTrigger(trig2);
+		readyBtn->SetLabel(&readyBtnTxt);
+		readyBtn->SetEffectGrow();
+		readyBtn->SetVisible(false);
+	}
+
+	if(disconnectBtn == NULL)
+	{
+		static GuiText disconnectBtnTxt("Disconnect", 17, (GXColor){0, 0, 0, 255});
+		static GuiImage disconnectBtnImg(&btnOutlineMicro);
+		static GuiImage disconnectBtnImgOver(&btnOutlineOverMicro);
+
+		disconnectBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+		disconnectBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+		disconnectBtn->SetPosition(2, -40);
+		disconnectBtn->SetLabel(&disconnectBtnTxt);
+		disconnectBtn->SetImage(&disconnectBtnImg);
+		disconnectBtn->SetImageOver(&disconnectBtnImgOver);
+		disconnectBtn->SetSoundOver(&btnSoundOver);
+		disconnectBtn->SetSoundClick(&btnSoundClick);
+		disconnectBtn->SetTrigger(trigA);
+		disconnectBtn->SetTrigger(trig2);
+		disconnectBtn->SetEffectGrow();
+		disconnectBtn->SetClickable(false);
+		disconnectBtn->SetVisible(false);
+	}
 
 	GuiWindow buttonWindow(screenwidth, screenheight);
 	buttonWindow.Append(joinBtn);
@@ -1170,15 +1189,19 @@ static int MenuGameSelection()
 	gameBrowser.SetPosition(50, 98);
 	ResetBrowser();
 
-	OptionList options;
-	snprintf (options.name[0], 100, "midnak");
-	sprintf (options.value[0], "midnak");
-	snprintf (options.name[1], 100, "blazzy");
-	sprintf (options.value[1], "blazzy");
-	playerList = new GuiPlayerList( 294, 288, &options );
-	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-	playerList->SetPosition(-8, 98);
-	playerList->SetVisible(false);
+	if(playerList == NULL)
+	{
+		static OptionList options;
+		snprintf (options.name[0], 100, "midnak");
+		sprintf (options.value[0], "midnak");
+		snprintf (options.name[1], 100, "blazzy");
+		sprintf (options.value[1], "blazzy");
+
+		playerList = new GuiPlayerList( 294, 288, &options );
+		playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+		playerList->SetPosition(-8, 98);
+		playerList->SetVisible(false);
+	}
 
 	HaltGui();
 	btnLogo->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -1313,13 +1336,6 @@ static int MenuGameSelection()
 	mainWindow->Remove(&buttonWindow);
 	mainWindow->Remove(&gameBrowser);
 	mainWindow->Remove(playerList);
-
-	delete hostBtn;
-	delete joinBtn;
-	delete disconnectBtn;
-	delete playerList;
-	delete chatBtn;
-	delete readyBtn;
 
 	return menu;
 }
