@@ -1014,7 +1014,7 @@ static int MenuGameSelection()
 	int i;
 	bool res;
 
-	GuiText titleTxt(selStr, 26, (GXColor){255, 255, 255, 255});
+	GuiText titleTxt("Choose Game", 26, (GXColor){255, 255, 255, 255});
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,50);
 
@@ -1312,17 +1312,14 @@ static int MenuGameSelection()
 	mainWindow->Remove(&titleTxt);
 	mainWindow->Remove(&buttonWindow);
 	mainWindow->Remove(&gameBrowser);
+	mainWindow->Remove(playerList);
 
-	// Okaaayy... screens are drawn from scratch every time, therefore
-	// we have to delete these, but if we do, clicking the Settings button,
-	// something I've never gone anywhere near, causes the app to crash.
-
-	/*delete playerList;
 	delete hostBtn;
 	delete joinBtn;
 	delete disconnectBtn;
+	delete playerList;
 	delete chatBtn;
-	delete readyBtn;*/
+	delete readyBtn;
 
 	return menu;
 }
