@@ -264,6 +264,9 @@ extern const u32	bg_game_selection_entry_png_size;
 extern const u8		bg_player_list_png[];
 extern const u32	bg_player_list_png_size;
 
+extern const u8		bg_player_list_entry_png[];
+extern const u32	bg_player_list_entry_png_size;
+
 extern const u8		scrollbar_png[];
 extern const u32	scrollbar_png_size;
 

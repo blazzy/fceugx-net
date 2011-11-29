@@ -921,6 +921,85 @@ static void WindowCredits(void * ptr)
 		delete txt[i];
 }
 
+GuiButton *chatBtn  = NULL,
+		  *readyBtn = NULL;
+
+static void setChatBtnVisible(bool b)
+{
+	if(chatBtn != NULL)
+	{
+		if(b)
+		{
+
+		}
+		else
+		{
+
+		}
+	}
+}
+
+/*static void setReadyBtnStatus(const bool visible, GuiImage *hoverImage)
+{
+	if(readyBtn != NULL)
+	{
+		if(visible)
+		{
+			readyBtn->SetClickable(true);
+			readyBtn->SetEffectGrow();
+			readyBtn->SetRumble(true);
+		}
+		else
+		{
+			readyBtn->SetClickable(false);
+			readyBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+			readyBtn->SetRumble(false);
+		}
+
+		//readyBtn->SetVisible(visible);
+		readyBtn->SetImageOver(hoverImage);
+	}
+}*/
+static void disableReadyBtn(GuiImage *hoverImage)
+{
+	readyBtn->SetClickable(false);
+	readyBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+	readyBtn->SetRumble(false);
+	readyBtn->SetImageOver(hoverImage);
+
+	//readyBtn->SetVisible(visible);
+}
+
+static void enableReadyBtn(GuiImage *hoverImage)
+{
+	readyBtn->SetClickable(true);
+	readyBtn->SetEffectGrow();
+	readyBtn->SetRumble(true);
+	readyBtn->SetImageOver(hoverImage);
+
+	//readyBtn->SetVisible(visible);
+}
+
+static void disableChatBtn(GuiImage *hoverImage)
+{
+	chatBtn->SetClickable(false);
+	chatBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+	chatBtn->SetRumble(false);
+	chatBtn->SetImageOver(hoverImage);
+
+	//chatBtn->SetVisible(visible);
+}
+
+static void enableChatBtn(GuiImage *hoverImage)
+{
+	chatBtn->SetClickable(true);
+	chatBtn->SetEffectGrow();
+	chatBtn->SetRumble(true);
+	chatBtn->SetImageOver(hoverImage);
+
+	//chatBtn->SetVisible(visible);
+}
+
 /****************************************************************************
  * MenuGameSelection
  *
@@ -1024,39 +1103,36 @@ static int MenuGameSelection()
 	joinBtn.SetTrigger(trig2);
 	joinBtn.SetEffectGrow();
 
-	// Various attributes of this button are manipulated
-	// during execution to make it appear active/inactive.
+	// Various attributes of this button are manipulated during execution to make it appear active/inactive.
 	GuiText chatBtnTxt("Chat", 22, (GXColor){0, 0, 0, 255});
 	GuiImage chatBtnImg(&btnOutlineMicro);
 	GuiImage chatBtnImgOver(&btnOutlineOverMicro);
-	GuiButton chatBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	chatBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-	chatBtn.SetPosition(0, -58);
-	chatBtn.SetLabel(&chatBtnTxt);
-	chatBtn.SetImage(&chatBtnImg);
-	chatBtn.SetImageOver(&chatBtnImg);
-	chatBtn.SetSoundOver(&btnSoundOver);
-	chatBtn.SetSoundClick(&btnSoundClick);
-	chatBtn.SetTrigger(trigA);
-	chatBtn.SetTrigger(trig2);
-	chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-	chatBtn.SetClickable(false);
-	chatBtn.SetRumble(false);
+	chatBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	chatBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	chatBtn->SetPosition(0, -58);
+	chatBtn->SetLabel(&chatBtnTxt);
+	chatBtn->SetImage(&chatBtnImg);
+	chatBtn->SetSoundOver(&btnSoundOver);
+	chatBtn->SetSoundClick(&btnSoundClick);
+	chatBtn->SetTrigger(trigA);
+	chatBtn->SetTrigger(trig2);
+	disableChatBtn(&chatBtnImg);
 
+	// Various attributes of this button are manipulated during execution to make it appear active/inactive.
 	GuiText readyBtnTxt("READY", 22, (GXColor){0, 0, 0, 255});
 	GuiImage readyBtnImg(&btnOutlineMicro);
 	GuiImage readyBtnImgOver(&btnOutlineOverMicro);
-	GuiButton readyBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	readyBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-	readyBtn.SetPosition(0, -17);
-	readyBtn.SetLabel(&readyBtnTxt);
-	readyBtn.SetImage(&readyBtnImg);
-	readyBtn.SetImageOver(&readyBtnImgOver);
-	readyBtn.SetSoundOver(&btnSoundOver);
-	readyBtn.SetSoundClick(&btnSoundClick);
-	readyBtn.SetTrigger(trigA);
-	readyBtn.SetTrigger(trig2);
-	readyBtn.SetEffectGrow();
+	readyBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	readyBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	readyBtn->SetPosition(0, -17);
+	readyBtn->SetLabel(&readyBtnTxt);
+	readyBtn->SetImage(&readyBtnImg);
+	readyBtn->SetSoundOver(&btnSoundOver);
+	readyBtn->SetSoundClick(&btnSoundClick);
+	readyBtn->SetTrigger(trigA);
+	readyBtn->SetTrigger(trig2);
+	readyBtn->SetLabel(&readyBtnTxt);
+	disableReadyBtn(&readyBtnImg);
 
 	GuiText disconnectBtnTxt("Disconnect", 17, (GXColor){0, 0, 0, 255});
 	GuiImage disconnectBtnImg(&btnOutlineMicro);
@@ -1078,11 +1154,11 @@ static int MenuGameSelection()
 	GuiWindow buttonWindow(screenwidth, screenheight);
 	buttonWindow.Append(&joinBtn);
 	buttonWindow.Append(&hostBtn);
-	buttonWindow.Append(&chatBtn);
-	buttonWindow.Append(&readyBtn);
+	buttonWindow.Append(&disconnectBtn);
+	buttonWindow.Append(chatBtn);
+	buttonWindow.Append(readyBtn);
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
-	buttonWindow.Append(&disconnectBtn);
 
 	GuiFileBrowser gameBrowser(424, 268);
 	gameBrowser.SetPosition(50, 98);
@@ -1194,8 +1270,14 @@ static int MenuGameSelection()
 			disconnectBtn.SetVisible(true);
 
 			// Animation effects are one per customer.  You have to set it again to get the effect to happen again.
-			playerListWindow.SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
 			playerListWindow.SetVisible(true);
+			playerListWindow.SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
+
+			if(1 /*blazzy-socket-open() == success*/)
+			{
+				enableChatBtn(&chatBtnImgOver);
+				enableReadyBtn(&readyBtnImgOver);
+			}
 
 			// TODO:  When a client connects, enable the chat button.
 			// Of course, none of that happens in this block, but
@@ -1216,20 +1298,23 @@ static int MenuGameSelection()
 
 			if( FCEUD_NetworkConnect() )
 			{
-				chatBtn.SetClickable(true);
-				chatBtn.SetImageOver(&chatBtnImgOver);
-				chatBtn.SetEffectGrow();
-				chatBtn.SetRumble(true);
+				enableChatBtn(&chatBtnImgOver);
+				enableReadyBtn(&readyBtnImgOver);
 			}
 		}
 		else if(disconnectBtn.GetState() == STATE_CLICKED)
 		{
-			FCEUD_NetworkClose();
+			//FCEUD_NetworkClose();
 
 			disconnectBtn.ResetState();
 			disconnectBtn.SetVisible(false);
 			disconnectBtn.SetClickable(false);
 
+			playerListWindow.SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 50);
+			while(playerListWindow.GetEffect() > 0)
+			{
+				usleep(THREAD_SLEEP);
+			}
 			playerListWindow.SetVisible(false);
 			playerList.Clear();
 			//playerList.ResetState();
@@ -1241,18 +1326,16 @@ static int MenuGameSelection()
 			hostBtn.SetClickable(true);
 			hostBtn.SetVisible(true);
 
-			chatBtn.SetClickable(false);
-			chatBtn.SetImageOver(&chatBtnImg);
-			chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-			chatBtn.SetRumble(false);
+			disableChatBtn(&chatBtnImg);
+			disableReadyBtn(&readyBtnImg);
 		}
-		else if(chatBtn.GetState() == STATE_CLICKED)
+		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
-			chatBtn.ResetState();
+			chatBtn->ResetState();
 		}
-		else if(readyBtn.GetState() == STATE_CLICKED)
+		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
-			readyBtn.ResetState();
+			readyBtn->ResetState();
 		}
 	}
 
@@ -1262,6 +1345,10 @@ static int MenuGameSelection()
 	mainWindow->Remove(&titleTxt);
 	mainWindow->Remove(&buttonWindow);
 	mainWindow->Remove(&gameBrowser);
+
+	delete chatBtn;
+	delete readyBtn;
+
 	return menu;
 }
 

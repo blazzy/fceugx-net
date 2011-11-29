@@ -51,7 +51,7 @@ GuiPlayerList::GuiPlayerList(int w, int h, OptionList * l)
 	titleTxt->SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
 	titleTxt->SetPosition(0, 10);
 
-	bgListEntry = new GuiImageData(bg_options_entry_png);
+	bgPlayerListEntry = new GuiImageData(bg_player_list_entry_png);
 
 	for(int i=0; i<PAGESIZE; i++)
 	{
@@ -65,7 +65,7 @@ GuiPlayerList::GuiPlayerList(int w, int h, OptionList * l)
 		optionVal[i]->SetPosition(250,0);
 		optionVal[i]->SetMaxWidth(230);
 
-		optionBg[i] = new GuiImage(bgListEntry);
+		optionBg[i] = new GuiImage(bgPlayerListEntry);
 
 		optionBtn[i] = new GuiButton(512,30);
 		optionBtn[i]->SetParent(this);
@@ -89,7 +89,7 @@ GuiPlayerList::~GuiPlayerList()
 	delete bgPlayerListImg;
 
 	delete bgPlayerList;
-	delete bgListEntry;
+	delete bgPlayerListEntry;
 
 	delete trigA;
 	delete trig2;

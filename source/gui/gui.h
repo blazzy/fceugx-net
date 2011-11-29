@@ -1087,7 +1087,7 @@ class GuiPlayerList : public GuiElement
 		GuiImage * bgPlayerListImg;
 
 		GuiImageData * bgPlayerList;
-		GuiImageData * bgListEntry;
+		GuiImageData * bgPlayerListEntry;
 
 		GuiSound * btnSoundOver;
 		GuiSound * btnSoundClick;
