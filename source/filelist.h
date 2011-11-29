@@ -14,6 +14,7 @@
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
  * midnak      11/26/2011  Netplay:  Created micro button
+ * midnak      11/29/2011  Netplay:  Created player list
  ****************************************************************************/
 
 #ifndef _FILELIST_H_
@@ -259,6 +260,9 @@ extern const u32	bg_game_selection_png_size;
 
 extern const u8		bg_game_selection_entry_png[];
 extern const u32	bg_game_selection_entry_png_size;
+
+extern const u8		bg_player_list_png[];
+extern const u32	bg_player_list_png_size;
 
 extern const u8		scrollbar_png[];
 extern const u32	scrollbar_png_size;

@@ -26,7 +26,13 @@
  * authors of PNGU and FreeTypeGX, of which this library makes use. Thanks
  * also to the authors of GRRLIB and libwiisprite for laying the foundations.
  *
-*/
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      11/29/2011  Netplay:  Added GuiPlayerlist
+ */
 
 #ifndef LIBWIIGUI_H
 #define LIBWIIGUI_H
@@ -1048,6 +1054,50 @@ class GuiFileBrowser : public GuiElement
 		int selectedItem;
 		int numEntries;
 		bool listChanged;
+};
+
+//!Netplay:  Display a list of connected players
+class GuiPlayerList : public GuiElement
+{
+	public:
+		GuiPlayerList(int w, int h, OptionList *l);
+		~GuiPlayerList();
+		void Clear();
+		void SetCol1Position(int x);
+		void SetCol2Position(int x);
+		int FindMenuItem(int c, int d);
+		int GetClickedOption();
+		void ResetState();
+		void SetFocus(int f);
+		void Draw();
+		void TriggerUpdate();
+		void ResetText();
+		void Update(GuiTrigger * t);
+		GuiText * optionVal[PAGESIZE];
+	protected:
+		int optionIndex[PAGESIZE];
+		GuiButton * optionBtn[PAGESIZE];
+		GuiText * optionTxt[PAGESIZE];
+		GuiImage * optionBg[PAGESIZE];
+
+		int selectedItem;
+		int listOffset;
+		OptionList * options;
+
+		GuiImage * bgPlayerListImg;
+
+		GuiImageData * bgPlayerList;
+		GuiImageData * bgListEntry;
+
+		GuiSound * btnSoundOver;
+		GuiSound * btnSoundClick;
+		GuiTrigger * trigA;
+		GuiTrigger * trig2;
+
+		bool listChanged;
+
+	private:
+		GuiText *titleTxt;
 };
 
 #endif

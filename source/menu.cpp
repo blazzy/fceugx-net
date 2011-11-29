@@ -11,6 +11,9 @@
  * TODO:
  *      1.  Transalations for Netplay buttons
  *
+ *      2.  GUI does not maintain state when coming back from another
+ *          screen.  This is a problem for the Netplay GUI components.
+ *
  * History:
  *
  * Name           Date     Description
@@ -20,6 +23,7 @@
  *                         hardcoded lengths.
  * midnak      11/26/2011  Netplay:  Added 'micro' buttons for host/join/chat
  *                         actions
+ * midnak      11/29/2011  Added player list.  Added READY button.
  ****************************************************************************/
 
 #include <gccore.h>
@@ -1037,21 +1041,22 @@ static int MenuGameSelection()
 	chatBtn.SetTrigger(trig2);
 	chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
 	chatBtn.SetClickable(false);
+	chatBtn.SetRumble(false);
 
-	GuiText sumthinBtnTxt("?", 22, (GXColor){0, 0, 0, 255});
-	GuiImage sumthinBtnImg(&btnOutlineMicro);
-	GuiImage sumthinBtnImgOver(&btnOutlineOverMicro);
-	GuiButton sumthinBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	sumthinBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-	sumthinBtn.SetPosition(0, -17);
-	sumthinBtn.SetLabel(&sumthinBtnTxt);
-	sumthinBtn.SetImage(&sumthinBtnImg);
-	sumthinBtn.SetImageOver(&sumthinBtnImgOver);
-	sumthinBtn.SetSoundOver(&btnSoundOver);
-	sumthinBtn.SetSoundClick(&btnSoundClick);
-	sumthinBtn.SetTrigger(trigA);
-	sumthinBtn.SetTrigger(trig2);
-	sumthinBtn.SetEffectGrow();
+	GuiText readyBtnTxt("READY", 22, (GXColor){0, 0, 0, 255});
+	GuiImage readyBtnImg(&btnOutlineMicro);
+	GuiImage readyBtnImgOver(&btnOutlineOverMicro);
+	GuiButton readyBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	readyBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	readyBtn.SetPosition(0, -17);
+	readyBtn.SetLabel(&readyBtnTxt);
+	readyBtn.SetImage(&readyBtnImg);
+	readyBtn.SetImageOver(&readyBtnImgOver);
+	readyBtn.SetSoundOver(&btnSoundOver);
+	readyBtn.SetSoundClick(&btnSoundClick);
+	readyBtn.SetTrigger(trigA);
+	readyBtn.SetTrigger(trig2);
+	readyBtn.SetEffectGrow();
 
 	GuiText disconnectBtnTxt("Disconnect", 17, (GXColor){0, 0, 0, 255});
 	GuiImage disconnectBtnImg(&btnOutlineMicro);
@@ -1074,7 +1079,7 @@ static int MenuGameSelection()
 	buttonWindow.Append(&joinBtn);
 	buttonWindow.Append(&hostBtn);
 	buttonWindow.Append(&chatBtn);
-	buttonWindow.Append(&sumthinBtn);
+	buttonWindow.Append(&readyBtn);
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
 	buttonWindow.Append(&disconnectBtn);
@@ -1083,12 +1088,25 @@ static int MenuGameSelection()
 	gameBrowser.SetPosition(50, 98);
 	ResetBrowser();
 
+	GuiWindow playerListWindow(screenwidth, screenheight);
+	OptionList options;
+	snprintf (options.name[0], 100, "midnak");
+	sprintf (options.value[0], "midnak");
+	snprintf (options.name[1], 100, "blazzy");
+	sprintf (options.value[1], "blazzy");
+	GuiPlayerList playerList( 294, 288, &options );
+	playerList.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	playerList.SetPosition(-8, 98);
+	playerList.SetVisible(false);
+	playerListWindow.Append(&playerList);
+
 	HaltGui();
 	btnLogo->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 	btnLogo->SetPosition(-50, 24);
 	mainWindow->Append(&titleTxt);
 	mainWindow->Append(&gameBrowser);
 	mainWindow->Append(&buttonWindow);
+	mainWindow->Append(&playerListWindow);
 	ResumeGui();
 
 	#ifdef HW_RVL
@@ -1175,6 +1193,10 @@ static int MenuGameSelection()
 			disconnectBtn.SetClickable(true);
 			disconnectBtn.SetVisible(true);
 
+			// Animation effects are one per customer.  You have to set it again to get the effect to happen again.
+			playerListWindow.SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
+			playerListWindow.SetVisible(true);
+
 			// TODO:  When a client connects, enable the chat button.
 			// Of course, none of that happens in this block, but
 			// this the only relevant place to mention it at this
@@ -1197,13 +1219,21 @@ static int MenuGameSelection()
 				chatBtn.SetClickable(true);
 				chatBtn.SetImageOver(&chatBtnImgOver);
 				chatBtn.SetEffectGrow();
+				chatBtn.SetRumble(true);
 			}
 		}
 		else if(disconnectBtn.GetState() == STATE_CLICKED)
 		{
+			FCEUD_NetworkClose();
+
 			disconnectBtn.ResetState();
 			disconnectBtn.SetVisible(false);
 			disconnectBtn.SetClickable(false);
+
+			playerListWindow.SetVisible(false);
+			playerList.Clear();
+			//playerList.ResetState();
+			//playerList.ResetText();  // hmm, wonder what this does
 
 			joinBtn.SetClickable(true);
 			joinBtn.SetVisible(true);
@@ -1214,14 +1244,15 @@ static int MenuGameSelection()
 			chatBtn.SetClickable(false);
 			chatBtn.SetImageOver(&chatBtnImg);
 			chatBtn.SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+			chatBtn.SetRumble(false);
 		}
 		else if(chatBtn.GetState() == STATE_CLICKED)
 		{
 			chatBtn.ResetState();
 		}
-		else if(sumthinBtn.GetState() == STATE_CLICKED)
+		else if(readyBtn.GetState() == STATE_CLICKED)
 		{
-			sumthinBtn.ResetState();
+			readyBtn.ResetState();
 		}
 	}
 
