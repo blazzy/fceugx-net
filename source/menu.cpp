@@ -921,82 +921,84 @@ static void WindowCredits(void * ptr)
 		delete txt[i];
 }
 
-GuiButton *chatBtn  = NULL,
-		  *readyBtn = NULL;
+GuiPlayerList *playerList = NULL;
+GuiButton *hostBtn        = NULL,
+          *joinBtn        = NULL,
+          *disconnectBtn  = NULL,
+          *chatBtn        = NULL,
+          *readyBtn       = NULL;
 
-static void disableReadyBtn(GuiImage *hoverImage)
+static void showNetplayGuiComponents()
 {
-	if(readyBtn != NULL)
+	if(hostBtn != NULL)
 	{
-		// One way of managing the Ready button:  keep it on-screen but disabled.
-		/*readyBtn->SetClickable(false);
-		readyBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-		readyBtn->SetRumble(false);
-		readyBtn->SetImageOver(hoverImage);*/
-
-		// Another way:  fly it off-screen
-		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 50);
-		while(readyBtn->GetEffect() > 0)
-		{
-			usleep(THREAD_SLEEP);
-		}
-		readyBtn->SetVisible(false);
+		hostBtn->SetClickable(false);
+		hostBtn->SetVisible(false);
 	}
-}
 
-static void enableReadyBtn(GuiImage *hoverImage)
-{
-	if(readyBtn != NULL)
+	if(joinBtn != NULL)
 	{
-		// One way of managing the Chat button:  keep it on-screen but disabled; enable it when needed.
-		/*
-		if(readyBtn != NULL)
-		{
-			readyBtn->SetClickable(true);
-			readyBtn->SetEffectGrow();
-			readyBtn->SetRumble(true);
-			readyBtn->SetImageOver(hoverImage);
-		}*/
-
-		// Another way:  fly it on-screen
-		readyBtn->SetVisible(true);
-		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
+		joinBtn->SetClickable(false);
+		joinBtn->SetVisible(false);
 	}
-}
 
-static void disableChatBtn(GuiImage *hoverImage)
-{
-	if(chatBtn != NULL)
+	if(disconnectBtn != NULL)
 	{
-		// One way of managing the Chat button:  keep it on-screen but disabled.
-		/*chatBtn->SetClickable(false);
-		chatBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-		chatBtn->SetRumble(false);
-		chatBtn->SetImageOver(hoverImage);*/
-
-		// Another way:  fly it off-screen
-		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 50);
-		while(chatBtn->GetEffect() > 0)
-		{
-			usleep(THREAD_SLEEP);
-		}
-		chatBtn->SetVisible(false);
+		disconnectBtn->SetClickable(true);
+		disconnectBtn->SetVisible(true);
 	}
-}
 
-static void enableChatBtn(GuiImage *hoverImage)
-{
-	if(chatBtn != NULL)
+	if(playerList != NULL && chatBtn != NULL && readyBtn != NULL)
 	{
-		// One way of managing the Chat button:  keep it on-screen but disabled; enable it when needed.
-		/*chatBtn->SetClickable(true);
-		chatBtn->SetEffectGrow();
-		chatBtn->SetRumble(true);
-		chatBtn->SetImageOver(hoverImage);*/
-
-		// Another way:  keep it off-screen and fly it in when needed
+		playerList->SetVisible(true);
 		chatBtn->SetVisible(true);
-		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
+		readyBtn->SetVisible(true);
+
+		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
+		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
+		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
+
+		while(playerList->GetEffect() > 0 || chatBtn->GetEffect() > 0 || readyBtn->GetEffect() > 0)
+		{
+			usleep(THREAD_SLEEP);
+		}
+	}
+}
+
+static void hideNetplayGuiComponents()
+{
+	if(hostBtn != NULL)
+	{
+		hostBtn->SetClickable(true);
+		hostBtn->SetVisible(true);
+	}
+
+	if(joinBtn != NULL)
+	{
+		joinBtn->SetClickable(true);
+		joinBtn->SetVisible(true);
+	}
+
+	if(disconnectBtn != NULL)
+	{
+		disconnectBtn->SetClickable(false);
+		disconnectBtn->SetVisible(false);
+	}
+
+	if(readyBtn != NULL && chatBtn != NULL && playerList != NULL)
+	{
+		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
+		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
+		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
+
+		while(playerList->GetEffect() > 0 || chatBtn->GetEffect() > 0 || readyBtn->GetEffect() > 0)
+		{
+			usleep(THREAD_SLEEP);
+		}
+
+		playerList->SetVisible(false);
+		chatBtn->SetVisible(false);
+		readyBtn->SetVisible(false);
 	}
 }
 
@@ -1012,7 +1014,7 @@ static int MenuGameSelection()
 	int i;
 	bool res;
 
-	GuiText titleTxt("Choose Game", 26, (GXColor){255, 255, 255, 255});
+	GuiText titleTxt(selStr, 26, (GXColor){255, 255, 255, 255});
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,50);
 
@@ -1076,32 +1078,32 @@ static int MenuGameSelection()
 	GuiText hostBtnTxt("Host", 22, (GXColor){0, 0, 0, 255});
 	GuiImage hostBtnImg(&btnOutlineMicro);
 	GuiImage hostBtnImgOver(&btnOutlineOverMicro);
-	GuiButton hostBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	hostBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-	hostBtn.SetPosition(2, -58);
-	hostBtn.SetLabel(&hostBtnTxt);
-	hostBtn.SetImage(&hostBtnImg);
-	hostBtn.SetImageOver(&hostBtnImgOver);
-	hostBtn.SetSoundOver(&btnSoundOver);
-	hostBtn.SetSoundClick(&btnSoundClick);
-	hostBtn.SetTrigger(trigA);
-	hostBtn.SetTrigger(trig2);
-	hostBtn.SetEffectGrow();
+	hostBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	hostBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	hostBtn->SetPosition(2, -58);
+	hostBtn->SetLabel(&hostBtnTxt);
+	hostBtn->SetImage(&hostBtnImg);
+	hostBtn->SetImageOver(&hostBtnImgOver);
+	hostBtn->SetSoundOver(&btnSoundOver);
+	hostBtn->SetSoundClick(&btnSoundClick);
+	hostBtn->SetTrigger(trigA);
+	hostBtn->SetTrigger(trig2);
+	hostBtn->SetEffectGrow();
 
 	GuiText joinBtnTxt("Join", 22, (GXColor){0, 0, 0, 255});
 	GuiImage joinBtnImg(&btnOutlineMicro);
 	GuiImage joinBtnImgOver(&btnOutlineOverMicro);
-	GuiButton joinBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	joinBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-	joinBtn.SetPosition(2, -17);
-	joinBtn.SetLabel(&joinBtnTxt);
-	joinBtn.SetImage(&joinBtnImg);
-	joinBtn.SetImageOver(&joinBtnImgOver);
-	joinBtn.SetSoundOver(&btnSoundOver);
-	joinBtn.SetSoundClick(&btnSoundClick);
-	joinBtn.SetTrigger(trigA);
-	joinBtn.SetTrigger(trig2);
-	joinBtn.SetEffectGrow();
+	joinBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	joinBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	joinBtn->SetPosition(2, -17);
+	joinBtn->SetLabel(&joinBtnTxt);
+	joinBtn->SetImage(&joinBtnImg);
+	joinBtn->SetImageOver(&joinBtnImgOver);
+	joinBtn->SetSoundOver(&btnSoundOver);
+	joinBtn->SetSoundClick(&btnSoundClick);
+	joinBtn->SetTrigger(trigA);
+	joinBtn->SetTrigger(trig2);
+	joinBtn->SetEffectGrow();
 
 	// Various attributes of this button are manipulated during execution to make it appear active/inactive.
 	GuiText chatBtnTxt("Chat", 22, (GXColor){0, 0, 0, 255});
@@ -1141,24 +1143,24 @@ static int MenuGameSelection()
 	GuiText disconnectBtnTxt("Disconnect", 17, (GXColor){0, 0, 0, 255});
 	GuiImage disconnectBtnImg(&btnOutlineMicro);
 	GuiImage disconnectBtnImgOver(&btnOutlineOverMicro);
-	GuiButton disconnectBtn(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
-	disconnectBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-	disconnectBtn.SetPosition(2, -40);
-	disconnectBtn.SetLabel(&disconnectBtnTxt);
-	disconnectBtn.SetImage(&disconnectBtnImg);
-	disconnectBtn.SetImageOver(&disconnectBtnImgOver);
-	disconnectBtn.SetSoundOver(&btnSoundOver);
-	disconnectBtn.SetSoundClick(&btnSoundClick);
-	disconnectBtn.SetTrigger(trigA);
-	disconnectBtn.SetTrigger(trig2);
-	disconnectBtn.SetEffectGrow();
-	disconnectBtn.SetClickable(false);
-	disconnectBtn.SetVisible(false);
+	disconnectBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+	disconnectBtn->SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	disconnectBtn->SetPosition(2, -40);
+	disconnectBtn->SetLabel(&disconnectBtnTxt);
+	disconnectBtn->SetImage(&disconnectBtnImg);
+	disconnectBtn->SetImageOver(&disconnectBtnImgOver);
+	disconnectBtn->SetSoundOver(&btnSoundOver);
+	disconnectBtn->SetSoundClick(&btnSoundClick);
+	disconnectBtn->SetTrigger(trigA);
+	disconnectBtn->SetTrigger(trig2);
+	disconnectBtn->SetEffectGrow();
+	disconnectBtn->SetClickable(false);
+	disconnectBtn->SetVisible(false);
 
 	GuiWindow buttonWindow(screenwidth, screenheight);
-	buttonWindow.Append(&joinBtn);
-	buttonWindow.Append(&hostBtn);
-	buttonWindow.Append(&disconnectBtn);
+	buttonWindow.Append(joinBtn);
+	buttonWindow.Append(hostBtn);
+	buttonWindow.Append(disconnectBtn);
 	buttonWindow.Append(chatBtn);
 	buttonWindow.Append(readyBtn);
 	buttonWindow.Append(&settingsBtn);
@@ -1168,17 +1170,15 @@ static int MenuGameSelection()
 	gameBrowser.SetPosition(50, 98);
 	ResetBrowser();
 
-	GuiWindow playerListWindow(screenwidth, screenheight);
 	OptionList options;
 	snprintf (options.name[0], 100, "midnak");
 	sprintf (options.value[0], "midnak");
 	snprintf (options.name[1], 100, "blazzy");
 	sprintf (options.value[1], "blazzy");
-	GuiPlayerList playerList( 294, 288, &options );
-	playerList.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-	playerList.SetPosition(-8, 98);
-	playerList.SetVisible(false);
-	playerListWindow.Append(&playerList);
+	playerList = new GuiPlayerList( 294, 288, &options );
+	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	playerList->SetPosition(-8, 98);
+	playerList->SetVisible(false);
 
 	HaltGui();
 	btnLogo->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -1186,7 +1186,7 @@ static int MenuGameSelection()
 	mainWindow->Append(&titleTxt);
 	mainWindow->Append(&gameBrowser);
 	mainWindow->Append(&buttonWindow);
-	mainWindow->Append(&playerListWindow);
+	mainWindow->Append(playerList);
 	ResumeGui();
 
 	#ifdef HW_RVL
@@ -1261,26 +1261,13 @@ static int MenuGameSelection()
 		{
 			ExitRequested = 1;
 		}
-		else if(hostBtn.GetState() == STATE_CLICKED)
+		else if(hostBtn->GetState() == STATE_CLICKED)
 		{
-			hostBtn.ResetState();
-			hostBtn.SetClickable(false);
-			hostBtn.SetVisible(false);
+			hostBtn->ResetState();
 
-			joinBtn.SetClickable(false);
-			joinBtn.SetVisible(false);
-
-			disconnectBtn.SetClickable(true);
-			disconnectBtn.SetVisible(true);
-
-			// Animation effects are one per customer.  You have to set it again to get the effect to happen again.
-			playerListWindow.SetVisible(true);
-			playerListWindow.SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
-
-			if(1 /*blazzy-socket-open() == success*/)
+			if(true /*blazzy-socket-listen() == success*/)
 			{
-				enableChatBtn(&chatBtnImgOver);
-				enableReadyBtn(&readyBtnImgOver);
+				showNetplayGuiComponents();
 			}
 
 			// TODO:  When a client connects, enable the chat button.
@@ -1288,50 +1275,26 @@ static int MenuGameSelection()
 			// this the only relevant place to mention it at this
 			// stage of development.
 		}
-		else if(joinBtn.GetState() == STATE_CLICKED)
+		else if(joinBtn->GetState() == STATE_CLICKED)
 		{
-			joinBtn.ResetState();
-			joinBtn.SetClickable(false);
-			joinBtn.SetVisible(false);
+			joinBtn->ResetState();
 
-			hostBtn.SetClickable(false);
-			hostBtn.SetVisible(false);
-
-			disconnectBtn.SetClickable(true);
-			disconnectBtn.SetVisible(true);
-
-			if( FCEUD_NetworkConnect() )
+			if(true /*FCEUD_NetworkConnect()*/ )
 			{
-				enableChatBtn(&chatBtnImgOver);
-				enableReadyBtn(&readyBtnImgOver);
+				showNetplayGuiComponents();
 			}
 		}
-		else if(disconnectBtn.GetState() == STATE_CLICKED)
+		else if(disconnectBtn->GetState() == STATE_CLICKED)
 		{
-			//FCEUD_NetworkClose();
+			disconnectBtn->ResetState();
 
-			disconnectBtn.ResetState();
-			disconnectBtn.SetVisible(false);
-			disconnectBtn.SetClickable(false);
+			FCEUD_NetworkClose();
 
-			playerListWindow.SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 50);
-			while(playerListWindow.GetEffect() > 0)
-			{
-				usleep(THREAD_SLEEP);
-			}
-			playerListWindow.SetVisible(false);
-			playerList.Clear();
+			hideNetplayGuiComponents();
+
+			//playerList.Clear();
 			//playerList.ResetState();
 			//playerList.ResetText();  // hmm, wonder what this does
-
-			joinBtn.SetClickable(true);
-			joinBtn.SetVisible(true);
-
-			hostBtn.SetClickable(true);
-			hostBtn.SetVisible(true);
-
-			disableChatBtn(&chatBtnImg);
-			disableReadyBtn(&readyBtnImg);
 		}
 		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
@@ -1350,8 +1313,16 @@ static int MenuGameSelection()
 	mainWindow->Remove(&buttonWindow);
 	mainWindow->Remove(&gameBrowser);
 
+	// Okaaayy... screens are drawn from scratch every time, therefore
+	// we have to delete these, but if we do, clicking the Settings button,
+	// something I've never gone anywhere near, causes the app to crash.
+
+	/*delete playerList;
+	delete hostBtn;
+	delete joinBtn;
+	delete disconnectBtn;
 	delete chatBtn;
-	delete readyBtn;
+	delete readyBtn;*/
 
 	return menu;
 }
