@@ -924,80 +924,80 @@ static void WindowCredits(void * ptr)
 GuiButton *chatBtn  = NULL,
 		  *readyBtn = NULL;
 
-static void setChatBtnVisible(bool b)
-{
-	if(chatBtn != NULL)
-	{
-		if(b)
-		{
-
-		}
-		else
-		{
-
-		}
-	}
-}
-
-/*static void setReadyBtnStatus(const bool visible, GuiImage *hoverImage)
+static void disableReadyBtn(GuiImage *hoverImage)
 {
 	if(readyBtn != NULL)
 	{
-		if(visible)
-		{
-			readyBtn->SetClickable(true);
-			readyBtn->SetEffectGrow();
-			readyBtn->SetRumble(true);
-		}
-		else
-		{
-			readyBtn->SetClickable(false);
-			readyBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-			readyBtn->SetRumble(false);
-		}
+		// One way of managing the Ready button:  keep it on-screen but disabled.
+		/*readyBtn->SetClickable(false);
+		readyBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+		readyBtn->SetRumble(false);
+		readyBtn->SetImageOver(hoverImage);*/
 
-		//readyBtn->SetVisible(visible);
-		readyBtn->SetImageOver(hoverImage);
+		// Another way:  fly it off-screen
+		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 50);
+		while(readyBtn->GetEffect() > 0)
+		{
+			usleep(THREAD_SLEEP);
+		}
+		readyBtn->SetVisible(false);
 	}
-}*/
-static void disableReadyBtn(GuiImage *hoverImage)
-{
-	readyBtn->SetClickable(false);
-	readyBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-	readyBtn->SetRumble(false);
-	readyBtn->SetImageOver(hoverImage);
-
-	//readyBtn->SetVisible(visible);
 }
 
 static void enableReadyBtn(GuiImage *hoverImage)
 {
-	readyBtn->SetClickable(true);
-	readyBtn->SetEffectGrow();
-	readyBtn->SetRumble(true);
-	readyBtn->SetImageOver(hoverImage);
+	if(readyBtn != NULL)
+	{
+		// One way of managing the Chat button:  keep it on-screen but disabled; enable it when needed.
+		/*
+		if(readyBtn != NULL)
+		{
+			readyBtn->SetClickable(true);
+			readyBtn->SetEffectGrow();
+			readyBtn->SetRumble(true);
+			readyBtn->SetImageOver(hoverImage);
+		}*/
 
-	//readyBtn->SetVisible(visible);
+		// Another way:  fly it on-screen
+		readyBtn->SetVisible(true);
+		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
+	}
 }
 
 static void disableChatBtn(GuiImage *hoverImage)
 {
-	chatBtn->SetClickable(false);
-	chatBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
-	chatBtn->SetRumble(false);
-	chatBtn->SetImageOver(hoverImage);
+	if(chatBtn != NULL)
+	{
+		// One way of managing the Chat button:  keep it on-screen but disabled.
+		/*chatBtn->SetClickable(false);
+		chatBtn->SetEffectOnOver(0, 0, 0);  // midnak:  is this proper?
+		chatBtn->SetRumble(false);
+		chatBtn->SetImageOver(hoverImage);*/
 
-	//chatBtn->SetVisible(visible);
+		// Another way:  fly it off-screen
+		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 50);
+		while(chatBtn->GetEffect() > 0)
+		{
+			usleep(THREAD_SLEEP);
+		}
+		chatBtn->SetVisible(false);
+	}
 }
 
 static void enableChatBtn(GuiImage *hoverImage)
 {
-	chatBtn->SetClickable(true);
-	chatBtn->SetEffectGrow();
-	chatBtn->SetRumble(true);
-	chatBtn->SetImageOver(hoverImage);
+	if(chatBtn != NULL)
+	{
+		// One way of managing the Chat button:  keep it on-screen but disabled; enable it when needed.
+		/*chatBtn->SetClickable(true);
+		chatBtn->SetEffectGrow();
+		chatBtn->SetRumble(true);
+		chatBtn->SetImageOver(hoverImage);*/
 
-	//chatBtn->SetVisible(visible);
+		// Another way:  keep it off-screen and fly it in when needed
+		chatBtn->SetVisible(true);
+		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 50);
+	}
 }
 
 /****************************************************************************
@@ -1112,11 +1112,13 @@ static int MenuGameSelection()
 	chatBtn->SetPosition(0, -58);
 	chatBtn->SetLabel(&chatBtnTxt);
 	chatBtn->SetImage(&chatBtnImg);
+	chatBtn->SetImageOver(&chatBtnImgOver);
 	chatBtn->SetSoundOver(&btnSoundOver);
 	chatBtn->SetSoundClick(&btnSoundClick);
 	chatBtn->SetTrigger(trigA);
 	chatBtn->SetTrigger(trig2);
-	disableChatBtn(&chatBtnImg);
+	chatBtn->SetEffectGrow();
+	chatBtn->SetVisible(false);
 
 	// Various attributes of this button are manipulated during execution to make it appear active/inactive.
 	GuiText readyBtnTxt("READY", 22, (GXColor){0, 0, 0, 255});
@@ -1127,12 +1129,14 @@ static int MenuGameSelection()
 	readyBtn->SetPosition(0, -17);
 	readyBtn->SetLabel(&readyBtnTxt);
 	readyBtn->SetImage(&readyBtnImg);
+	readyBtn->SetImageOver(&readyBtnImgOver);
 	readyBtn->SetSoundOver(&btnSoundOver);
 	readyBtn->SetSoundClick(&btnSoundClick);
 	readyBtn->SetTrigger(trigA);
 	readyBtn->SetTrigger(trig2);
 	readyBtn->SetLabel(&readyBtnTxt);
-	disableReadyBtn(&readyBtnImg);
+	readyBtn->SetEffectGrow();
+	readyBtn->SetVisible(false);
 
 	GuiText disconnectBtnTxt("Disconnect", 17, (GXColor){0, 0, 0, 255});
 	GuiImage disconnectBtnImg(&btnOutlineMicro);
