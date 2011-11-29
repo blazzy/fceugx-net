@@ -939,6 +939,7 @@ static void showNetplayGuiComponents()
 		hostBtn->SetClickable(false);
 		hostBtn->SetVisible(false);
 		hostBtn->SetSoundOver(NULL);
+		hostBtn->SetRumble(false);
 	}
 
 	if(joinBtn != NULL)
@@ -946,11 +947,13 @@ static void showNetplayGuiComponents()
 		joinBtn->SetClickable(false);
 		joinBtn->SetVisible(false);
 		joinBtn->SetSoundOver(NULL);
+		joinBtn->SetRumble(false);
 	}
 
 	if(disconnectBtn != NULL)
 	{
 		disconnectBtn->SetClickable(true);
+		disconnectBtn->SetRumble(true);
 		disconnectBtn->SetVisible(true);
 	}
 
@@ -976,12 +979,14 @@ static void hideNetplayGuiComponents()
 	if(hostBtn != NULL)
 	{
 		hostBtn->SetClickable(true);
+		hostBtn->SetRumble(true);
 		hostBtn->SetVisible(true);
 	}
 
 	if(joinBtn != NULL)
 	{
 		joinBtn->SetClickable(true);
+		joinBtn->SetRumble(true);
 		joinBtn->SetVisible(true);
 	}
 
