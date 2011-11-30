@@ -69,6 +69,8 @@ extern FreeTypeGX *fontSystem[];
 #define MAX_OPTIONS 			150
 #define MAX_KEYBOARD_DISPLAY	32
 
+#define MAX_PLAYER_LIST_SIZE    4
+
 typedef void (*UpdateCallback)(void * e);
 
 enum
@@ -1068,11 +1070,11 @@ class GuiPlayerList : public GuiElement
 		void DrawTooltip();
 		void TriggerUpdate();
 		void Update(GuiTrigger * t);
-		GuiButton * fileList[FILE_PAGESIZE];
+		GuiButton * fileList[MAX_PLAYER_LIST_SIZE];
 	protected:
-		GuiText * fileListText[FILE_PAGESIZE];
-		GuiImage * fileListBg[FILE_PAGESIZE];
-		GuiImage * fileListIcon[FILE_PAGESIZE];
+		GuiText * fileListText[MAX_PLAYER_LIST_SIZE];
+		GuiImage * fileListBg[MAX_PLAYER_LIST_SIZE];
+		GuiImage * fileListIcon[MAX_PLAYER_LIST_SIZE];
 
 		/*GuiButton * arrowUpBtn;
 		GuiButton * arrowDownBtn;

@@ -17,6 +17,7 @@
 #include "gui.h"
 #include "filebrowser.h"
 
+
 GuiPlayerList::GuiPlayerList(int w, int h)
 {
 	width = w;
@@ -105,26 +106,41 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	scrollbarBoxBtn->SetHoldable(true);
 	scrollbarBoxBtn->SetTrigger(trigHeldA);*/
 
-	for(int i=0; i<FILE_PAGESIZE; ++i)
+	for(int i=0; i<MAX_PLAYER_LIST_SIZE; ++i)
 	{
-		fileListText[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
+		fileListText[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 255});
 		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 		fileListText[i]->SetPosition(5,0);
 		fileListText[i]->SetMaxWidth(105);
 
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
-		fileListBg[i]->SetPosition(2,0);
+		fileListBg[i]->SetPosition(2,-3);
 		fileListIcon[i] = NULL;
 
-		fileList[i] = new GuiButton(380, 26);
+		fileList[i] = new GuiButton(this->GetWidth(), 26);
 		fileList[i]->SetParent(this);
 		fileList[i]->SetLabel(fileListText[i]);
 		fileList[i]->SetImageOver(fileListBg[i]);
-		fileList[i]->SetPosition(2,26*i+3);
+		fileList[i]->SetPosition(2,26*i+55);
 		fileList[i]->SetTrigger(trigA);
 		fileList[i]->SetTrigger(trig2);
 		fileList[i]->SetSoundClick(btnSoundClick);
 	}
+
+	/*GuiText headerTxt("PLAYERS", 25, (GXColor){0, 0, 0, 0xff});
+	headerTxt.SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	headerTxt.SetPosition(5,0);
+	headerTxt.SetMaxWidth(105);
+	// And now, idiocy commences.
+	GuiButton headerBtn(this->GetWidth(), 26);
+	headerBtn.SetParent(this);
+	headerBtn.SetLabel(&headerTxt);
+	headerBtn.SetPosition(2,26*4+55);
+	headerBtn.SetTrigger(trigA);
+	headerBtn.SetTrigger(trig2);
+	headerBtn.SetVisible(true);
+	headerBtn.Draw();
+	this->UpdateEffects();*/
 }
 
 GuiPlayerList::~GuiPlayerList()
@@ -164,7 +180,7 @@ GuiPlayerList::~GuiPlayerList()
 	delete trigA;
 	delete trig2;
 
-	for(int i=0; i<FILE_PAGESIZE; i++)
+	for(int i=0; i<MAX_PLAYER_LIST_SIZE; i++)
 	{
 		delete fileListText[i];
 		delete fileList[i];
@@ -179,7 +195,7 @@ void GuiPlayerList::SetFocus(int f)
 {
 	focus = f;
 
-	for(int i=0; i<FILE_PAGESIZE; i++)
+	for(int i=0; i<MAX_PLAYER_LIST_SIZE; i++)
 		fileList[i]->ResetState();
 
 	if(f == 1)
@@ -192,7 +208,7 @@ void GuiPlayerList::ResetState()
 	stateChan = -1;
 	selectedItem = 0;
 
-	for(int i=0; i<FILE_PAGESIZE; i++)
+	for(int i=0; i<MAX_PLAYER_LIST_SIZE; i++)
 	{
 		fileList[i]->ResetState();
 	}
@@ -202,8 +218,8 @@ void GuiPlayerList::TriggerUpdate()
 {
 	int newIndex = browser.selIndex-browser.pageIndex;
 	
-	if(newIndex >= FILE_PAGESIZE)
-		newIndex = FILE_PAGESIZE-1;
+	if(newIndex >= MAX_PLAYER_LIST_SIZE)
+		newIndex = MAX_PLAYER_LIST_SIZE-1;
 	else if(newIndex < 0)
 		newIndex = 0;
 
@@ -221,7 +237,7 @@ void GuiPlayerList::Draw()
 
 	bgFileSelectionImg->Draw();
 
-	for(u32 i=0; i<FILE_PAGESIZE; ++i)
+	for(u32 i=0; i<MAX_PLAYER_LIST_SIZE; ++i)
 	{
 		fileList[i]->Draw();
 	}
@@ -254,7 +270,7 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	if(scrollbarBoxBtn->GetState() == STATE_HELD &&
 		scrollbarBoxBtn->GetStateChan() == t->chan &&
 		t->wpad->ir.valid &&
-		browser.numEntries > FILE_PAGESIZE
+		browser.numEntries > MAX_PLAYER_LIST_SIZE
 		)
 	{
 		scrollbarBoxBtn->SetPosition(0,0);
@@ -271,9 +287,9 @@ void GuiPlayerList::Update(GuiTrigger * t)
 		{
 			browser.pageIndex = 0;
 		}
-		else if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
+		else if(browser.pageIndex+MAX_PLAYER_LIST_SIZE >= browser.numEntries)
 		{
-			browser.pageIndex = browser.numEntries-FILE_PAGESIZE;
+			browser.pageIndex = browser.numEntries-MAX_PLAYER_LIST_SIZE;
 		}
 		listChanged = true;
 		focus = false;
@@ -290,7 +306,7 @@ void GuiPlayerList::Update(GuiTrigger * t)
 		t->wpad->btns_d |= WPAD_BUTTON_UP;
 		if(!this->IsFocused())
 			((GuiWindow *)this->GetParent())->ChangeFocus(this);
-	}*/
+	}
 
 	// pad/joystick navigation
 	if(!focus)
@@ -301,11 +317,11 @@ void GuiPlayerList::Update(GuiTrigger * t)
 
 	if(t->Right())
 	{
-		if(browser.pageIndex < browser.numEntries && browser.numEntries > FILE_PAGESIZE)
+		if(browser.pageIndex < browser.numEntries && browser.numEntries > MAX_PLAYER_LIST_SIZE)
 		{
-			browser.pageIndex += FILE_PAGESIZE;
-			if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
-				browser.pageIndex = browser.numEntries-FILE_PAGESIZE;
+			browser.pageIndex += MAX_PLAYER_LIST_SIZE;
+			if(browser.pageIndex+MAX_PLAYER_LIST_SIZE >= browser.numEntries)
+				browser.pageIndex = browser.numEntries-MAX_PLAYER_LIST_SIZE;
 			listChanged = true;
 		}
 	}
@@ -313,7 +329,7 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	{
 		if(browser.pageIndex > 0)
 		{
-			browser.pageIndex -= FILE_PAGESIZE;
+			browser.pageIndex -= MAX_PLAYER_LIST_SIZE;
 			if(browser.pageIndex < 0)
 				browser.pageIndex = 0;
 			listChanged = true;
@@ -323,7 +339,7 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	{
 		if(browser.pageIndex + selectedItem + 1 < browser.numEntries)
 		{
-			if(selectedItem == FILE_PAGESIZE-1)
+			if(selectedItem == MAX_PLAYER_LIST_SIZE-1)
 			{
 				// move list down by 1
 				++browser.pageIndex;
@@ -352,8 +368,9 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	}
 
 	endNavigation:
+	*/
 
-	for(int i=0; i<FILE_PAGESIZE; ++i)
+	for(int i=0; i<MAX_PLAYER_LIST_SIZE; ++i)
 	{
 		if(listChanged || numEntries != browser.numEntries)
 		{
@@ -433,27 +450,28 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	}
 
 	// update the location of the scroll box based on the position in the file list
-	if(positionWiimote > 0)
+	/*if(positionWiimote > 0)
 	{
 		position = positionWiimote; // follow wiimote cursor
 		//scrollbarBoxBtn->SetPosition(0,position+36);
 	}
 	else if(listChanged || numEntries != browser.numEntries)
 	{
-		if(float((browser.pageIndex<<1))/(float(FILE_PAGESIZE)) < 1.0)
+		if(float((browser.pageIndex<<1))/(float(MAX_PLAYER_LIST_SIZE)) < 1.0)
 		{
 			position = 0;
 		}
-		else if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
+		else if(browser.pageIndex+MAX_PLAYER_LIST_SIZE >= browser.numEntries)
 		{
 			position = 156;
 		}
 		else
 		{
-			position = 156 * (browser.pageIndex + FILE_PAGESIZE/2) / (float)browser.numEntries;
+			position = 156 * (browser.pageIndex + MAX_PLAYER_LIST_SIZE/2) / (float)browser.numEntries;
 		}
 		//scrollbarBoxBtn->SetPosition(0,position+36);
 	}
+	 */
 
 	listChanged = false;
 	numEntries = browser.numEntries;
