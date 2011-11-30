@@ -1060,44 +1060,56 @@ class GuiFileBrowser : public GuiElement
 class GuiPlayerList : public GuiElement
 {
 	public:
-		GuiPlayerList(int w, int h, OptionList *l);
+		GuiPlayerList(int w, int h);
 		~GuiPlayerList();
-		void Clear();
-		void SetCol1Position(int x);
-		void SetCol2Position(int x);
-		int FindMenuItem(int c, int d);
-		int GetClickedOption();
 		void ResetState();
 		void SetFocus(int f);
 		void Draw();
+		void DrawTooltip();
 		void TriggerUpdate();
-		void ResetText();
 		void Update(GuiTrigger * t);
-		GuiText * optionVal[PAGESIZE];
+		GuiButton * fileList[FILE_PAGESIZE];
 	protected:
-		int optionIndex[PAGESIZE];
-		GuiButton * optionBtn[PAGESIZE];
-		GuiText * optionTxt[PAGESIZE];
-		GuiImage * optionBg[PAGESIZE];
+		GuiText * fileListText[FILE_PAGESIZE];
+		GuiImage * fileListBg[FILE_PAGESIZE];
+		GuiImage * fileListIcon[FILE_PAGESIZE];
 
-		int selectedItem;
-		int listOffset;
-		OptionList * options;
+		/*GuiButton * arrowUpBtn;
+		GuiButton * arrowDownBtn;
+		GuiButton * scrollbarBoxBtn;*/
 
-		GuiImage * bgPlayerListImg;
+		GuiImage * bgFileSelectionImg;
+		/*GuiImage * scrollbarImg;
+		GuiImage * arrowDownImg;
+		GuiImage * arrowDownOverImg;
+		GuiImage * arrowUpImg;
+		GuiImage * arrowUpOverImg;
+		GuiImage * scrollbarBoxImg;
+		GuiImage * scrollbarBoxOverImg;*/
 
-		GuiImageData * bgPlayerList;
-		GuiImageData * bgPlayerListEntry;
+		GuiImageData * bgFileSelection;
+		GuiImageData * bgFileSelectionEntry;
+		GuiImageData * iconFolder;
+		GuiImageData * iconSD;
+		GuiImageData * iconUSB;
+		GuiImageData * iconDVD;
+		GuiImageData * iconSMB;
+		/*GuiImageData * scrollbar;
+		GuiImageData * arrowDown;
+		GuiImageData * arrowDownOver;
+		GuiImageData * arrowUp;
+		GuiImageData * arrowUpOver;
+		GuiImageData * scrollbarBox;
+		GuiImageData * scrollbarBoxOver;*/
 
 		GuiSound * btnSoundOver;
 		GuiSound * btnSoundClick;
 		GuiTrigger * trigA;
 		GuiTrigger * trig2;
+		GuiTrigger * trigHeldA;
 
+		int selectedItem;
+		int numEntries;
 		bool listChanged;
-
-	private:
-		GuiText *titleTxt;
 };
-
 #endif

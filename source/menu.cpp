@@ -11,6 +11,11 @@
  * TODO:
  *      1.  Transalations for Netplay buttons
  *
+ *      2.  'Ready' button:  assign player number 1-4 based on order of
+ *          clicking in, rather than order of connection.  This will allow
+ *          people to decide their player number, should they have a
+ *          preference for some reason.
+ *
  * History:
  *
  * Name           Date     Description
@@ -1202,13 +1207,7 @@ static int MenuGameSelection()
 
 	if(playerList == NULL)
 	{
-		static OptionList options;
-		snprintf (options.name[0], 100, "midnak");
-		sprintf (options.value[0], "midnak");
-		snprintf (options.name[1], 100, "blazzy");
-		sprintf (options.value[1], "blazzy");
-
-		playerList = new GuiPlayerList( 294, 288, &options );
+		playerList = new GuiPlayerList(152, 265);
 		playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 		playerList->SetPosition(-8, 98);
 		playerList->SetVisible(false);
