@@ -45,11 +45,10 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 
 	bgFileSelectionEntry = new GuiImageData(bg_player_list_entry_png);
 
-	iconFolder = new GuiImageData(icon_folder_png);
-	iconSD = new GuiImageData(icon_sd_png);
-	iconUSB = new GuiImageData(icon_usb_png);
-	iconDVD = new GuiImageData(icon_dvd_png);
-	iconSMB = new GuiImageData(icon_smb_png);
+	iconPlayer1Ready = new GuiImageData(player1_grab_small_png);
+	iconPlayer2Ready = new GuiImageData(player1_grab_small_png);
+	iconPlayer3Ready = new GuiImageData(player1_grab_small_png);
+	iconPlayer4Ready = new GuiImageData(player1_grab_small_png);
 
 	/*scrollbar = new GuiImageData(scrollbar_png);
 	scrollbarImg = new GuiImage(scrollbar);
@@ -111,9 +110,10 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 		fileListText[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
 		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 		fileListText[i]->SetPosition(5,0);
-		fileListText[i]->SetMaxWidth(380);
+		fileListText[i]->SetMaxWidth(105);
 
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
+		fileListBg[i]->SetPosition(2,0);
 		fileListIcon[i] = NULL;
 
 		fileList[i] = new GuiButton(380, 26);
@@ -144,11 +144,12 @@ GuiPlayerList::~GuiPlayerList()
 
 	delete bgFileSelection;
 	delete bgFileSelectionEntry;
-	delete iconFolder;
-	delete iconSD;
-	delete iconUSB;
-	delete iconDVD;
-	delete iconSMB;
+
+	delete iconPlayer1Ready;
+	delete iconPlayer2Ready;
+	delete iconPlayer3Ready;
+	delete iconPlayer4Ready;
+
 	/*delete scrollbar;
 	delete arrowDown;
 	delete arrowDownOver;
@@ -375,24 +376,29 @@ void GuiPlayerList::Update(GuiTrigger * t)
 				switch(browserList[browser.pageIndex+i].icon)
 				{
 					case ICON_FOLDER:
-						fileListIcon[i] = new GuiImage(iconFolder);
+						fileListIcon[i] = new GuiImage(iconPlayer1Ready);
 						break;
 					case ICON_SD:
-						fileListIcon[i] = new GuiImage(iconSD);
+						fileListIcon[i] = new GuiImage(iconPlayer2Ready);
 						break;
 					case ICON_USB:
-						fileListIcon[i] = new GuiImage(iconUSB);
+						fileListIcon[i] = new GuiImage(iconPlayer3Ready);
 						break;
 					case ICON_DVD:
-						fileListIcon[i] = new GuiImage(iconDVD);
+						fileListIcon[i] = new GuiImage(iconPlayer4Ready);
 						break;
-					case ICON_SMB:
-						fileListIcon[i] = new GuiImage(iconSMB);
+					default:
+						fileListIcon[i] = new GuiImage(iconPlayer4Ready);
 						break;
 				}
+
 				fileList[i]->SetIcon(fileListIcon[i]);
+
 				if(fileListIcon[i] != NULL)
-					fileListText[i]->SetPosition(30,0);
+				{
+					fileListIcon[i]->SetPosition(5,0);
+					fileListText[i]->SetPosition(40,0);
+				}
 			}
 			else
 			{

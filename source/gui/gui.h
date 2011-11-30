@@ -1089,11 +1089,11 @@ class GuiPlayerList : public GuiElement
 
 		GuiImageData * bgFileSelection;
 		GuiImageData * bgFileSelectionEntry;
-		GuiImageData * iconFolder;
-		GuiImageData * iconSD;
-		GuiImageData * iconUSB;
-		GuiImageData * iconDVD;
-		GuiImageData * iconSMB;
+		GuiImageData * iconPlayer1Ready;
+		GuiImageData * iconPlayer2Ready;
+		GuiImageData * iconPlayer3Ready;
+		GuiImageData * iconPlayer4Ready;
+
 		/*GuiImageData * scrollbar;
 		GuiImageData * arrowDown;
 		GuiImageData * arrowDownOver;
