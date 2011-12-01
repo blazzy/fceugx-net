@@ -15,6 +15,7 @@
  * ----------  mm/dd/yyyy  --------------------------------------------------
  * midnak      11/26/2011  Netplay:  Created micro button
  * midnak      11/29/2011  Netplay:  Created player list
+ * midnak      11/30/2011  Netplay:  Created thumbs-up images ("playerReady")
  ****************************************************************************/
 
 #ifndef _FILELIST_H_
@@ -324,9 +325,6 @@ extern const u32	player4_point_png_size;
 extern const u8		player1_grab_png[];
 extern const u32	player1_grab_png_size;
 
-extern const u8		player1_grab_small_png[];
-extern const u32	player1_grab_small_png_size;
-
 extern const u8		player2_grab_png[];
 extern const u32	player2_grab_png_size;
 
@@ -335,5 +333,17 @@ extern const u32	player3_grab_png_size;
 
 extern const u8		player4_grab_png[];
 extern const u32	player4_grab_png_size;
+
+extern const u8		player1_ready_png[];
+extern const u32	player1_ready_png_size;
+
+extern const u8		player2_ready_png[];
+extern const u32	player2_ready_png_size;
+
+extern const u8		player3_ready_png[];
+extern const u32	player3_ready_png_size;
+
+extern const u8		player4_ready_png[];
+extern const u32	player4_ready_png_size;
 
 #endif

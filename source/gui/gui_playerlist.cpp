@@ -39,17 +39,22 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	btnSoundOver = new GuiSound(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	btnSoundClick = new GuiSound(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 
-	bgFileSelection = new GuiImageData(bg_player_list_png);
-	bgFileSelectionImg = new GuiImage(bgFileSelection);
-	bgFileSelectionImg->SetParent(this);
-	bgFileSelectionImg->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	imgDataMainWindow = new GuiImageData(bg_player_list_png);
+	imgMainWindow = new GuiImage(imgDataMainWindow);
+	imgMainWindow->SetParent(this);
+	imgMainWindow->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 
-	bgFileSelectionEntry = new GuiImageData(bg_player_list_entry_png);
+	imgDataSelectionEntry = new GuiImageData(bg_player_list_entry_png);
 
-	iconPlayer1Ready = new GuiImageData(player1_grab_small_png);
-	iconPlayer2Ready = new GuiImageData(player1_grab_small_png);
-	iconPlayer3Ready = new GuiImageData(player1_grab_small_png);
-	iconPlayer4Ready = new GuiImageData(player1_grab_small_png);
+	titleTxt = new GuiText("PLAYERS", 25, (GXColor){0, 0, 0, 255});
+	titleTxt->SetParent(imgMainWindow);
+	titleTxt->SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	titleTxt->SetPosition(0, 10);
+
+	imgDataPlayer1Ready = new GuiImageData(player1_ready_png);
+	imgDataPlayer2Ready = new GuiImageData(player2_ready_png);
+	imgDataPlayer3Ready = new GuiImageData(player3_ready_png);
+	imgDataPlayer4Ready = new GuiImageData(player4_ready_png);
 
 	/*scrollbar = new GuiImageData(scrollbar_png);
 	scrollbarImg = new GuiImage(scrollbar);
@@ -113,7 +118,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 		fileListText[i]->SetPosition(5,0);
 		fileListText[i]->SetMaxWidth(105);
 
-		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
+		fileListBg[i] = new GuiImage(imgDataSelectionEntry);
 		fileListBg[i]->SetPosition(2,-3);
 		fileListIcon[i] = NULL;
 
@@ -126,30 +131,17 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 		fileList[i]->SetTrigger(trig2);
 		fileList[i]->SetSoundClick(btnSoundClick);
 	}
-
-	/*GuiText headerTxt("PLAYERS", 25, (GXColor){0, 0, 0, 0xff});
-	headerTxt.SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
-	headerTxt.SetPosition(5,0);
-	headerTxt.SetMaxWidth(105);
-	// And now, idiocy commences.
-	GuiButton headerBtn(this->GetWidth(), 26);
-	headerBtn.SetParent(this);
-	headerBtn.SetLabel(&headerTxt);
-	headerBtn.SetPosition(2,26*4+55);
-	headerBtn.SetTrigger(trigA);
-	headerBtn.SetTrigger(trig2);
-	headerBtn.SetVisible(true);
-	headerBtn.Draw();
-	this->UpdateEffects();*/
 }
 
 GuiPlayerList::~GuiPlayerList()
 {
+	delete titleTxt;
+
 	/*delete arrowUpBtn;
 	delete arrowDownBtn;
 	delete scrollbarBoxBtn;*/
 
-	delete bgFileSelectionImg;
+	delete imgMainWindow;
 	/*delete scrollbarImg;
 	delete arrowDownImg;
 	delete arrowDownOverImg;
@@ -158,13 +150,13 @@ GuiPlayerList::~GuiPlayerList()
 	delete scrollbarBoxImg;
 	delete scrollbarBoxOverImg;*/
 
-	delete bgFileSelection;
-	delete bgFileSelectionEntry;
+	delete imgDataMainWindow;
+	delete imgDataSelectionEntry;
 
-	delete iconPlayer1Ready;
-	delete iconPlayer2Ready;
-	delete iconPlayer3Ready;
-	delete iconPlayer4Ready;
+	delete imgDataPlayer1Ready;
+	delete imgDataPlayer2Ready;
+	delete imgDataPlayer3Ready;
+	delete imgDataPlayer4Ready;
 
 	/*delete scrollbar;
 	delete arrowDown;
@@ -235,7 +227,7 @@ void GuiPlayerList::Draw()
 	if(!this->IsVisible())
 		return;
 
-	bgFileSelectionImg->Draw();
+	imgMainWindow->Draw();
 
 	for(u32 i=0; i<MAX_PLAYER_LIST_SIZE; ++i)
 	{
@@ -246,6 +238,8 @@ void GuiPlayerList::Draw()
 	arrowUpBtn->Draw();
 	arrowDownBtn->Draw();
 	scrollbarBoxBtn->Draw();*/
+
+	titleTxt->Draw();
 
 	this->UpdateEffects();
 }
@@ -393,21 +387,27 @@ void GuiPlayerList::Update(GuiTrigger * t)
 				switch(browserList[browser.pageIndex+i].icon)
 				{
 					case ICON_FOLDER:
-						fileListIcon[i] = new GuiImage(iconPlayer1Ready);
+						fileListIcon[i] = new GuiImage(imgDataPlayer1Ready);
 						break;
 					case ICON_SD:
-						fileListIcon[i] = new GuiImage(iconPlayer2Ready);
+						fileListIcon[i] = new GuiImage(imgDataPlayer2Ready);
 						break;
 					case ICON_USB:
-						fileListIcon[i] = new GuiImage(iconPlayer3Ready);
+						fileListIcon[i] = new GuiImage(imgDataPlayer3Ready);
 						break;
 					case ICON_DVD:
-						fileListIcon[i] = new GuiImage(iconPlayer4Ready);
+						fileListIcon[i] = new GuiImage(imgDataPlayer4Ready);
 						break;
 					default:
-						fileListIcon[i] = new GuiImage(iconPlayer4Ready);
+						fileListIcon[i] = new GuiImage(imgDataPlayer4Ready);
 						break;
 				}
+
+				// Temporarily hack the new images into the list so I can see them
+				fileListIcon[0] = new GuiImage(imgDataPlayer1Ready);
+				fileListIcon[1] = new GuiImage(imgDataPlayer2Ready);
+				fileListIcon[2] = new GuiImage(imgDataPlayer3Ready);
+				fileListIcon[3] = new GuiImage(imgDataPlayer4Ready);
 
 				fileList[i]->SetIcon(fileListIcon[i]);
 

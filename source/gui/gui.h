@@ -1059,7 +1059,7 @@ class GuiFileBrowser : public GuiElement
 };
 
 //!Netplay:  Display a list of connected players
-class GuiPlayerList : public GuiElement
+class GuiPlayerList : public GuiWindow
 {
 	public:
 		GuiPlayerList(int w, int h);
@@ -1080,7 +1080,7 @@ class GuiPlayerList : public GuiElement
 		GuiButton * arrowDownBtn;
 		GuiButton * scrollbarBoxBtn;*/
 
-		GuiImage * bgFileSelectionImg;
+		GuiImage * imgMainWindow;
 		/*GuiImage * scrollbarImg;
 		GuiImage * arrowDownImg;
 		GuiImage * arrowDownOverImg;
@@ -1089,12 +1089,12 @@ class GuiPlayerList : public GuiElement
 		GuiImage * scrollbarBoxImg;
 		GuiImage * scrollbarBoxOverImg;*/
 
-		GuiImageData * bgFileSelection;
-		GuiImageData * bgFileSelectionEntry;
-		GuiImageData * iconPlayer1Ready;
-		GuiImageData * iconPlayer2Ready;
-		GuiImageData * iconPlayer3Ready;
-		GuiImageData * iconPlayer4Ready;
+		GuiImageData * imgDataMainWindow;
+		GuiImageData * imgDataSelectionEntry;
+		GuiImageData * imgDataPlayer1Ready;
+		GuiImageData * imgDataPlayer2Ready;
+		GuiImageData * imgDataPlayer3Ready;
+		GuiImageData * imgDataPlayer4Ready;
 
 		/*GuiImageData * scrollbar;
 		GuiImageData * arrowDown;
@@ -1113,5 +1113,8 @@ class GuiPlayerList : public GuiElement
 		int selectedItem;
 		int numEntries;
 		bool listChanged;
+
+	private:
+		GuiText *titleTxt;
 };
 #endif
