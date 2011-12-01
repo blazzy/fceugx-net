@@ -1324,6 +1324,11 @@ static int MenuGameSelection()
 				}
 			}*/
 
+			playerList->AddPlayer(GCSettings.netplayName);
+			playerList->AddPlayer("merry");
+			playerList->AddPlayer("pippin");
+			playerList->AddPlayer("1234567890ABCDEFGHIKshouldnotseeanythingafterK");
+
 			// TODO:  When a client connects, enable the chat button.
 			// Of course, none of that happens in this block, but
 			// this the only relevant place to mention it at this
@@ -1379,6 +1384,11 @@ static int MenuGameSelection()
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
 			readyBtn->ResetState();
+
+			playerList->SetPlayerReady(1, true);
+			playerList->SetPlayerReady(2, true);
+			playerList->SetPlayerReady(3, true);
+			playerList->SetPlayerReady(4, true);
 		}
 	}
 

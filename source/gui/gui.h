@@ -69,7 +69,8 @@ extern FreeTypeGX *fontSystem[];
 #define MAX_OPTIONS 			150
 #define MAX_KEYBOARD_DISPLAY	32
 
-#define MAX_PLAYER_LIST_SIZE    4
+#define MAX_PLAYER_LIST_SIZE 4
+#define MAX_PLAYER_NAME_LEN  20  // TODO:  Make this, the Settings screen and the protocol pull this value from one place.  Make them agree.
 
 typedef void (*UpdateCallback)(void * e);
 
@@ -1067,54 +1068,41 @@ class GuiPlayerList : public GuiWindow
 		void ResetState();
 		void SetFocus(int f);
 		void Draw();
-		void DrawTooltip();
 		void TriggerUpdate();
-		void Update(GuiTrigger * t);
-		GuiButton * fileList[MAX_PLAYER_LIST_SIZE];
-	protected:
-		GuiText * fileListText[MAX_PLAYER_LIST_SIZE];
-		GuiImage * fileListBg[MAX_PLAYER_LIST_SIZE];
-		GuiImage * fileListIcon[MAX_PLAYER_LIST_SIZE];
+		void Update(GuiTrigger *t);
 
-		/*GuiButton * arrowUpBtn;
-		GuiButton * arrowDownBtn;
-		GuiButton * scrollbarBoxBtn;*/
+		bool AddPlayer(char *);
+		bool SetPlayerReady(int, bool);
+		void ClearList();
 
-		GuiImage * imgMainWindow;
-		/*GuiImage * scrollbarImg;
-		GuiImage * arrowDownImg;
-		GuiImage * arrowDownOverImg;
-		GuiImage * arrowUpImg;
-		GuiImage * arrowUpOverImg;
-		GuiImage * scrollbarBoxImg;
-		GuiImage * scrollbarBoxOverImg;*/
+		GuiButton *fileList[MAX_PLAYER_LIST_SIZE];
+	private:
+		GuiText *titleTxt;
+		GuiText *fileListText[MAX_PLAYER_LIST_SIZE];
+		GuiImage *fileListBg[MAX_PLAYER_LIST_SIZE];
+		GuiImage *fileListIcon[MAX_PLAYER_LIST_SIZE];
 
-		GuiImageData * imgDataMainWindow;
-		GuiImageData * imgDataSelectionEntry;
-		GuiImageData * imgDataPlayer1Ready;
-		GuiImageData * imgDataPlayer2Ready;
-		GuiImageData * imgDataPlayer3Ready;
-		GuiImageData * imgDataPlayer4Ready;
+		GuiImageData *imgDataMainWindow;
+		GuiImageData *imgDataSelectionEntry;
+		GuiImageData *imgDataPlayer1Ready;
+		GuiImageData *imgDataPlayer2Ready;
+		GuiImageData *imgDataPlayer3Ready;
+		GuiImageData *imgDataPlayer4Ready;
 
-		/*GuiImageData * scrollbar;
-		GuiImageData * arrowDown;
-		GuiImageData * arrowDownOver;
-		GuiImageData * arrowUp;
-		GuiImageData * arrowUpOver;
-		GuiImageData * scrollbarBox;
-		GuiImageData * scrollbarBoxOver;*/
+		GuiImage *imgMainWindow,
+		         *imgPlayer1Ready,
+		         *imgPlayer2Ready,
+		         *imgPlayer3Ready,
+		         *imgPlayer4Ready;
 
-		GuiSound * btnSoundOver;
-		GuiSound * btnSoundClick;
-		GuiTrigger * trigA;
-		GuiTrigger * trig2;
-		GuiTrigger * trigHeldA;
+		GuiSound *btnSoundOver;
+		GuiSound *btnSoundClick;
+		GuiTrigger *trigA;
+		GuiTrigger *trig2;
+		GuiTrigger *trigHeldA;
 
 		int selectedItem;
 		int numEntries;
 		bool listChanged;
-
-	private:
-		GuiText *titleTxt;
 };
 #endif
