@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <errno.h>  
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -35,7 +35,7 @@
 
 #define QUOTE(x) #x
 #define STR(x) QUOTE(x)
-#define MIN(a,b) (((a)<(b))?(a):(b)) 
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
 #define VERSION              "0.1.0"
 #define DEFAULT_PORT         4046
@@ -82,14 +82,14 @@ static uint32_t de32(uint8_t *morp) {
 
 
 static uint64_t gettime() {
- timespec tp;
- clock_gettime(CLOCK_MONOTONIC, &tp);
- return tp.tv_sec * 1000000 + (tp.tv_nsec / 1000);
+	timespec tp;
+	clock_gettime(CLOCK_MONOTONIC, &tp);
+	return tp.tv_sec * 1000000 + (tp.tv_nsec / 1000);
 }
 
 
 struct Client {
-  const static int name_max = 20;
+	const static int name_max = 20;
 	char             name[name_max];
 	int  id;
 
@@ -113,9 +113,9 @@ struct Client {
 		command_type(0) {
 	}
 
-  ~Client() {
-    disconnect();
-  }
+	~Client() {
+		disconnect();
+	}
 
 	int connected() const {
 		return (socket != -1);
@@ -147,9 +147,9 @@ struct Client {
 		command_length = length;
 	}
 
-  void set_default_name() {
-    snprintf(name, name_max, "%s%i", DEFAULT_NAME, id);
-  }
+	void set_default_name() {
+		snprintf(name, name_max, "%s%i", DEFAULT_NAME, id);
+	}
 };
 
 
@@ -159,7 +159,7 @@ struct Game {
 		max_clients(DEFAULT_MAXCLIENTS),
 		connect_timeout(DEFAULT_TIMEOUT),
 		frame_divisor(DEFAULT_FRAMEDIVISOR),
-		password(0), 
+		password(0),
 		last_time(0) {
 			for (int i = 0; i < 4; ++i) {
 				player[i] = 0;
@@ -170,11 +170,11 @@ struct Game {
 			}
 	}
 
-  ~Game() {
-    if (password) {
-      delete [] password;
-    }
-  }
+	~Game() {
+		if (password) {
+			delete [] password;
+		}
+	}
 
 	int unique_name(Client &c) {
 		for (int i = 0; i < 4; ++i) {
@@ -271,17 +271,17 @@ struct Game {
 				const int nick_len = client.command_length - ignored_bytes;
 
 				if (nick_len) {
-          int len = MIN(nick_len, client.name_max - 1);
-          memcpy(client.name, &client.buffer[ignored_bytes], len);
+					int len = MIN(nick_len, client.name_max - 1);
+					memcpy(client.name, &client.buffer[ignored_bytes], len);
 					client.name[len] = 0;
 
 					if (!unique_name(client)) {
-            fprintf(stderr, "Name %s already in use.\n", client.name);
-            client.set_default_name();
+						fprintf(stderr, "Name %s already in use.\n", client.name);
+						client.set_default_name();
 					}
 				} else {
-          client.set_default_name();
-        }
+					client.set_default_name();
+				}
 
 				fprintf(stderr, "Client %d joined as %s\n", client.id, client.name);
 
@@ -446,7 +446,7 @@ int start_listening(const Game &game) {
 	if (setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(int)))
 		fprintf(stderr, "SO_REUSEADDR failed: %s\n", strerror(errno));
 
-	//Disable nagle algorithm 
+	//Disable nagle algorithm
 	if (setsockopt(listen_socket, IPPROTO_TCP, TCP_NODELAY, &sockopt, sizeof(int)))
 		fprintf(stderr, "TCP_NODELAY failed: %s\n", strerror(errno));
 
