@@ -1,10 +1,12 @@
 CXX := g++
+CXXFLAGS := -ggdb
+LDFLAGS  := -lrt
 
 BUILDDIR  := build_server
 TARGETDIR := executables
 SOURCEDIR := source/server
 
-OBJECTS     := md5.o throttle.o server.o
+OBJECTS     := md5.o server.o
 
 OBJECTS_OUT := $(addprefix $(BUILDDIR)/, $(OBJECTS))
 DEPENDS	    := $(OBJECTS_OUT:.o=.o.d)
