@@ -44,13 +44,15 @@
 #define DEFAULT_FRAMEDIVISOR 1
 #define DEFAULT_NAME         "UnnamedClient"
 
-#define FCEUNPCMD_RESET   0x01
-#define FCEUNPCMD_POWER   0x02
-#define FCEUNPCMD_TEXT		0x90
+#define FCEUNPCMD_RESET      0x01
+#define FCEUNPCMD_POWER      0x02
+#define FCEUNPCMD_VSUNICOIN  0x07
+#define FCEUNPCMD_VSUNIDIP0  0x08
+#define FCEUNPCMD_TEXT       0x90
 
 #define N_LOGINLEN   0x1000
 #define N_LOGIN      0x2000
-#define N_COMMAND		 0x4000
+#define N_COMMAND    0x4000
 #define N_UPDATEDATA 0x5000
 
 const char *usage =
@@ -316,8 +318,16 @@ struct Game {
 
 			case FCEUNPCMD_POWER:
 			case FCEUNPCMD_TEXT:
+			case FCEUNPCMD_VSUNICOIN:
+			case FCEUNPCMD_VSUNIDIP0:
+			case FCEUNPCMD_VSUNIDIP0 + 1:
+			case FCEUNPCMD_VSUNIDIP0 + 2:
+			case FCEUNPCMD_VSUNIDIP0 + 3:
+			case FCEUNPCMD_VSUNIDIP0 + 4:
+			case FCEUNPCMD_VSUNIDIP0 + 5:
+			case FCEUNPCMD_VSUNIDIP0 + 6:
+			case FCEUNPCMD_VSUNIDIP0 + 7:
 			case FCEUNPCMD_RESET: {
-				fprintf(stderr, "Doing command");
 				send_all(client.command_type, client.buffer, client.buffer_used);
 				client.reset_buffer(N_UPDATEDATA, 1);
 				return;
@@ -349,7 +359,7 @@ struct Game {
 
 	void set_frame_delay(int frame_divisor) {
 		//TODO: figure out how to deal with PAL
-		//	    838977920;  // ~50.007
+		//      838977920;  // ~50.007
 		int d = 1008307711; // ~60.1
 		frame_delay = 16777216.0 / d * 1000000 * frame_divisor;
 	}
@@ -378,7 +388,7 @@ struct Game {
 	int last_time;
 	uint8_t *password;
 
-	uint8_t joybuf[5];	  /* 4 player data + 1 command byte */
+	uint8_t joybuf[5];  /* 4 player data + 1 command byte */
 
 	Client  client[4];
 	Client *player[4];
