@@ -632,6 +632,7 @@ int main(int argc, char *argv[])
 			if (skipgfx) {
 				skipgfx_count++;
 				gfx   = 0;
+				sound = 0;
 			}
 
 			update_framerate(frame_count++, skipgfx_count);
