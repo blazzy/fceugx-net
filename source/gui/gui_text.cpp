@@ -5,7 +5,14 @@
  *
  * gui_text.cpp
  *
- * GUI class definitions
+ * Description:  GUI class definitions
+ *
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      12/02/2011  Added ToString()
  ***************************************************************************/
 
 #include "gui.h"
@@ -477,4 +484,9 @@ void GuiText::Draw()
 		fontSystem[currentSize]->drawText(this->GetLeft(), this->GetTop(), textDyn[0], c, style);
 	}
 	this->UpdateEffects();
+}
+
+char * GuiText::ToString()
+{
+	return strdup(origText);
 }

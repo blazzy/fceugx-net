@@ -32,6 +32,7 @@
 #include <arpa/inet.h>
 
 #include "md5.h"
+#include "fceugx.h"
 
 #define QUOTE(x) #x
 #define STR(x) QUOTE(x)
@@ -91,8 +92,7 @@ static uint64_t gettime() {
 
 
 struct Client {
-	const static int name_max = 20;
-	char             name[name_max];
+	char name[NETPLAY_MAX_NAME_LEN ];
 	int  id;
 
 	int  socket;
@@ -273,8 +273,8 @@ struct Game {
 				const int nick_len = client.command_length - ignored_bytes;
 
 				if (nick_len) {
-					int len = MIN(nick_len, client.name_max - 1);
-					memcpy(client.name, &client.buffer[ignored_bytes], len);
+          int len = MIN(nick_len, NETPLAY_MAX_NAME_LEN - 1);
+          memcpy(client.name, &client.buffer[ignored_bytes], len);
 					client.name[len] = 0;
 
 					if (!unique_name(client)) {

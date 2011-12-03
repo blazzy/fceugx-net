@@ -10,11 +10,19 @@
  *
  * TODO:
  *      1.  Transalations for Netplay buttons
- *
  *      2.  'Ready' button:  assign player number 1-4 based on order of
  *          clicking in, rather than order of connection.  This will allow
  *          people to decide their player number, should they have a
  *          preference for some reason.
+ *      3.  Prevent changes to netplay settings if user is connected to
+ *          a host.
+ *      4.  Clients:  Prevent selection from ROM list - only the host
+ *          can launch a game.
+ *      5.  Host:  Prevent making a selection from the ROM list unless
+ *          everyone's clicked READY.
+ *      6.  Save settings as soon as the Back button is pressed.  Prevents
+ *          annoyance if the app crashes - currently, settings aren't
+ *          saved until exit.
  *
  * History:
  *
@@ -30,6 +38,7 @@
  *                         displayed, the Netplay GUI components were made
  *                         static so they'll maintain state after navigating
  *                         away from the main screen.
+ * midnak      12/02/2011  GUI and server use same player name length
  ****************************************************************************/
 
 #include <gccore.h>
@@ -979,6 +988,22 @@ static void showNetplayGuiComponents()
 	}
 }
 
+void newPlayerList()
+{
+	if(playerList != NULL)
+	{
+		mainWindow->Remove(playerList);
+		delete playerList;
+	}
+
+	playerList = new GuiPlayerList(152, 265);
+	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	playerList->SetPosition(-8, 98);
+	playerList->SetVisible(false);
+
+	mainWindow->Append(playerList);
+}
+
 static void hideNetplayGuiComponents()
 {
 	if(hostBtn != NULL)
@@ -1017,6 +1042,8 @@ static void hideNetplayGuiComponents()
 		chatBtn->SetVisible(false);
 		readyBtn->SetVisible(false);
 	}
+
+	newPlayerList();
 }
 
 /****************************************************************************
@@ -1207,10 +1234,7 @@ static int MenuGameSelection()
 
 	if(playerList == NULL)
 	{
-		playerList = new GuiPlayerList(152, 265);
-		playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-		playerList->SetPosition(-8, 98);
-		playerList->SetVisible(false);
+		newPlayerList();
 	}
 
 	HaltGui();
@@ -1298,37 +1322,44 @@ static int MenuGameSelection()
 		{
 			hostBtn->ResetState();
 
-			HaltGui();
-
-			if( true /*serverInit success*/ )
+			if(GCSettings.netplayPort == NULL || GCSettings.netplayName == NULL
+			  || strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayName) == 0)
 			{
-				ResumeGui();
-				showNetplayGuiComponents();
-				disconnectBtn->SetSoundOver(&btnSoundOver);
+				ErrorPrompt("To host, you must specify the following:  Port, Player Name");
 			}
-			/*else
+			else
 			{
-				ResumeGui();
+				HaltGui();
 
-				int retry = ErrorPromptRetry("Could not open a connection");
-
-				while(retry)
+				if( true /*serverInit success*/ )
 				{
-					HaltGui();
-
-					if(! server init success)
-					{
-						ResumeGui();
-						retry = ErrorPromptRetry("Could not open a connection");
-					}
+					ResumeGui();
+					showNetplayGuiComponents();
+					disconnectBtn->SetSoundOver(&btnSoundOver);
 				}
-			}*/
+				/*else
+				{
+					ResumeGui();
 
-			playerList->AddPlayer(GCSettings.netplayName);
-			playerList->AddPlayer("merry");
-			playerList->AddPlayer("pippin");
-			playerList->AddPlayer("1234567890ABCDEFGHIKshouldnotseeanythingafterK");
+					int retry = ErrorPromptRetry("Could not open a connection");
 
+					while(retry)
+					{
+						HaltGui();
+
+						if(! server init success)
+						{
+							ResumeGui();
+							retry = ErrorPromptRetry("Could not open a connection");
+						}
+					}
+				}*/
+
+				playerList->AddPlayer(Player{GCSettings.netplayName, false});
+				playerList->AddPlayer(Player{"merry", false});
+				playerList->AddPlayer(Player{"pippin", false});
+				playerList->AddPlayer(Player{"1234567890ABCDEFGHIKshouldnotseeanythingafterK", false});
+			}
 			// TODO:  When a client connects, enable the chat button.
 			// Of course, none of that happens in this block, but
 			// this the only relevant place to mention it at this
@@ -1337,28 +1368,37 @@ static int MenuGameSelection()
 		else if(joinBtn->GetState() == STATE_CLICKED)
 		{
 			joinBtn->ResetState();
-			HaltGui();
 
-			if(FCEUD_NetworkConnect())
+			if(GCSettings.netplayIp == NULL || GCSettings.netplayPort == NULL || GCSettings.netplayName == NULL
+			  || strcmp("", GCSettings.netplayIp) == 0 || strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayName) == 0)
 			{
-				ResumeGui();
-				showNetplayGuiComponents();
-				disconnectBtn->SetSoundOver(&btnSoundOver);
+				ErrorPrompt("To join, you must specify the following:   IP Address, Port, Player Name");
 			}
 			else
 			{
-				ResumeGui();
+				HaltGui();
 
-				int retry = ErrorPromptRetry("Could not connect");
-
-				while(retry)
+				if(FCEUD_NetworkConnect())
 				{
-					HaltGui();
+					ResumeGui();
+					showNetplayGuiComponents();
+					disconnectBtn->SetSoundOver(&btnSoundOver);
+				}
+				else
+				{
+					ResumeGui();
 
-					if(!FCEUD_NetworkConnect())
+					int retry = ErrorPromptRetry("Could not connect");
+
+					while(retry)
 					{
-						ResumeGui();
-						retry = ErrorPromptRetry("Could not connect");
+						HaltGui();
+
+						if(!FCEUD_NetworkConnect())
+						{
+							ResumeGui();
+							retry = ErrorPromptRetry("Could not connect");
+						}
 					}
 				}
 			}
@@ -1368,14 +1408,9 @@ static int MenuGameSelection()
 			disconnectBtn->ResetState();
 
 			FCEUD_NetworkClose();
-
 			hideNetplayGuiComponents();
 			hostBtn->SetSoundOver(&btnSoundOver);
 			joinBtn->SetSoundOver(&btnSoundOver);
-
-			//playerList.Clear();
-			//playerList.ResetState();
-			//playerList.ResetText();  // hmm, wonder what this does
 		}
 		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
@@ -1384,11 +1419,7 @@ static int MenuGameSelection()
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
 			readyBtn->ResetState();
-
-			playerList->SetPlayerReady(1, true);
-			playerList->SetPlayerReady(2, true);
-			playerList->SetPlayerReady(3, true);
-			playerList->SetPlayerReady(4, true);
+			playerList->ToggleReady();
 		}
 	}
 
@@ -4032,7 +4063,6 @@ static int MenuSettingsNetwork()
 	const u32 SIZE_NETPLAY_IP   = (u32) sizeof(GCSettings.netplayIp),
 	          SIZE_NETPLAY_PORT = (u32) sizeof(GCSettings.netplayPort),
 	          SIZE_NETPLAY_PWD  = (u32) sizeof(GCSettings.netplayPwd),
-	          SIZE_NETPLAY_NAME = (u32) sizeof(GCSettings.netplayName),
 	          SIZE_SMB_IP       = (u32) sizeof(GCSettings.smbip),
 	          SIZE_SMB_SHARE    = (u32) sizeof(GCSettings.smbshare),
 	          SIZE_SMB_USER     = (u32) sizeof(GCSettings.smbuser),
@@ -4109,7 +4139,7 @@ static int MenuSettingsNetwork()
 				break;
 
 			case 3:
-				OnScreenKeyboard(GCSettings.netplayName, SIZE_NETPLAY_NAME);
+				OnScreenKeyboard(GCSettings.netplayName, NETPLAY_MAX_NAME_LEN);
 				break;
 
 			case 4:
@@ -4135,7 +4165,7 @@ static int MenuSettingsNetwork()
 			snprintf (options.value[0], SIZE_NETPLAY_IP   - 1, "%s", GCSettings.netplayIp);
 			snprintf (options.value[1], SIZE_NETPLAY_PORT - 1, "%s", GCSettings.netplayPort);
 			snprintf (options.value[2], SIZE_NETPLAY_PWD  - 1, "%s", GCSettings.netplayPwd);
-			snprintf (options.value[3], SIZE_NETPLAY_NAME - 1, "%s", GCSettings.netplayName);
+			snprintf (options.value[3], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayName);
 
 			snprintf (options.value[4], 25, "%s", GCSettings.smbip);   // midnak:  Why didn't he use (size - 1) here like he did with the others?  Question 2:  why's the array so big to begin with?
 			snprintf (options.value[5], SIZE_SMB_SHARE - 1, "%s", GCSettings.smbshare);

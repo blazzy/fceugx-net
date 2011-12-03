@@ -6,12 +6,17 @@
  *
  * Description:
  *
+ * TODO:
+ *   1.  Implement FCEUD_TellServerToggleReady() and FCEUD_SendPlayerListToClients()
+ *
  * History:
  *
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
  * blazzy      11/24/2011  New file
  * midnak      11/25/2011  Netplay:  Get netplay settings from GUI.
+ * midnak      12/02/2011  Netplay:  Added FCEUD_TellServerToggleReady(),
+ *                         FCEUD_SendPlayerListToClients()
  ****************************************************************************/
 
 #include <gctypes.h>
@@ -186,3 +191,26 @@ void FCEUD_NetworkClose(void) {
 
 void FCEUD_NetplayText(uint8 *text) {
 }
+
+// Names are unique
+bool FCEUD_TellServerToggleReady(char *name) {
+	return true;
+}
+
+// This function sends a list of all connected players to each client for
+// update in their GUIs.  Players are marked 0-3 (indicating zero-indexed
+// Player 1, Player 2, etc.) if they have clicked READY.  If they haven't
+// clicked READY, they are marked with an X.
+void FCEUD_SendPlayerListToClients() {
+	char *MSG_HEADER="PLAYER_LIST:";
+	char *MSG_FOOTER[2] = { "\n" };  // Tantric's keyboard doesn't do newline.
+
+	char list[300];
+	sprintf( list, "%s0=gandalf,1=frodo,X=merry,X=pippin%s", *MSG_HEADER, *MSG_FOOTER );
+
+	// foreach socket in clientSockets[]
+	// do
+	//		FCEUD_SendData(socket, list, (uint32) sizeof(list) );
+	// done
+}
+
