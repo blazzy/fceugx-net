@@ -6,6 +6,20 @@
  *
  * Description:  Lists connected players in netplay
  *
+ * TODO:
+ *     1.  ToggleReady():
+ *             - Make this method aware of whether it's running as client or
+ *               host (no need to invoke TellServer method if server)
+ *             - Implement FCEUD_TellServerToggleReady()
+ *     2.  Players can only be moused over/clicked once - after that, they
+ *         become disabled.  Might be the update() method.  Don't know if
+ *         we even need that functionality, but I can see a purpose arising in
+ *         the future.  At least get it working, then maybe disable it with
+ *         a setter.
+ *     3.  Implement RemovePlayer()?  Probably not, since the server would
+ *         send out an updated list which the GUI would just rebuild.
+ *     4.  Fix issue with "all players ready" message not displaying
+ *
  * History:
  *
  * Name           Date     Description
@@ -13,10 +27,10 @@
  * midnak      11/29/2011  New file (gutted GuiFileBrowser)
  ****************************************************************************/
 
-
+#include "fceunetwork.h"  // FCEUD_TellServerToggleReady()
 #include "gui.h"
 #include "filebrowser.h"
-
+#include "menu.h"         // Error prompts.  Don't know why they're in menu.h.
 
 GuiPlayerList::GuiPlayerList(int w, int h)
 {
@@ -33,9 +47,6 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	trig2 = new GuiTrigger;
 	trig2->SetSimpleTrigger(-1, WPAD_BUTTON_2, 0);
 
-	trigHeldA = new GuiTrigger;
-	trigHeldA->SetHeldTrigger(-1, WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A, PAD_BUTTON_A);
-
 	btnSoundOver = new GuiSound(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	btnSoundClick = new GuiSound(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 
@@ -50,6 +61,11 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	titleTxt->SetParent(imgMainWindow);
 	titleTxt->SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
 	titleTxt->SetPosition(0, 10);
+
+	txtAllPlayersReady = new GuiText("ALL PLAYERS READY", 18, (GXColor{0,0,0,255}));
+	txtAllPlayersReady->SetParent(imgMainWindow);
+	txtAllPlayersReady->SetAlignment(ALIGN_CENTRE, ALIGN_BOTTOM);
+	txtAllPlayersReady->SetPosition(0, 10);
 
 	imgDataPlayer1Ready = new GuiImageData(player1_ready_png);
 	imgDataPlayer2Ready = new GuiImageData(player2_ready_png);
@@ -71,15 +87,22 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	fileList[1] = new GuiButton(w,h);
 	fileList[2] = new GuiButton(w,h);
 	fileList[3] = new GuiButton(w,h);
-	fileListText[0] = new GuiText("1", 25, (GXColor){0, 0, 0, 255});
-	fileListText[1] = new GuiText("2", 25, (GXColor){0, 0, 0, 255});
-	fileListText[2] = new GuiText("3", 25, (GXColor){0, 0, 0, 255});
-	fileListText[3] = new GuiText("4", 25, (GXColor){0, 0, 0, 255});
+
+	player1ColorText = new GuiText("", 25, (GXColor){61, 89, 144, 255});
+	player2ColorText = new GuiText("", 25, (GXColor){144, 60, 60, 255});
+	player3ColorText = new GuiText("", 25, (GXColor){60, 144, 60, 255});
+	player4ColorText = new GuiText("", 25, (GXColor){148, 147, 65, 255});
+
+	fileListText[0] = player1ColorText;
+	fileListText[1] = player2ColorText;
+	fileListText[2] = player3ColorText;
+	fileListText[3] = player4ColorText;
 }
 
 GuiPlayerList::~GuiPlayerList()
 {
 	delete titleTxt;
+	delete txtAllPlayersReady;
 
 	delete imgMainWindow;
 
@@ -92,15 +115,26 @@ GuiPlayerList::~GuiPlayerList()
 
 	delete btnSoundOver;
 	delete btnSoundClick;
-	delete trigHeldA;
+
 	delete trigA;
 	delete trig2;
 
-	for(int i=0; i<MAX_PLAYER_LIST_SIZE; i++)
+	for(int i=0; i < MAX_PLAYER_LIST_SIZE; i++)
 	{
-		delete fileListText[i];
-		delete fileList[i];
-		delete fileListBg[i];
+		if(fileListText[i])
+		{
+			delete fileListText[i];
+		}
+
+		if(fileList[i])
+		{
+			delete fileList[i];
+		}
+
+		if(fileListBg[i])
+		{
+			delete fileListBg[i];
+		}
 
 		if(fileListIcon[i])
 		{
@@ -113,7 +147,7 @@ void GuiPlayerList::SetFocus(int f)
 {
 	focus = f;
 
-	for(int i=0; i<MAX_PLAYER_LIST_SIZE; i++)
+	for(int i=0; i < MAX_PLAYER_LIST_SIZE; i++)
 	{
 		fileList[i]->ResetState();
 	}
@@ -124,81 +158,131 @@ void GuiPlayerList::SetFocus(int f)
 	}
 }
 
-bool GuiPlayerList::AddPlayer(char *name)
+bool GuiPlayerList::AddPlayer(Player player)
 {
-	if(numEntries >= MAX_PLAYER_LIST_SIZE || name == NULL)
+	/*if(player == NULL)
 	{
+		return false;
+	}*/
+
+	if(numEntries < MAX_PLAYER_LIST_SIZE)
+	{
+		char truncName[MAX_PLAYER_NAME_LEN+1];
+		snprintf(truncName, MAX_PLAYER_NAME_LEN+1, "%s", player.name);
+
+		fileListText[numEntries]->SetText(truncName);
+		fileListText[numEntries]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+		fileListText[numEntries]->SetPosition(5,0);
+		fileListText[numEntries]->SetMaxWidth(105);
+
+		fileListBg[numEntries] = new GuiImage(imgDataSelectionEntry);
+		fileListBg[numEntries]->SetPosition(2,-3);
+
+		fileList[numEntries] = new GuiButton(this->GetWidth(), 26);
+		fileList[numEntries]->SetParent(this);
+		fileList[numEntries]->SetLabel(fileListText[numEntries]);
+		fileList[numEntries]->SetImageOver(fileListBg[numEntries]);
+		fileList[numEntries]->SetPosition(2, (26 * numEntries) + 55);
+		fileList[numEntries]->SetTrigger(trigA);
+		fileList[numEntries]->SetTrigger(trig2);
+		fileList[numEntries]->SetSoundClick(btnSoundClick);
+
+		numEntries++;
+		listChanged = true;
+
+		txtAllPlayersReady->SetVisible(IsEveryoneReady());
+
+		return true;
+	}
+
+	return false;
+}
+
+void GuiPlayerList::RemovePlayer(int playerNum)
+{
+	numEntries--;
+}
+
+int GuiPlayerList::GetPlayerNumber(char *name)
+{
+	int idx = -1;
+
+	if(fileListText != NULL)
+	{
+		for(int i = 0; i < numEntries; i++)
+		{
+			if(strcmp(name, fileListText[i]->ToString()) == 0)
+			{
+				idx = i;
+				break;
+			}
+		}
+	}
+
+	return idx;
+}
+
+// This function requests the server mark the player as ready/not ready.
+// No action is taken in the GUI until the server sends back the new
+// player list containing everyone's status.  The list is rebuilt when
+// this message is received, though not by this method (keep in mind
+// that the server may also send such updates unsolicited).
+bool GuiPlayerList::ToggleReady()
+{
+	int me = GetPlayerNumber(GCSettings.netplayName);
+
+	if(me < 0)
+	{
+		ErrorPrompt("Unable to look up player number");
 		return false;
 	}
 
-	char substr[MAX_PLAYER_NAME_LEN];
-	snprintf( substr, MAX_PLAYER_NAME_LEN, "%s", name );
-
-	fileListText[numEntries]->SetText(name);
-	fileListText[numEntries]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
-	fileListText[numEntries]->SetPosition(5,0);
-	fileListText[numEntries]->SetMaxWidth(105);
-
-	fileListBg[numEntries] = new GuiImage(imgDataSelectionEntry);
-	fileListBg[numEntries]->SetPosition(2,-3);
-	//fileListIcon[numEntries] = NULL;
-
-	fileList[numEntries] = new GuiButton(this->GetWidth(), 26);
-	fileList[numEntries]->SetParent(this);
-	fileList[numEntries]->SetLabel(fileListText[numEntries]);
-	fileList[numEntries]->SetImageOver(fileListBg[numEntries]);
-	fileList[numEntries]->SetPosition(2, (26 * numEntries) + 55);
-	fileList[numEntries]->SetTrigger(trigA);
-	fileList[numEntries]->SetTrigger(trig2);
-	fileList[numEntries]->SetSoundClick(btnSoundClick);
-
-	numEntries++;
-	listChanged = true;
+	if(/*!runningAsServer &&*/!FCEUD_TellServerToggleReady(GCSettings.netplayName))
+	{
+		ErrorPrompt("Could not send 'ready' message to server");
+		return false;
+	}
 
 	return true;
 }
 
-// playerNum is 1-indexed
-bool GuiPlayerList::SetPlayerReady(int playerNum, bool ready)
+bool GuiPlayerList::IsPlayerReady(int playerNum)
 {
-	if(playerNum < 0 || playerNum > numEntries)
+	bool ready = true;
+
+	if(playerNum < 0 || playerNum >= MAX_PLAYER_LIST_SIZE)
 	{
-		return false;
+		ready = false;
 	}
 
-	switch(playerNum)
+	if(fileList[playerNum]->GetIcon() == NULL)
 	{
-		case 1:
-			fileList[playerNum-1]->SetIcon(ready ? imgPlayer1Ready: NULL);
-			break;
-		case 2:
-			fileList[playerNum-1]->SetIcon(ready ? imgPlayer2Ready: NULL);
-			break;
-		case 3:
-			fileList[playerNum-1]->SetIcon(ready ? imgPlayer3Ready: NULL);
-			break;
-		case 4:
-			fileList[playerNum-1]->SetIcon(ready ? imgPlayer4Ready: NULL);
-			break;
+		ready = false;
 	}
 
-	if(ready)
-	{
-		// TODO:  Color the text
-	}
-	else
-	{
-		// TODO:  Change the text back to black
-	}
+/*
+char c[100];
+sprintf( c, "%d = %s", playerNum, ready?"true":"false");
+ErrorPrompt(c);
+*/
 
-	// TODO:  Sort the list, putting non-ready players at the bottom.
-
-	return true;
+	return ready;
 }
 
-void GuiPlayerList::ClearList()
+bool GuiPlayerList::IsEveryoneReady()
 {
+	bool ready = true;
 
+	for(int i = 0; i < numEntries; i++)
+	{
+		if(!IsPlayerReady(i))
+		{
+			ready = false;
+			break;
+		}
+	}
+
+	return ready;
 }
 
 void GuiPlayerList::ResetState()
@@ -207,23 +291,10 @@ void GuiPlayerList::ResetState()
 	stateChan = -1;
 	selectedItem = 0;
 
-	for(int i=0; i<MAX_PLAYER_LIST_SIZE; i++)
+	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
 	{
 		fileList[i]->ResetState();
 	}
-}
-
-void GuiPlayerList::TriggerUpdate()
-{
-	int newIndex = browser.selIndex-browser.pageIndex;
-	
-	if(newIndex >= MAX_PLAYER_LIST_SIZE)
-		newIndex = MAX_PLAYER_LIST_SIZE-1;
-	else if(newIndex < 0)
-		newIndex = 0;
-
-	selectedItem = newIndex;
-	listChanged = true;
 }
 
 /**
@@ -232,11 +303,13 @@ void GuiPlayerList::TriggerUpdate()
 void GuiPlayerList::Draw()
 {
 	if(!this->IsVisible())
+	{
 		return;
+	}
 
 	imgMainWindow->Draw();
 
-	for(u32 i=0; i<MAX_PLAYER_LIST_SIZE; ++i)
+	for(u32 i = 0; i < MAX_PLAYER_LIST_SIZE; ++i)
 	{
 		fileList[i]->Draw();
 	}
@@ -254,114 +327,6 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	int position = 0;
 	int positionWiimote = 0;
 
-	/*arrowUpBtn->Update(t);
-	arrowDownBtn->Update(t);
-	scrollbarBoxBtn->Update(t);
-
-	// move the file listing to respond to wiimote cursor movement
-	if(scrollbarBoxBtn->GetState() == STATE_HELD &&
-		scrollbarBoxBtn->GetStateChan() == t->chan &&
-		t->wpad->ir.valid &&
-		browser.numEntries > MAX_PLAYER_LIST_SIZE
-		)
-	{
-		scrollbarBoxBtn->SetPosition(0,0);
-		positionWiimote = t->wpad->ir.y - 60 - scrollbarBoxBtn->GetTop();
-
-		if(positionWiimote < scrollbarBoxBtn->GetMinY())
-			positionWiimote = scrollbarBoxBtn->GetMinY();
-		else if(positionWiimote > scrollbarBoxBtn->GetMaxY())
-			positionWiimote = scrollbarBoxBtn->GetMaxY();
-
-		browser.pageIndex = (positionWiimote * browser.numEntries)/156.0f - selectedItem;
-
-		if(browser.pageIndex <= 0)
-		{
-			browser.pageIndex = 0;
-		}
-		else if(browser.pageIndex+MAX_PLAYER_LIST_SIZE >= browser.numEntries)
-		{
-			browser.pageIndex = browser.numEntries-MAX_PLAYER_LIST_SIZE;
-		}
-		listChanged = true;
-		focus = false;
-	}*/
-
-	/*if(arrowDownBtn->GetState() == STATE_HELD && arrowDownBtn->GetStateChan() == t->chan)
-	{
-		t->wpad->btns_d |= WPAD_BUTTON_DOWN;
-		if(!this->IsFocused())
-			((GuiWindow *)this->GetParent())->ChangeFocus(this);
-	}
-	else if(arrowUpBtn->GetState() == STATE_HELD && arrowUpBtn->GetStateChan() == t->chan)
-	{
-		t->wpad->btns_d |= WPAD_BUTTON_UP;
-		if(!this->IsFocused())
-			((GuiWindow *)this->GetParent())->ChangeFocus(this);
-	}
-
-	// pad/joystick navigation
-	if(!focus)
-	{
-		goto endNavigation; // skip navigation
-		listChanged = false;
-	}
-
-	if(t->Right())
-	{
-		if(browser.pageIndex < browser.numEntries && browser.numEntries > MAX_PLAYER_LIST_SIZE)
-		{
-			browser.pageIndex += MAX_PLAYER_LIST_SIZE;
-			if(browser.pageIndex+MAX_PLAYER_LIST_SIZE >= browser.numEntries)
-				browser.pageIndex = browser.numEntries-MAX_PLAYER_LIST_SIZE;
-			listChanged = true;
-		}
-	}
-	else if(t->Left())
-	{
-		if(browser.pageIndex > 0)
-		{
-			browser.pageIndex -= MAX_PLAYER_LIST_SIZE;
-			if(browser.pageIndex < 0)
-				browser.pageIndex = 0;
-			listChanged = true;
-		}
-	}
-	else if(t->Down())
-	{
-		if(browser.pageIndex + selectedItem + 1 < browser.numEntries)
-		{
-			if(selectedItem == MAX_PLAYER_LIST_SIZE-1)
-			{
-				// move list down by 1
-				++browser.pageIndex;
-				listChanged = true;
-			}
-			else if(fileList[selectedItem+1]->IsVisible())
-			{
-				fileList[selectedItem]->ResetState();
-				fileList[++selectedItem]->SetState(STATE_SELECTED, t->chan);
-			}
-		}
-	}
-	else if(t->Up())
-	{
-		if(selectedItem == 0 &&	browser.pageIndex + selectedItem > 0)
-		{
-			// move list up by 1
-			--browser.pageIndex;
-			listChanged = true;
-		}
-		else if(selectedItem > 0)
-		{
-			fileList[selectedItem]->ResetState();
-			fileList[--selectedItem]->SetState(STATE_SELECTED, t->chan);
-		}
-	}
-
-	endNavigation:
-	*/
-//-------------------------------------------------------------------------------------------------------------------------
 	for(int i=0; i<numEntries; ++i)
 	{
 		if(listChanged)
@@ -448,33 +413,8 @@ void GuiPlayerList::Update(GuiTrigger * t)
 		else
 			fileListText[i]->SetScroll(SCROLL_NONE);
 	}
-//-------------------------------------------------------------------------------------------------------------------------
-	// update the location of the scroll box based on the position in the file list
-	/*if(positionWiimote > 0)
-	{
-		position = positionWiimote; // follow wiimote cursor
-		//scrollbarBoxBtn->SetPosition(0,position+36);
-	}
-	else if(listChanged || numEntries != browser.numEntries)
-	{
-		if(float((browser.pageIndex<<1))/(float(MAX_PLAYER_LIST_SIZE)) < 1.0)
-		{
-			position = 0;
-		}
-		else if(browser.pageIndex+MAX_PLAYER_LIST_SIZE >= browser.numEntries)
-		{
-			position = 156;
-		}
-		else
-		{
-			position = 156 * (browser.pageIndex + MAX_PLAYER_LIST_SIZE/2) / (float)browser.numEntries;
-		}
-		//scrollbarBoxBtn->SetPosition(0,position+36);
-	}
-	 */
 
 	listChanged = false;
-	//numEntries = browser.numEntries;
 
 	//if(updateCB)
 	//	updateCB(this);

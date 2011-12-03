@@ -32,6 +32,7 @@
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
  * midnak      11/29/2011  Netplay:  Added GuiPlayerlist
+ * midnak      12/01/2011  Added GuiImage::GetIcon
  */
 
 #ifndef LIBWIIGUI_H
@@ -699,6 +700,8 @@ class GuiText : public GuiElement
 		void ResetText();
 		//!Constantly called to draw the text
 		void Draw();
+		//!Returns a copy of this object's backing array
+		char *ToString();
 	protected:
 		GXColor color; //!< Font color
 		wchar_t* text; //!< Translated Unicode text value
@@ -766,6 +769,8 @@ class GuiButton : public GuiElement
 		//!Sets the button's icon
 		//!\param i Pointer to GuiImage object
 		void SetIcon(GuiImage* i);
+		//!Returns the button's icon
+		GuiImage* GetIcon();
 		//!Sets the button's icon on over
 		//!\param i Pointer to GuiImage object
 		void SetIconOver(GuiImage* i);
@@ -1059,8 +1064,15 @@ class GuiFileBrowser : public GuiElement
 		bool listChanged;
 };
 
+// TODO:  Relocate
+struct Player
+{
+	char *name;
+	bool ready;
+};
+
 //!Netplay:  Display a list of connected players
-class GuiPlayerList : public GuiWindow
+class GuiPlayerList : public GuiElement
 {
 	public:
 		GuiPlayerList(int w, int h);
@@ -1071,13 +1083,17 @@ class GuiPlayerList : public GuiWindow
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);
 
-		bool AddPlayer(char *);
-		bool SetPlayerReady(int, bool);
-		void ClearList();
+		bool AddPlayer(Player player);
+		void RemovePlayer(int playerNum);
+		int  GetPlayerNumber(char *name);
+		bool ToggleReady();
+		bool IsPlayerReady(int playerNum);
+		bool IsEveryoneReady();
 
 		GuiButton *fileList[MAX_PLAYER_LIST_SIZE];
 	private:
 		GuiText *titleTxt;
+		GuiText *txtAllPlayersReady;
 		GuiText *fileListText[MAX_PLAYER_LIST_SIZE];
 		GuiImage *fileListBg[MAX_PLAYER_LIST_SIZE];
 		GuiImage *fileListIcon[MAX_PLAYER_LIST_SIZE];
@@ -1099,7 +1115,12 @@ class GuiPlayerList : public GuiWindow
 		GuiSound *btnSoundClick;
 		GuiTrigger *trigA;
 		GuiTrigger *trig2;
-		GuiTrigger *trigHeldA;
+
+		GuiText *player1ColorText,
+				*player2ColorText,
+				*player3ColorText,
+				*player4ColorText;
+
 
 		int selectedItem;
 		int numEntries;

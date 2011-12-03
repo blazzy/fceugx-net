@@ -6,6 +6,12 @@
  * gui_button.cpp
  *
  * GUI class definitions
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      12/01/2011  Added GuiImage::GetIcon
  ***************************************************************************/
 
 #include "gui.h"
@@ -74,6 +80,10 @@ void GuiButton::SetIcon(GuiImage* img)
 {
 	icon = img;
 	if(img) img->SetParent(this);
+}
+GuiImage* GuiButton::GetIcon()
+{
+	return icon;
 }
 void GuiButton::SetIconOver(GuiImage* img)
 {

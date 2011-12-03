@@ -14,6 +14,7 @@
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
  * midnak      11/25/2011  Netplay:  Added members
+ * midnak      12/02/2011  GUI and server use the same length for nickname
  ****************************************************************************/
 
 #ifndef _FCEUGX_H_
@@ -30,6 +31,8 @@
 
 #define NOTSILENT 0
 #define SILENT 1
+
+#define NETPLAY_MAX_NAME_LEN  20
 
 const char pathPrefix[9][8] =
 { "", "sd:/", "usb:/", "dvd:/", "smb:/", "carda:/", "cardb:/" };
@@ -94,7 +97,7 @@ struct SGCSettings{
 	char    netplayIp[17];  // Forward compatibility:  IPv6 IPs are 128 bits
 	char    netplayPort[6];
 	char    netplayPwd[21];
-	char    netplayName[16];
+	char    netplayName[NETPLAY_MAX_NAME_LEN];
 
 	char	smbip[80];
 	char	smbuser[20];
