@@ -107,7 +107,8 @@ int FCEUD_NetworkConnect() {
 	memset(sendbuf, 0, sendbuf_len);
 
 	FCEU_en32lsb(sendbuf, sendbuf_len - 4);
-	memcpy(sendbuf + 4, &GameInfo->MD5.data, 16);
+	//memcpy(sendbuf + 4, &GameInfo->MD5.data, 16);
+	memset(sendbuf + 4, 0, 16);
 
 	int password_len = strlen(password);
 	if (password_len) {
