@@ -16,6 +16,8 @@
 
 #include <gctypes.h>
 #include <network.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include "fceugx.h"
 #include "fceultra/utils/endian.h"
@@ -24,10 +26,12 @@ extern FCEUGI *GameInfo;
 
 static int Socket = -1;
 
+static int poll_one(int socket, int timeout = 1);
+
+#define CONNECT_TIMEOUT 3000//ms
+
 int skipgfx;
 
-// TODO:  This function needs a short timeout period.  It takes
-// 3m10s for this function to fail.  It needs to be 10 seconds.
 int FCEUD_NetworkConnect() {
 	const char *host     = GCSettings.netplayIp;
 	const char *name     = GCSettings.netplayName;
@@ -70,14 +74,29 @@ int FCEUD_NetworkConnect() {
 		memcpy(&address.sin_addr, he->h_addr, he->h_length);
 	}
 
+	//Disable blocking so we can have the connect call timeout
+	int flags = fcntl(tcp_socket, F_GETFL, 0);
+	net_fcntl(tcp_socket, F_SETFL, flags | O_NONBLOCK);
 
-	if (net_connect(tcp_socket, (sockaddr*)&address, sizeof(address))) {
+	int connect_ret = net_connect(tcp_socket, (sockaddr*)&address, sizeof(address));
+	int poll_ret    = 0;
+	//TODO: This isn't right. We should be examining errno.
+	//      We should fix the devkitpro socket function.
+	if (connect_ret == -EINPROGRESS) {
+		poll_ret = poll_one(tcp_socket, CONNECT_TIMEOUT);
+	}
+
+	if (connect_ret && poll_ret != 1) {
 		// TODO:  Remove this message once we are GUI-driven.  Return a unique
 		// value if you want to communicate a specific message.
 		FCEU_DispMessage("Failed to connect.", 0);
 		close(tcp_socket);
 		return 0;
 	}
+
+	//reenable blocking
+	flags = net_fcntl(tcp_socket, F_GETFL, 0);
+	net_fcntl(tcp_socket, F_SETFL, flags ^ O_NONBLOCK);
 
 	// 4 bytes for length
 	// 16 bytes md5 key. Is it a hash of the rom data?
@@ -128,12 +147,12 @@ int FCEUD_SendData(void *data, uint32 len) {
 }
 
 //Run poll a single socket for inbound data
-static int poll_one(int socket) {
+static int poll_one(int socket, int timeout) {
 	pollsd sd;
 	sd.socket = socket;	
 	sd.events = POLLIN;
 
-	return net_poll(&sd, 1, 1);
+	return net_poll(&sd, 1, timeout);
 }
 
 int FCEUD_RecvData(void *data, uint32 len) {
