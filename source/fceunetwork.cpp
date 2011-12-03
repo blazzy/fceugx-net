@@ -19,6 +19,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#include <ogc/lwp_watchdog.h>
+
 #include "fceugx.h"
 #include "fceultra/utils/endian.h"
 
@@ -26,9 +28,9 @@ extern FCEUGI *GameInfo;
 
 static int Socket = -1;
 
-static int poll_one(int socket, int timeout = 1);
+static int poll_one(int socket, int timeout, int event);
 
-#define CONNECT_TIMEOUT 3000//ms
+#define CONNECT_TIMEOUT 4000//ms
 
 int skipgfx;
 
@@ -74,24 +76,20 @@ int FCEUD_NetworkConnect() {
 		memcpy(&address.sin_addr, he->h_addr, he->h_length);
 	}
 
-	//Disable blocking so we can have the connect call timeout
+	//Disable blocking so we can have the connect-call timeout
 	int flags = fcntl(tcp_socket, F_GETFL, 0);
 	net_fcntl(tcp_socket, F_SETFL, flags | O_NONBLOCK);
 
-	int connect_ret = net_connect(tcp_socket, (sockaddr*)&address, sizeof(address));
-	int poll_ret    = 0;
-	//TODO: This isn't right. We should be examining errno.
-	//      We should fix the devkitpro socket function.
-	if (connect_ret == -EINPROGRESS) {
-		poll_ret = poll_one(tcp_socket, CONNECT_TIMEOUT);
-	}
-
-	if (connect_ret && poll_ret != 1) {
-		// TODO:  Remove this message once we are GUI-driven.  Return a unique
-		// value if you want to communicate a specific message.
-		FCEU_DispMessage("Failed to connect.", 0);
-		close(tcp_socket);
-		return 0;
+	u64 start_time = gettime();
+	while (-EISCONN != net_connect(tcp_socket, (sockaddr*)&address, sizeof(address))) {
+		usleep(1000);
+		if ( diff_msec(start_time, gettime()) > CONNECT_TIMEOUT ) {
+			// TODO:  Remove this message once we are GUI-driven.  Return a unique
+			// value if you want to communicate a specific message.
+			FCEU_DispMessage("Failed to connect.", 0);
+			close(tcp_socket);
+			return 0;
+		}
 	}
 
 	//reenable blocking
@@ -147,10 +145,10 @@ int FCEUD_SendData(void *data, uint32 len) {
 }
 
 //Run poll a single socket for inbound data
-static int poll_one(int socket, int timeout) {
+static int poll_one(int socket, int timeout, int event) {
 	pollsd sd;
 	sd.socket = socket;	
-	sd.events = POLLIN;
+	sd.events = event;
 
 	return net_poll(&sd, 1, timeout);
 }
@@ -158,7 +156,7 @@ static int poll_one(int socket, int timeout) {
 int FCEUD_RecvData(void *data, uint32 len) {
 	skipgfx = 0;
 	while (true) {
-		switch (poll_one(Socket)) {
+		switch (poll_one(Socket, 10, POLLIN)) {
 			case  0: continue;
 			case -1: return 0;
 		}
@@ -166,7 +164,7 @@ int FCEUD_RecvData(void *data, uint32 len) {
 		int size = net_recv(Socket, data, len, 0);
 
 		if (size == int(len)) {
-			if (poll_one(Socket)) {
+			if (poll_one(Socket, 0, POLLIN)) {
 				skipgfx = 1;
 			}
 			return 1;
