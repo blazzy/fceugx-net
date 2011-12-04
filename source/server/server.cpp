@@ -150,7 +150,7 @@ struct Client {
 	}
 
 	void set_default_name() {
-		snprintf(name, name_max, "%s%i", DEFAULT_NAME, id);
+		snprintf(name, NETPLAY_MAX_NAME_LEN, "%s%i", DEFAULT_NAME, id);
 	}
 };
 
