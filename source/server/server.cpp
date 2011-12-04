@@ -32,7 +32,7 @@
 #include <arpa/inet.h>
 
 #include "md5.h"
-#include "fceugx.h"
+#include "fceunetwork.h"
 
 #define QUOTE(x) #x
 #define STR(x) QUOTE(x)
@@ -150,7 +150,7 @@ struct Client {
 	}
 
 	void set_default_name() {
-		snprintf(name, name_max, "%s%i", DEFAULT_NAME, id);
+		snprintf(name, NETPLAY_MAX_NAME_LEN, "%s%i", DEFAULT_NAME, id);
 	}
 };
 
@@ -316,8 +316,15 @@ struct Game {
 				return;
 			}
 
+			case FCEUNPCMD_TEXT: {
+				send_all(client.command_type, client.buffer, client.buffer_used);
+				client.buffer[MIN(client.buffer_used, client.buffer_max - 1)] = '\0';
+				fprintf(stderr, "%i %s: %s\n", client.id, client.name, client.buffer);
+				client.reset_buffer(N_UPDATEDATA, 1);
+				return;
+			}
+
 			case FCEUNPCMD_POWER:
-			case FCEUNPCMD_TEXT:
 			case FCEUNPCMD_VSUNICOIN:
 			case FCEUNPCMD_VSUNIDIP0:
 			case FCEUNPCMD_VSUNIDIP0 + 1:

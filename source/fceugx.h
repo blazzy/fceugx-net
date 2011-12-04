@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "fceultra/driver.h"
+#include "fceunetwork.h"
 
 #define APPNAME			"FCE Ultra GX"
 #define APPVERSION		"3.2.6"
@@ -31,8 +32,6 @@
 
 #define NOTSILENT 0
 #define SILENT 1
-
-#define NETPLAY_MAX_NAME_LEN  20
 
 enum ExecutionMode { OFFLINE, NETPLAY_HOST, NETPLAY_CLIENT };
 

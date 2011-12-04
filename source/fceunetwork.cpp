@@ -35,6 +35,8 @@ static int Socket = -1;
 
 static int poll_one(int socket, int timeout, int event);
 
+#define IOS_O_NONBLOCK			0x04
+
 #define CONNECT_TIMEOUT 4000//ms
 
 int skipgfx;
@@ -83,7 +85,7 @@ int FCEUD_NetworkConnect() {
 
 	//Disable blocking so we can have the connect-call timeout
 	int flags = net_fcntl(tcp_socket, F_GETFL, 0);
-	net_fcntl(tcp_socket, F_SETFL, flags | O_NONBLOCK);
+	net_fcntl(tcp_socket, F_SETFL, flags | IOS_O_NONBLOCK);
 
 	u64 start_time = gettime();
 	while (-EISCONN != net_connect(tcp_socket, (sockaddr*)&address, sizeof(address))) {
@@ -98,8 +100,7 @@ int FCEUD_NetworkConnect() {
 	}
 
 	//reenable blocking
-	flags = net_fcntl(tcp_socket, F_GETFL, 0);
-	net_fcntl(tcp_socket, F_SETFL, flags & ~O_NONBLOCK);
+	net_fcntl(tcp_socket, F_SETFL, flags);
 
 	// 4 bytes for length
 	// 16 bytes md5 key. Is it a hash of the rom data?
