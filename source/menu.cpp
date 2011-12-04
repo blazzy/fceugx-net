@@ -14,14 +14,6 @@
  *          clicking in, rather than order of connection.  This will allow
  *          people to decide their player number, should they have a
  *          preference for some reason.
- *      3.  Prevent changes to netplay settings if user is connected to
- *          a host.
- *      6.  Save settings as soon as the Back button is pressed.  Prevents
- *          annoyance if the app crashes - currently, settings aren't
- *          saved until exit.
- *      7.  Display an animated "please wait" notification when trying
- *          to open a client/server socket.  That might get interesting
- *          with the GUI being halted and all...
  *
  * History:
  *
@@ -76,6 +68,8 @@
 #define THREAD_SLEEP 100
 
 ExecutionMode executionMode = OFFLINE;
+static void newPlayerList();
+static void pleaseWaitMsg();
 static void hideNetplayGuiComponents();
 static void showNetplayGuiComponents();
 
@@ -552,7 +546,7 @@ ShowProgress (const char *msg, int done, int total)
 		CancelAction(); // wait for previous progress window to finish
 
 	snprintf(progressMsg, 200, "%s", msg);
-	sprintf(progressTitle, "Please Wait");
+	sprintf(progressTitle, "Opening connection");
 	showProgress = 1;
 	progressTotal = total;
 	progressDone = done;
@@ -962,6 +956,12 @@ void newPlayerList()
 	mainWindow->Append(playerList);
 }
 
+static void pleaseWaitMsg()
+{
+	HaltGui();
+	ShowAction("Opening connection");
+}
+
 static void showNetplayGuiComponents()
 {
 	if(hostBtn != NULL)
@@ -1350,15 +1350,16 @@ static int MenuGameSelection()
 			{
 				bool connected = false;
 
-				HaltGui();
+				pleaseWaitMsg();
 
 				if((connected = true/*whateverServerInitFunction()*/) == false)
 				{
+					CancelAction();
 					ResumeGui();
 
 					while(ErrorPromptRetry("Could not open a connection"))
 					{
-						HaltGui();
+						pleaseWaitMsg();
 
 						if((connected = true/*whateverServerInitFunction()*/) == true)
 						{
@@ -1367,6 +1368,7 @@ static int MenuGameSelection()
 					}
 				}
 
+				CancelAction();
 				ResumeGui();
 
 				if(connected)
@@ -1395,7 +1397,7 @@ static int MenuGameSelection()
 			{
 				bool connected = false;
 
-				HaltGui();
+				pleaseWaitMsg();
 
 				if((connected = FCEUD_NetworkConnect()) == false)
 				{
@@ -1403,7 +1405,7 @@ static int MenuGameSelection()
 
 					while(ErrorPromptRetry("Could not connect"))
 					{
-						HaltGui();
+						pleaseWaitMsg();
 
 						if((connected = FCEUD_NetworkConnect()) == true)
 						{
@@ -3888,6 +3890,7 @@ static int MenuSettingsFile()
 		if(backBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_SETTINGS;
+			SavePrefs(true);
 		}
 	}
 	HaltGui();
@@ -4071,6 +4074,7 @@ static int MenuSettingsMenu()
 		if(backBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_SETTINGS;
+			SavePrefs(true);
 		}
 	}
 	HaltGui();
@@ -4211,6 +4215,7 @@ static int MenuSettingsNetwork()
 		if(backBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_SETTINGS;
+			SavePrefs(true);
 		}
 	}
 	HaltGui();
