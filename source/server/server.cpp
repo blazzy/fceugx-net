@@ -316,8 +316,15 @@ struct Game {
 				return;
 			}
 
+			case FCEUNPCMD_TEXT: {
+				send_all(client.command_type, client.buffer, client.buffer_used);
+				client.buffer[MIN(client.buffer_used, client.buffer_max - 1)] = '\0';
+				fprintf(stderr, "%i %s: %s\n", client.id, client.name, client.buffer);
+				client.reset_buffer(N_UPDATEDATA, 1);
+				return;
+			}
+
 			case FCEUNPCMD_POWER:
-			case FCEUNPCMD_TEXT:
 			case FCEUNPCMD_VSUNICOIN:
 			case FCEUNPCMD_VSUNIDIP0:
 			case FCEUNPCMD_VSUNIDIP0 + 1:
