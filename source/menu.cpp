@@ -1322,7 +1322,7 @@ static int MenuGameSelection()
 				}
 				else if(executionMode == NETPLAY_HOST)
 				{
-					ErrorPrompt("Everyone must click in READY before a game can be launched");
+					ErrorPrompt("Everyone must click in as READY before launching a game");
 				}
 				else
 				{
