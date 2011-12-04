@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -ggdb
+CXXFLAGS := -ggdb -Isource
 LDFLAGS  := -lrt
 
 BUILDDIR  := build_server
