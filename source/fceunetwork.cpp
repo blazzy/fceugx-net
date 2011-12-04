@@ -202,11 +202,7 @@ bool FCEUD_TellServerToggleReady(char *name) {
 // Player 1, Player 2, etc.) if they have clicked READY.  If they haven't
 // clicked READY, they are marked with an X.
 void FCEUD_SendPlayerListToClients() {
-	char *MSG_HEADER="PLAYER_LIST:";
-	char *MSG_FOOTER[2] = { "\n" };  // Tantric's keyboard doesn't do newline.
-
-	char list[300];
-	sprintf( list, "%s0=gandalf,1=frodo,X=merry,X=pippin%s", *MSG_HEADER, *MSG_FOOTER );
+	char *list = "PLAYER_LIST:0=gandalf,1=frodo,X=merry,X=pippin\n";
 
 	// foreach socket in clientSockets[]
 	// do
