@@ -32,7 +32,7 @@
 #include <arpa/inet.h>
 
 #include "md5.h"
-#include "fceugx.h"
+#include "fceunetwork.h"
 
 #define QUOTE(x) #x
 #define STR(x) QUOTE(x)
