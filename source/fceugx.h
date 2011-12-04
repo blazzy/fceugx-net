@@ -34,6 +34,8 @@
 
 #define NETPLAY_MAX_NAME_LEN  20
 
+enum ExecutionMode { OFFLINE, NETPLAY_HOST, NETPLAY_CLIENT };
+
 const char pathPrefix[9][8] =
 { "", "sd:/", "usb:/", "dvd:/", "smb:/", "carda:/", "cardb:/" };
 
@@ -140,5 +142,6 @@ extern char loadedFile[];
 extern int frameskip;
 extern int turbomode;
 extern bool romLoaded;
+extern ExecutionMode executionMode;
 
 #endif

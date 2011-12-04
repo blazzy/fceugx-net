@@ -23,6 +23,9 @@
  *      6.  Save settings as soon as the Back button is pressed.  Prevents
  *          annoyance if the app crashes - currently, settings aren't
  *          saved until exit.
+ *      7.  Display an animated "please wait" notification when trying
+ *          to open a client/server socket.  That might get interesting
+ *          with the GUI being halted and all...
  *
  * History:
  *
@@ -76,6 +79,7 @@
 
 #define THREAD_SLEEP 100
 
+ExecutionMode executionMode = OFFLINE;
 static void hideNetplayGuiComponents();
 static void showNetplayGuiComponents();
 
@@ -946,6 +950,22 @@ GuiButton *hostBtn        = NULL,
           *chatBtn        = NULL,
           *readyBtn       = NULL;
 
+void newPlayerList()
+{
+	if(playerList != NULL)
+	{
+		mainWindow->Remove(playerList);
+		delete playerList;
+	}
+
+	playerList = new GuiPlayerList(152, 265);
+	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	playerList->SetPosition(-8, 98);
+	playerList->SetVisible(false);
+
+	mainWindow->Append(playerList);
+}
+
 static void showNetplayGuiComponents()
 {
 	if(hostBtn != NULL)
@@ -986,22 +1006,6 @@ static void showNetplayGuiComponents()
 			usleep(THREAD_SLEEP);
 		}
 	}
-}
-
-void newPlayerList()
-{
-	if(playerList != NULL)
-	{
-		mainWindow->Remove(playerList);
-		delete playerList;
-	}
-
-	playerList = new GuiPlayerList(152, 265);
-	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-	playerList->SetPosition(-8, 98);
-	playerList->SetVisible(false);
-
-	mainWindow->Append(playerList);
 }
 
 static void hideNetplayGuiComponents()
@@ -1276,36 +1280,55 @@ static int MenuGameSelection()
 			if(gameBrowser.fileList[i]->GetState() == STATE_CLICKED)
 			{
 				gameBrowser.fileList[i]->ResetState();
-				// check corresponding browser entry
-				if(browserList[browser.selIndex].isdir || IsSz())
-				{
-					if(IsSz())
-						res = BrowserLoadSz();
-					else
-						res = BrowserChangeFolder();
 
-					if(res)
+				if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
+				{
+					ErrorPrompt("Everyone must click in as READY before launching a game");
+				}
+
+				if( executionMode == OFFLINE || (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady()) )
+				{
+					// check corresponding browser entry
+					if(browserList[browser.selIndex].isdir || IsSz())
 					{
-						gameBrowser.ResetState();
-						gameBrowser.fileList[0]->SetState(STATE_SELECTED);
-						gameBrowser.TriggerUpdate();
+						if(IsSz())
+							res = BrowserLoadSz();
+						else
+							res = BrowserChangeFolder();
+
+						if(res)
+						{
+							gameBrowser.ResetState();
+							gameBrowser.fileList[0]->SetState(STATE_SELECTED);
+							gameBrowser.TriggerUpdate();
+						}
+						else
+						{
+							menu = MENU_GAMESELECTION;
+							break;
+						}
 					}
 					else
 					{
-						menu = MENU_GAMESELECTION;
-						break;
+						#ifdef HW_RVL
+						ShutoffRumble();
+						#endif
+						mainWindow->SetState(STATE_DISABLED);
+						if(BrowserLoadFile())
+							menu = MENU_EXIT;
+						else
+							mainWindow->SetState(STATE_DEFAULT);
 					}
+				}
+				else if(executionMode == NETPLAY_HOST)
+				{
+					ErrorPrompt("Everyone must click in READY before a game can be launched");
 				}
 				else
 				{
-					#ifdef HW_RVL
-					ShutoffRumble();
-					#endif
-					mainWindow->SetState(STATE_DISABLED);
-					if(BrowserLoadFile())
-						menu = MENU_EXIT;
-					else
-						mainWindow->SetState(STATE_DEFAULT);
+					// I suppose there's nothing stopping us from letting clients start games, though that
+					// could make for a chaotic exerience.  We'll stick with letting the host do the honors.
+					ErrorPrompt("Only the host can start games");
 				}
 			}
 		}
@@ -1329,41 +1352,39 @@ static int MenuGameSelection()
 			}
 			else
 			{
+				bool connected = false;
+
 				HaltGui();
 
-				if( true /*serverInit success*/ )
-				{
-					ResumeGui();
-					showNetplayGuiComponents();
-					disconnectBtn->SetSoundOver(&btnSoundOver);
-				}
-				/*else
+				if((connected = true/*whateverServerInitFunction()*/) == false)
 				{
 					ResumeGui();
 
-					int retry = ErrorPromptRetry("Could not open a connection");
-
-					while(retry)
+					while(ErrorPromptRetry("Could not open a connection"))
 					{
 						HaltGui();
 
-						if(! server init success)
+						if((connected = true/*whateverServerInitFunction()*/) == true)
 						{
-							ResumeGui();
-							retry = ErrorPromptRetry("Could not open a connection");
+							break;
 						}
 					}
-				}*/
+				}
+
+				ResumeGui();
+
+				if(connected)
+				{
+					executionMode = NETPLAY_HOST;
+					showNetplayGuiComponents();
+					disconnectBtn->SetSoundOver(&btnSoundOver);
+				}
 
 				playerList->AddPlayer(Player{GCSettings.netplayName, false});
 				playerList->AddPlayer(Player{"merry", false});
 				playerList->AddPlayer(Player{"pippin", false});
 				playerList->AddPlayer(Player{"1234567890ABCDEFGHIKshouldnotseeanythingafterK", false});
 			}
-			// TODO:  When a client connects, enable the chat button.
-			// Of course, none of that happens in this block, but
-			// this the only relevant place to mention it at this
-			// stage of development.
 		}
 		else if(joinBtn->GetState() == STATE_CLICKED)
 		{
@@ -1376,36 +1397,40 @@ static int MenuGameSelection()
 			}
 			else
 			{
+				bool connected = false;
+
 				HaltGui();
 
-				if(FCEUD_NetworkConnect())
-				{
-					ResumeGui();
-					showNetplayGuiComponents();
-					disconnectBtn->SetSoundOver(&btnSoundOver);
-				}
-				else
+				if((connected = FCEUD_NetworkConnect()) == false)
 				{
 					ResumeGui();
 
-					int retry = ErrorPromptRetry("Could not connect");
-
-					while(retry)
+					while(ErrorPromptRetry("Could not connect"))
 					{
 						HaltGui();
 
-						if(!FCEUD_NetworkConnect())
+						if((connected = FCEUD_NetworkConnect()) == true)
 						{
-							ResumeGui();
-							retry = ErrorPromptRetry("Could not connect");
+							break;
 						}
 					}
+				}
+
+				ResumeGui();
+
+				if(connected)
+				{
+					executionMode = NETPLAY_CLIENT;
+					showNetplayGuiComponents();
+					disconnectBtn->SetSoundOver(&btnSoundOver);
 				}
 			}
 		}
 		else if(disconnectBtn->GetState() == STATE_CLICKED)
 		{
 			disconnectBtn->ResetState();
+
+			executionMode = OFFLINE;
 
 			FCEUD_NetworkClose();
 			hideNetplayGuiComponents();
