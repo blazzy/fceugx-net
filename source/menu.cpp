@@ -9,17 +9,13 @@
  * Description:  Main menu flow control
  *
  * TODO:
- *      1.  Transalations for Netplay buttons
+ *      1.  Translations for Netplay buttons
  *      2.  'Ready' button:  assign player number 1-4 based on order of
  *          clicking in, rather than order of connection.  This will allow
  *          people to decide their player number, should they have a
  *          preference for some reason.
  *      3.  Prevent changes to netplay settings if user is connected to
  *          a host.
- *      4.  Clients:  Prevent selection from ROM list - only the host
- *          can launch a game.
- *      5.  Host:  Prevent making a selection from the ROM list unless
- *          everyone's clicked READY.
  *      6.  Save settings as soon as the Back button is pressed.  Prevents
  *          annoyance if the app crashes - currently, settings aren't
  *          saved until exit.
@@ -1283,7 +1279,7 @@ static int MenuGameSelection()
 
 				if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
 				{
-					ErrorPrompt("Everyone must click in as READY before launching a game");
+					InfoPrompt("Everyone must click in as READY before launching a game");
 				}
 
 				if( executionMode == OFFLINE || (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady()) )
@@ -1322,13 +1318,13 @@ static int MenuGameSelection()
 				}
 				else if(executionMode == NETPLAY_HOST)
 				{
-					ErrorPrompt("Everyone must click in as READY before launching a game");
+					InfoPrompt("Everyone must click in as READY before launching a game");
 				}
 				else
 				{
 					// I suppose there's nothing stopping us from letting clients start games, though that
-					// could make for a chaotic exerience.  We'll stick with letting the host do the honors.
-					ErrorPrompt("Only the host can start games");
+					// could make for a chaotic experience.  We'll stick with letting the host do the honors.
+					InfoPrompt("Only the host can start games");
 				}
 			}
 		}
@@ -3661,7 +3657,20 @@ static int MenuSettings()
 		}
 		else if(networkBtn.GetState() == STATE_CLICKED)
 		{
-			menu = MENU_SETTINGS_NETWORK;
+			if(executionMode == OFFLINE)
+			{
+				menu = MENU_SETTINGS_NETWORK;
+			}
+			else
+			{
+				InfoPrompt("Can't change network settings while a connection is open");
+
+				// Don't kick the user out of the Settings screen by allowing menu to
+				// remain MENU_NONE.  This has the unfortunate side effect of a quick
+				// screen flicker as the Settings screen is redrawn.  Rats.
+				menu = MENU_SETTINGS;
+				break;
+			}
 		}
 		else if(cheatsBtn.GetState() == STATE_CLICKED)
 		{
