@@ -39,8 +39,6 @@
 #include "driver.h"
 #include "utils/memory.h"
 
-int FCEUnetplay=0;
-
 static uint8 netjoy[4]; // Controller cache.
 static int numlocal;
 static int netdivisor;
@@ -57,9 +55,9 @@ static void NetError(void)
 
 void FCEUI_NetplayStop(void)
 {
-	if(FCEUnetplay)
+	if(executionMode != OFFLINE)
 	{
-		FCEUnetplay = 0;
+		executionMode = OFFLINE;
 		FCEU_FlushGameCheats(0,1);  //Don't save netplay cheats.
 		FCEU_LoadGameCheats(0);    //Reload our original cheats.
 	}
@@ -70,8 +68,16 @@ int FCEUI_NetplayStart(int nlocal, int divisor)
 {
 	FCEU_FlushGameCheats(0, 0);  //Save our pre-netplay cheats.
 	FCEU_LoadGameCheats(0);    // Load them again, for pre-multiplayer action.
-	
-	FCEUnetplay = 1;
+
+	// We know to set this to client instead of server because FCEUI_NetplayStart() is only
+	// called by FCEUD_NetworkConnect(), and that's only a client function.  Verified by
+	// looking at the FCEUD_NetworkConnect() of FCEUX SDL. If FCEUI_NetplayStart() should
+	// ever be called by the host (the function name is generic enough to suggest someone
+	// might repurpose it in the future), we'll have a problem and will have to resort to
+	// having two global netplay variables:  int FCEUnetplay and its ExecutionMode
+	// replacement.
+	executionMode = NETPLAY_CLIENT;
+
 	memset(netjoy,0,sizeof(netjoy));
 	numlocal = nlocal;
 	netdivisor = divisor;
@@ -268,7 +274,7 @@ void NetplayUpdate(uint8 *joyp)
 					//// }
 
 					//free(fn);
-					//if(!FCEUnetplay) return;
+					//if(executionMode == OFFLINE) return;
 
 					//fn = strdup(FCEU_MakeFName(FCEUMKF_NPTEMP,0,0).c_str());
 					//fp = fopen(fn, "wb");

@@ -925,7 +925,7 @@ void FCEUI_LoadState(const char *fname)
 	if(FCEUSS_Load(fname))
 	{
 		//mbg todo netplay
-		/*if(FCEUnetplay)
+		/*if(executionMode != OFFLINE)
 		{
 			char *fn = strdup(FCEU_MakeFName(FCEUMKF_NPTEMP, 0, 0).c_str());
 			FILE *fp;

@@ -20,9 +20,9 @@
 
 int FCEUD_NetworkConnect();
 
-extern int FCEUnetplay;
-
 #define NETPLAY_MAX_NAME_LEN  20
+
+#include "fceugx.h"  // for executionMode
 
 /*
  * The host has sole authority over player ID assignment (Player 1, Player 2, etc.).

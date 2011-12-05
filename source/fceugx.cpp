@@ -630,7 +630,7 @@ int main(int argc, char *argv[])
 			FCEUI_Emulate(&gfx, &sound, &ssize, fskip);
 
 			//skip rendering some frames
-			if(FCEUnetplay) 
+			if(executionMode != OFFLINE)
 			{
 				if (skipgfx) 
 				{

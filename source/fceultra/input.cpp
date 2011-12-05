@@ -329,7 +329,7 @@ void FCEU_UpdateInput(void)
 	if(GameInfo->type==GIT_VSUNI)
 		if(coinon) coinon--;
 
-	if(FCEUnetplay)
+	if(executionMode != OFFLINE)
 		NetplayUpdate(joy);
 
 	FCEUMOV_AddInputState();
@@ -542,7 +542,7 @@ void FCEU_DoSimpleCommand(int cmd)
 
 void FCEU_QSimpleCommand(int cmd)
 {
-	if(FCEUnetplay)
+	if(executionMode != OFFLINE)
 		FCEUNET_SendCommand(cmd, 0);
 	else
 	{

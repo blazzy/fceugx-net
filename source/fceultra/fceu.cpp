@@ -149,7 +149,7 @@ static void FCEU_CloseGame(void)
 	}
 #endif
 
-		if(FCEUnetplay)
+		if(executionMode != OFFLINE)
 		{
 			FCEUD_NetworkClose();
 		}

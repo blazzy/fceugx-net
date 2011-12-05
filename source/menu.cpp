@@ -317,7 +317,7 @@ UpdateGUI (void *arg)
 			mainWindow->DrawTooltip();
 
 		static uint8 joy[] = {0,0,0,0};
-		if(FCEUnetplay)
+		if(executionMode != OFFLINE)
 			NetplayUpdate(joy);
 
 		#ifdef HW_RVL
@@ -1381,7 +1381,7 @@ static int MenuGameSelection()
 
 				if(connected)
 				{
-					executionMode = NETPLAY_HOST;
+					//executionMode = NETPLAY_HOST;
 					showNetplayGuiComponents();
 					disconnectBtn->SetSoundOver(&btnSoundOver);
 				}
@@ -1427,7 +1427,6 @@ static int MenuGameSelection()
 
 				if(connected)
 				{
-					executionMode = NETPLAY_CLIENT;
 					showNetplayGuiComponents();
 					disconnectBtn->SetSoundOver(&btnSoundOver);
 				}
