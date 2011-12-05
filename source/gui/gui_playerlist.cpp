@@ -87,6 +87,10 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	fileList[1] = new GuiButton(w,h);
 	fileList[2] = new GuiButton(w,h);
 	fileList[3] = new GuiButton(w,h);
+	for (int i = 0; i < MAX_PLAYER_LIST_SIZE; ++i)
+	{
+		fileListBg[i] = 0;
+	}
 
 	player1ColorText = new GuiText("", 25, (GXColor){61, 89, 144, 255});
 	player2ColorText = new GuiText("", 25, (GXColor){144, 60, 60, 255});

@@ -20,6 +20,8 @@
 
 int FCEUD_NetworkConnect();
 
+extern int FCEUnetplay;
+
 #define NETPLAY_MAX_NAME_LEN  20
 
 /*

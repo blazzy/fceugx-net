@@ -67,6 +67,7 @@
 #include "gui/gui.h"
 #include "utils/gettext.h"
 #include "fceunetwork.h"
+#include "fceultra/netplay.h"
 
 #define THREAD_SLEEP 100
 
@@ -314,6 +315,10 @@ UpdateGUI (void *arg)
 
 		if (mainWindow->GetState() != STATE_DISABLED)
 			mainWindow->DrawTooltip();
+
+		static uint8 joy[] = {0,0,0,0};
+		if(FCEUnetplay)
+			NetplayUpdate(joy);
 
 		#ifdef HW_RVL
 		i = 3;
@@ -1417,6 +1422,7 @@ static int MenuGameSelection()
 					}
 				}
 
+				CancelAction();
 				ResumeGui();
 
 				if(connected)

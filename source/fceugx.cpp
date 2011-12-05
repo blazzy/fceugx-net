@@ -448,7 +448,8 @@ void Check3D()
 	old_anaglyph_3d_mode = anaglyph_3d_mode;
 }
 
-static void update_framerate(int frame, int skipgfx_count) {
+static void update_framerate(int frame, int skipgfx_count) 
+{
 	static int last_frame = 0;
 	static int last_skipgfx = 0;
 	static u64 last_time = gettime();
@@ -629,13 +630,16 @@ int main(int argc, char *argv[])
 			FCEUI_Emulate(&gfx, &sound, &ssize, fskip);
 
 			//skip rendering some frames
-			if (skipgfx) {
-				skipgfx_count++;
-				gfx   = 0;
-				sound = 0;
+			if(FCEUnetplay) 
+			{
+				if (skipgfx) 
+				{
+					skipgfx_count++;
+					gfx   = 0;
+					sound = 0;
+				}
+				update_framerate(frame_count++, skipgfx_count);
 			}
-
-			update_framerate(frame_count++, skipgfx_count);
 
 			if (!shutter_3d_mode && !anaglyph_3d_mode)
 				FCEUD_Update(gfx, sound, ssize);
