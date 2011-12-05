@@ -1419,6 +1419,7 @@ static int MenuGameSelection()
 					}
 				}
 
+				CancelAction();
 				ResumeGui();
 
 				if(connected)
