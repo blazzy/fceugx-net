@@ -230,20 +230,23 @@ int GuiPlayerList::GetPlayerNumber(char *name)
 bool GuiPlayerList::ToggleReady()
 {
 	int me = GetPlayerNumber(GCSettings.netplayName);
+	bool ret = true;
 
 	if(me < 0)
 	{
 		ErrorPrompt("Unable to look up player number");
-		return false;
+		ret = false;
 	}
-
-	if(/*!runningAsServer &&*/!FCEUD_TellServerToggleReady(GCSettings.netplayName))
+	else if(executionMode == NETPLAY_CLIENT)
 	{
-		ErrorPrompt("Could not send 'ready' message to server");
-		return false;
+		if(!FCEUD_TellServerToggleReady(GCSettings.netplayName))
+		{
+			ErrorPrompt("Could not send 'ready' message to server");
+			ret = false;
+		}
 	}
 
-	return true;
+	return ret;
 }
 
 bool GuiPlayerList::IsPlayerReady(int playerNum)
@@ -273,12 +276,15 @@ bool GuiPlayerList::IsEveryoneReady()
 {
 	bool ready = true;
 
-	for(int i = 0; i < numEntries; i++)
+	if(numEntries>=0)
 	{
-		if(!IsPlayerReady(i))
+		for(int i = 0; i < numEntries; i++)
 		{
-			ready = false;
-			break;
+			if(!IsPlayerReady(i))
+			{
+				ready = false;
+				break;
+			}
 		}
 	}
 

@@ -14,6 +14,9 @@
  *          clicking in, rather than order of connection.  This will allow
  *          people to decide their player number, should they have a
  *          preference for some reason.
+ *      3.  If a host unclicks READY, don't allow anyone other than the
+ *          host to claim Player 1 in the player list.  This shall be
+ *          enforced on the server side.
  *
  * History:
  *
@@ -1381,7 +1384,7 @@ static int MenuGameSelection()
 				playerList->AddPlayer(Player{GCSettings.netplayName, false});
 				playerList->AddPlayer(Player{"merry", false});
 				playerList->AddPlayer(Player{"pippin", false});
-				playerList->AddPlayer(Player{"1234567890ABCDEFGHIKshouldnotseeanythingafterK", false});
+				playerList->AddPlayer(Player{"1234567890ABCDEFGHIJKshouldnotseeanythingafterK", false});
 			}
 		}
 		else if(joinBtn->GetState() == STATE_CLICKED)

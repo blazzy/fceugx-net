@@ -8,6 +8,7 @@
  *
  * TODO:
  *   1.  Implement FCEUD_TellServerToggleReady() and FCEUD_SendPlayerListToClients()
+ *   2.  Becoming aware of a dropped client and updating the player list in real time
  *
  * History:
  *
@@ -194,8 +195,20 @@ void FCEUD_NetplayText(uint8 *text) {
 }
 
 // Names are unique
-bool FCEUD_TellServerToggleReady(char *name) {
-	return true;
+bool FCEUD_TellServerToggleReady(char *name)
+{
+	bool ret = true;
+
+	if(executionMode == NETPLAY_CLIENT)
+	{
+		// socketed stuff
+	}
+	else
+	{
+
+	}
+
+	return ret;
 }
 
 // This function sends a list of all connected players to each client for
