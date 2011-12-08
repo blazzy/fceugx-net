@@ -71,7 +71,6 @@
 
 #define THREAD_SLEEP 100
 
-ExecutionMode executionMode = OFFLINE;
 static void newPlayerList();
 static void pleaseWaitMsg();
 static void hideNetplayGuiComponents();

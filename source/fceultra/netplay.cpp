@@ -39,6 +39,8 @@
 #include "driver.h"
 #include "utils/memory.h"
 
+ExecutionMode executionMode = OFFLINE;
+
 static uint8 netjoy[4]; // Controller cache.
 static int numlocal;
 static int netdivisor;

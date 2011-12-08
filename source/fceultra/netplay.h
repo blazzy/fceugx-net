@@ -1,7 +1,27 @@
-#include "fceugx.h";   // for executionMode
+/****************************************************************************
+ * FCE Ultra
+ * Nintendo Wii/Gamecube Port
+ *
+ * netplay.h
+ *
+ * Description:
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * midnak      12/02/2011  GUI and server use the same length for nickname
+ * midnak      12/07/2011  ExecutionMode replaces FCEUnetplay
+ ****************************************************************************/
 
-int InitNetplay(void);
-void NetplayUpdate(uint8 *joyp);
+
+#ifndef _NETPLAY_H_
+#define _NETPLAY_H_
+
+enum ExecutionMode { OFFLINE, NETPLAY_HOST, NETPLAY_CLIENT };
+extern ExecutionMode executionMode;
+
+#define NETPLAY_MAX_NAME_LEN  20
 
 #define FCEUNPCMD_RESET   0x01
 #define FCEUNPCMD_POWER   0x02
@@ -19,5 +39,10 @@ void NetplayUpdate(uint8 *joyp);
 #define FCEUNPCMD_LOADCHEATS	0x82
 #define FCEUNPCMD_TEXT		0x90
 
+int InitNetplay(void);
+void NetplayUpdate(uint8 *joyp);
+
 int FCEUNET_SendCommand(uint8, uint32);
 int FCEUNET_SendFile(uint8 cmd, char *);
+
+#endif

@@ -14,7 +14,6 @@
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
  * midnak      11/25/2011  Netplay:  Added members
- * midnak      12/02/2011  GUI and server use the same length for nickname
  ****************************************************************************/
 
 #ifndef _FCEUGX_H_
@@ -23,6 +22,7 @@
 #include <unistd.h>
 
 #include "fceultra/driver.h"
+#include "fceultra/netplay.h"
 #include "fceunetwork.h"
 
 #define APPNAME			"FCE Ultra GX"
@@ -32,8 +32,6 @@
 
 #define NOTSILENT 0
 #define SILENT 1
-
-enum ExecutionMode { OFFLINE, NETPLAY_HOST, NETPLAY_CLIENT };
 
 const char pathPrefix[9][8] =
 { "", "sd:/", "usb:/", "dvd:/", "smb:/", "carda:/", "cardb:/" };
@@ -141,6 +139,5 @@ extern char loadedFile[];
 extern int frameskip;
 extern int turbomode;
 extern bool romLoaded;
-extern ExecutionMode executionMode;
 
 #endif

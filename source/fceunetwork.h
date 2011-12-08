@@ -20,10 +20,6 @@
 
 int FCEUD_NetworkConnect();
 
-#define NETPLAY_MAX_NAME_LEN  20
-
-#include "fceugx.h"  // for executionMode
-
 /*
  * The host has sole authority over player ID assignment (Player 1, Player 2, etc.).
  * When a client clicks READY in the GUI (thereby toggling ready status on/off), it
