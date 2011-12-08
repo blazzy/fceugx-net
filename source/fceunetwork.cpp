@@ -194,8 +194,11 @@ void FCEUD_NetworkClose(void) {
 void FCEUD_NetplayText(uint8 *text) {
 }
 
-// Names are unique
-bool FCEUD_TellServerToggleReady(char *name)
+// Originally took a char *name, but that's insecure.
+// The client will send a general request; the server
+// will identify the client based on which socket the
+// request came from.
+bool FCEUD_TellServerToggleReady()
 {
 	bool ret = true;
 
@@ -215,12 +218,14 @@ bool FCEUD_TellServerToggleReady(char *name)
 // update in their GUIs.  Players are marked 0-3 (indicating zero-indexed
 // Player 1, Player 2, etc.) if they have clicked READY.  If they haven't
 // clicked READY, they are marked with an X.
-void FCEUD_SendPlayerListToClients() {
+bool FCEUD_SendPlayerListToClients() {
 	char *list = "PLAYER_LIST:0=gandalf,1=frodo,X=merry,X=pippin\n";
 
 	// foreach socket in clientSockets[]
 	// do
 	//		FCEUD_SendData(socket, list, (uint32) sizeof(list) );
 	// done
+
+	return true;
 }
 

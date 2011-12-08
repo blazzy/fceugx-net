@@ -1288,8 +1288,7 @@ static int MenuGameSelection()
 				{
 					InfoPrompt("Everyone must click in as READY before launching a game");
 				}
-
-				if( executionMode == OFFLINE || (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady()) )
+				else if((executionMode == NETPLAY_HOST && playerList->IsEveryoneReady()) || executionMode == OFFLINE)
 				{
 					// check corresponding browser entry
 					if(browserList[browser.selIndex].isdir || IsSz())
@@ -1380,7 +1379,7 @@ static int MenuGameSelection()
 
 				if(connected)
 				{
-					//executionMode = NETPLAY_HOST;
+					executionMode = NETPLAY_HOST;
 					showNetplayGuiComponents();
 					disconnectBtn->SetSoundOver(&btnSoundOver);
 				}

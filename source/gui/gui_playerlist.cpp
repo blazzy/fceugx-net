@@ -54,6 +54,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	imgMainWindow = new GuiImage(imgDataMainWindow);
 	imgMainWindow->SetParent(this);
 	imgMainWindow->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	imgMainWindow->SetPosition(0, 4);
 
 	imgDataSelectionEntry = new GuiImageData(bg_player_list_entry_png);
 
@@ -65,7 +66,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	txtAllPlayersReady = new GuiText("ALL PLAYERS READY", 18, (GXColor{0,0,0,255}));
 	txtAllPlayersReady->SetParent(imgMainWindow);
 	txtAllPlayersReady->SetAlignment(ALIGN_CENTRE, ALIGN_BOTTOM);
-	txtAllPlayersReady->SetPosition(0, 10);
+	txtAllPlayersReady->SetPosition(0, -10);
 
 	imgDataPlayer1Ready = new GuiImageData(player1_ready_png);
 	imgDataPlayer2Ready = new GuiImageData(player2_ready_png);
@@ -190,11 +191,10 @@ bool GuiPlayerList::AddPlayer(Player player)
 		fileList[numEntries]->SetTrigger(trigA);
 		fileList[numEntries]->SetTrigger(trig2);
 		fileList[numEntries]->SetSoundClick(btnSoundClick);
+		fileList[numEntries]->SetIcon(fileListIcon[numEntries]);
 
 		numEntries++;
 		listChanged = true;
-
-		txtAllPlayersReady->SetVisible(IsEveryoneReady());
 
 		return true;
 	}
@@ -202,9 +202,14 @@ bool GuiPlayerList::AddPlayer(Player player)
 	return false;
 }
 
+// TODO:  To implement or to remove, that is the question.
 void GuiPlayerList::RemovePlayer(int playerNum)
 {
 	numEntries--;
+
+	// blow stuff away
+
+	listChanged = true;
 }
 
 int GuiPlayerList::GetPlayerNumber(char *name)
@@ -233,22 +238,23 @@ int GuiPlayerList::GetPlayerNumber(char *name)
 // that the server may also send such updates unsolicited).
 bool GuiPlayerList::ToggleReady()
 {
-	int me = GetPlayerNumber(GCSettings.netplayName);
 	bool ret = true;
 
-	if(me < 0)
+	if(executionMode == NETPLAY_HOST)
 	{
-		ErrorPrompt("Unable to look up player number");
-		ret = false;
+		fileList[0]->SetIcon(IsPlayerReady(0) ? NULL : fileListIcon[0]);
+		FCEUD_SendPlayerListToClients();
 	}
 	else if(executionMode == NETPLAY_CLIENT)
 	{
-		if(!FCEUD_TellServerToggleReady(GCSettings.netplayName))
+		if(!FCEUD_TellServerToggleReady())
 		{
 			ErrorPrompt("Could not send 'ready' message to server");
 			ret = false;
 		}
 	}
+
+	listChanged = true;
 
 	return ret;
 }
@@ -326,6 +332,9 @@ void GuiPlayerList::Draw()
 
 	titleTxt->Draw();
 
+	txtAllPlayersReady->SetVisible(IsEveryoneReady());
+	txtAllPlayersReady->Draw();
+
 	this->UpdateEffects();
 }
 
@@ -377,14 +386,6 @@ void GuiPlayerList::Update(GuiTrigger * t)
 						fileListIcon[i] = new GuiImage(imgDataPlayer4Ready);
 						break;
 				}*/
-
-				// Temporarily hack the new images into the list so I can see them
-				//fileListIcon[0] = new GuiImage(imgDataPlayer1Ready);
-				//fileListIcon[1] = new GuiImage(imgDataPlayer2Ready);
-				//fileListIcon[2] = new GuiImage(imgDataPlayer3Ready);
-				//fileListIcon[3] = new GuiImage(imgDataPlayer4Ready);
-
-				fileList[i]->SetIcon(fileListIcon[i]);
 
 				if(fileListIcon[i] != NULL)
 				{

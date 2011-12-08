@@ -32,8 +32,8 @@ int FCEUD_NetworkConnect();
  * It should be noted that receipt of this data can be completely unsolicited, so
  * clients need to be able to handle that.
  */
-void FCEUD_SendPlayerListToClients();
+bool FCEUD_SendPlayerListToClients();
 
-bool FCEUD_TellServerToggleReady(char *name);
+bool FCEUD_TellServerToggleReady();
 
 #endif
