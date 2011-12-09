@@ -1337,6 +1337,11 @@ static int MenuGameSelection()
 
 		if(settingsBtn.GetState() == STATE_CLICKED)
 		{
+			if(playerList != NULL)
+			{
+				playerList->ToggleReady();
+			}
+
 			menu = MENU_SETTINGS;
 		}
 		else if(exitBtn.GetState() == STATE_CLICKED)
