@@ -18,7 +18,6 @@
  *         a setter.
  *     3.  Implement RemovePlayer()?  Probably not, since the server would
  *         send out an updated list which the GUI would just rebuild.
- *     4.  Fix inability to unready after coming back from a game
  *
  * History:
  *
