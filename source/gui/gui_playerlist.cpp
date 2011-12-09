@@ -13,12 +13,12 @@
  *             - Implement FCEUD_TellServerToggleReady()
  *     2.  Players can only be moused over/clicked once - after that, they
  *         become disabled.  Might be the update() method.  Don't know if
- *         we even need that functionality, but I can see a purpose arising in
+ *         we even need that functionality, but I could see a purpose arising in
  *         the future.  At least get it working, then maybe disable it with
  *         a setter.
  *     3.  Implement RemovePlayer()?  Probably not, since the server would
  *         send out an updated list which the GUI would just rebuild.
- *     4.  Fix issue with "all players ready" message not displaying
+ *     4.  Fix inability to unready after coming back from a game
  *
  * History:
  *
@@ -82,6 +82,11 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	fileListIcon[1] = imgPlayer2Ready;
 	fileListIcon[2] = imgPlayer3Ready;
 	fileListIcon[3] = imgPlayer4Ready;
+
+	for(int i = 0; i < 4; i++)
+	{
+		fileListIcon[i]->SetPosition(5,0);
+	}
 
 	// Gotta get rid of this.  For now, it prevents a segfault.
 	fileList[0] = new GuiButton(w,h);
@@ -165,11 +170,6 @@ void GuiPlayerList::SetFocus(int f)
 
 bool GuiPlayerList::AddPlayer(Player player)
 {
-	/*if(player == NULL)
-	{
-		return false;
-	}*/
-
 	if(numEntries < MAX_PLAYER_LIST_SIZE)
 	{
 		char truncName[MAX_PLAYER_NAME_LEN+1];
@@ -177,21 +177,25 @@ bool GuiPlayerList::AddPlayer(Player player)
 
 		fileListText[numEntries]->SetText(truncName);
 		fileListText[numEntries]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
-		fileListText[numEntries]->SetPosition(5,0);
+		fileListText[numEntries]->SetPosition(40,0);
 		fileListText[numEntries]->SetMaxWidth(105);
 
 		fileListBg[numEntries] = new GuiImage(imgDataSelectionEntry);
 		fileListBg[numEntries]->SetPosition(2,-3);
 
-		fileList[numEntries] = new GuiButton(this->GetWidth(), 26);
+		fileList[numEntries] = new GuiButton(this->GetWidth(), imgDataSelectionEntry->GetHeight());
 		fileList[numEntries]->SetParent(this);
 		fileList[numEntries]->SetLabel(fileListText[numEntries]);
 		fileList[numEntries]->SetImageOver(fileListBg[numEntries]);
-		fileList[numEntries]->SetPosition(2, (26 * numEntries) + 55);
+		fileList[numEntries]->SetPosition(2, (fileListBg[numEntries]->GetHeight() * numEntries) + 50);
 		fileList[numEntries]->SetTrigger(trigA);
 		fileList[numEntries]->SetTrigger(trig2);
 		fileList[numEntries]->SetSoundClick(btnSoundClick);
-		fileList[numEntries]->SetIcon(fileListIcon[numEntries]);
+
+		if(player.ready)
+		{
+			fileList[numEntries]->SetIcon(fileListIcon[numEntries]);
+		}
 
 		numEntries++;
 		listChanged = true;
@@ -273,12 +277,6 @@ bool GuiPlayerList::IsPlayerReady(int playerNum)
 		ready = false;
 	}
 
-/*
-char c[100];
-sprintf( c, "%d = %s", playerNum, ready?"true":"false");
-ErrorPrompt(c);
-*/
-
 	return ready;
 }
 
@@ -341,63 +339,29 @@ void GuiPlayerList::Draw()
 void GuiPlayerList::Update(GuiTrigger * t)
 {
 	if(state == STATE_DISABLED || !t)
+	{
 		return;
-
-	int position = 0;
-	int positionWiimote = 0;
+	}
 
 	for(int i=0; i<numEntries; ++i)
 	{
 		if(listChanged)
 		{
-			//if(browser.pageIndex+i < browser.numEntries)
+			if(fileList[i]->GetState() == STATE_DISABLED)
 			{
-				if(fileList[i]->GetState() == STATE_DISABLED)
-				{
-					fileList[i]->SetState(STATE_DEFAULT);
-				}
-
-				fileList[i]->SetVisible(true);
-
-				//fileListText[i]->SetText(browserList[browser.pageIndex+i].displayname);
-
-				/*if(fileListIcon[i])
-				{
-					delete fileListIcon[i];
-					fileListIcon[i] = NULL;
-					fileListText[i]->SetPosition(5,0);
-				}*/
-
-				/*switch(browserList[browser.pageIndex+i].icon)
-				{
-					case ICON_FOLDER:
-						fileListIcon[i] = new GuiImage(imgDataPlayer1Ready);
-						break;
-					case ICON_SD:
-						fileListIcon[i] = new GuiImage(imgDataPlayer2Ready);
-						break;
-					case ICON_USB:
-						fileListIcon[i] = new GuiImage(imgDataPlayer3Ready);
-						break;
-					case ICON_DVD:
-						fileListIcon[i] = new GuiImage(imgDataPlayer4Ready);
-						break;
-					default:
-						fileListIcon[i] = new GuiImage(imgDataPlayer4Ready);
-						break;
-				}*/
-
-				if(fileListIcon[i] != NULL)
-				{
-					fileListIcon[i]->SetPosition(5,0);
-					fileListText[i]->SetPosition(40,0);
-				}
+				fileList[i]->SetState(STATE_DEFAULT);
 			}
-			//else
-			//{
-			//	fileList[i]->SetVisible(false);
-			//	fileList[i]->SetState(STATE_DISABLED);
-			//}
+
+			fileList[i]->SetVisible(true);
+
+			//fileListText[i]->SetText(browserList[browser.pageIndex+i].displayname);
+
+			/*if(fileListIcon[i])
+			{
+				delete fileListIcon[i];
+				fileListIcon[i] = NULL;
+				fileListText[i]->SetPosition(5,0);
+			}*/
 		}
 
 		if(i != selectedItem && fileList[i]->GetState() == STATE_SELECTED)

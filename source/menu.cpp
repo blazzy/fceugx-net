@@ -1385,9 +1385,9 @@ static int MenuGameSelection()
 				}
 
 				playerList->AddPlayer(Player{GCSettings.netplayName, false});
-				playerList->AddPlayer(Player{"merry", false});
-				playerList->AddPlayer(Player{"pippin", false});
-				playerList->AddPlayer(Player{"1234567890ABCDEFGHIJKshouldnotseeanythingafterK", false});
+				playerList->AddPlayer(Player{"merry", true});
+				playerList->AddPlayer(Player{"pippin", true});
+				playerList->AddPlayer(Player{"1234567890ABCDEFGHIJKshouldnotseeanythingafterK", true});
 			}
 		}
 		else if(joinBtn->GetState() == STATE_CLICKED)
