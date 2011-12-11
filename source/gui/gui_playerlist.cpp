@@ -7,10 +7,7 @@
  * Description:  Lists connected players in netplay
  *
  * TODO:
- *     1.  ToggleReady():
- *             - Make this method aware of whether it's running as client or
- *               host (no need to invoke TellServer method if server)
- *             - Implement FCEUD_TellServerToggleReady()
+ *     1.  ToggleReady():  Implement FCEUD_TellServerToggleReady()
  *     2.  Players can only be moused over/clicked once - after that, they
  *         become disabled.  Might be the update() method.  Don't know if
  *         we even need that functionality, but I could see a purpose arising in
@@ -60,13 +57,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	imgMainWindow->SetPosition(0, 4);
 
 	imgDataSelectionEntry = new GuiImageData(bg_player_list_entry_png);
-/*
-	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
-	{
-		imgRowSelected[numEntries] = new GuiImage(imgDataSelectionEntry);
-		imgRowSelected[numEntries]->SetPosition(2,-3);
-	}
-*/
+
 	titleTxt = new GuiText("PLAYERS", 25, (GXColor){0, 0, 0, 255});
 	titleTxt->SetParent(imgMainWindow);
 	titleTxt->SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
@@ -95,13 +86,10 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
 	{
 		imgPlayerReady[i]->SetPosition(5,0);
+		imgRowSelected[i] = NULL;
+		rowText[i] = NULL;
+		rowButton[i] = NULL;
 	}
-
-	// Gotta get rid of this.  For now, it prevents a segfault.
-	rowButton[0] = new GuiButton(w,h);
-	rowButton[1] = new GuiButton(w,h);
-	rowButton[2] = new GuiButton(w,h);
-	rowButton[3] = new GuiButton(w,h);
 
 	colorNotReady = new (GXColor){0, 0, 0, 155};
 	colorReady = new GXColor[4] {
@@ -110,11 +98,6 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 									(GXColor){60, 144, 60, 255},  // Player 3 ready (green)
 									(GXColor){148, 147, 65, 255}  // Player 4 ready (yellow)
 								 };
-
-	rowText[0] = new GuiText("", 25, *colorNotReady);
-	rowText[1] = new GuiText("", 25, *colorNotReady);
-	rowText[2] = new GuiText("", 25, *colorNotReady);
-	rowText[3] = new GuiText("", 25, *colorNotReady);
 }
 
 GuiPlayerList::~GuiPlayerList()
@@ -169,10 +152,13 @@ void GuiPlayerList::SetFocus(int f)
 
 	for(int i=0; i < MAX_PLAYER_LIST_SIZE; i++)
 	{
-		rowButton[i]->ResetState();
+		if(rowButton[i] != NULL)
+		{
+			rowButton[i]->ResetState();
+		}
 	}
 
-	if(f == 1)
+	if(f == 1 && rowButton[selectedItem] != NULL)
 	{
 		rowButton[selectedItem]->SetState(STATE_SELECTED);
 	}
@@ -185,31 +171,50 @@ bool GuiPlayerList::AddPlayer(Player player)
 		char truncName[MAX_PLAYER_NAME_LEN+1];
 		snprintf(truncName, MAX_PLAYER_NAME_LEN+1, "%s", player.name);
 
-		rowText[numEntries]->SetText(truncName);
-		rowText[numEntries]->SetColor(player.ready ? colorReady[numEntries] : *colorNotReady);
+		rowText[numEntries] = new GuiText(truncName, 25, player.ready ? colorReady[numEntries] : *colorNotReady);
+
+		if(rowText[numEntries] == NULL)
+		{
+			return false;
+		}
+
 		rowText[numEntries]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 		rowText[numEntries]->SetPosition(40,0);
 		rowText[numEntries]->SetMaxWidth(105);
 
 		imgRowSelected[numEntries] = new GuiImage(imgDataSelectionEntry);
+
+		if(imgRowSelected[numEntries] == NULL)
+		{
+			return false;
+		}
+
 		imgRowSelected[numEntries]->SetPosition(2,-3);
 
 		rowButton[numEntries] = new GuiButton(this->GetWidth(), imgDataSelectionEntry->GetHeight());
-		rowButton[numEntries]->SetParent(this);
-		rowButton[numEntries]->SetLabel(rowText[numEntries]);
-		rowButton[numEntries]->SetImageOver(imgRowSelected[numEntries]);
-		rowButton[numEntries]->SetPosition(2, (imgRowSelected[numEntries]->GetHeight() * numEntries) + 50);
-		rowButton[numEntries]->SetTrigger(trigA);
-		rowButton[numEntries]->SetTrigger(trig2);
-		rowButton[numEntries]->SetSoundClick(btnSoundClick);
 
-		if(player.ready)
+		if(rowButton[numEntries] == NULL)
 		{
-			rowButton[numEntries]->SetIcon(imgPlayerReady[numEntries]);
+			return false;
 		}
+		else
+		{
+			rowButton[numEntries]->SetParent(this);
+			rowButton[numEntries]->SetLabel(rowText[numEntries]);
+			rowButton[numEntries]->SetImageOver(imgRowSelected[numEntries]);
+			rowButton[numEntries]->SetPosition(2, (imgRowSelected[numEntries]->GetHeight() * numEntries) + 50);
+			rowButton[numEntries]->SetTrigger(trigA);
+			rowButton[numEntries]->SetTrigger(trig2);
+			rowButton[numEntries]->SetSoundClick(btnSoundClick);
 
-		numEntries++;
-		listChanged = true;
+			if(player.ready)
+			{
+				rowButton[numEntries]->SetIcon(imgPlayerReady[numEntries]);
+			}
+
+			numEntries++;
+			listChanged = true;
+		}
 
 		return true;
 	}
@@ -252,35 +257,51 @@ int GuiPlayerList::GetPlayerNumber(char *name)
 // that the server may also send such updates unsolicited).
 bool GuiPlayerList::ToggleReady()
 {
-	bool ret = true;
-
-	if(executionMode == NETPLAY_HOST)
+	if(rowButton[0] == NULL)
 	{
-		if(IsPlayerReady(0))
-		{
-			rowButton[0]->SetIcon(NULL);
-			rowText[0]->SetColor(*colorNotReady);
-		}
-		else
-		{
-			rowButton[0]->SetIcon(imgPlayerReady[0]);
-			rowText[0]->SetColor(colorReady[0]);
-		}
-
-		FCEUD_SendPlayerListToClients();
+		return false;
 	}
-	else if(executionMode == NETPLAY_CLIENT)
+	else
 	{
-		if(!FCEUD_TellServerToggleReady())
+		if(executionMode == NETPLAY_HOST)
 		{
-			ErrorPrompt("Could not send 'ready' message to server");
-			ret = false;
+			if(IsPlayerReady(0))
+			{
+				rowButton[0]->SetIcon(NULL);
+				rowText[0]->SetColor(*colorNotReady);
+			}
+			else
+			{
+				rowButton[0]->SetIcon(imgPlayerReady[0]);
+				rowText[0]->SetColor(colorReady[0]);
+			}
+
+			// We might not need to set this here for the server, depending on how
+			// we update the list.  If the host connects to itself, it would receive
+			// the new list over a socket, which would set listChanged.
+
+			listChanged = true;
+
+			FCEUD_SendPlayerListToClients();
+		}
+		else if(executionMode == NETPLAY_CLIENT)
+		{
+			if(!FCEUD_TellServerToggleReady())
+			{
+				ErrorPrompt("Could not send 'ready' message to server");
+				return false;
+			}
+			else
+			{
+				// Don't set listChanged here.  It will be changed when the client
+				// receives a response from the server containing the new player list.
+
+				//listChanged = true;
+			}
 		}
 	}
 
-	listChanged = true;
-
-	return ret;
+	return true;
 }
 
 bool GuiPlayerList::IsPlayerReady(int playerNum)
@@ -299,7 +320,7 @@ bool GuiPlayerList::IsEveryoneReady()
 {
 	bool ready = true;
 
-	if(numEntries>=0)
+	if(numEntries >= 0)
 	{
 		for(int i = 0; i < numEntries; i++)
 		{
@@ -320,9 +341,12 @@ void GuiPlayerList::ResetState()
 	stateChan = -1;
 	selectedItem = 0;
 
-	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
+	for(int i = 0; i < numEntries; i++)
 	{
-		rowButton[i]->ResetState();
+		if(rowButton[i] != NULL)
+		{
+			rowButton[i]->ResetState();
+		}
 	}
 }
 
@@ -340,7 +364,10 @@ void GuiPlayerList::Draw()
 
 	for(int i = 0; i <= numEntries; ++i)
 	{
-		rowButton[i]->Draw();
+		if(rowButton[i] != NULL)
+		{
+			rowButton[i]->Draw();
+		}
 	}
 
 	titleTxt->Draw();
@@ -365,6 +392,11 @@ void GuiPlayerList::Update(GuiTrigger * t)
 
 	for(int i=0; i<numEntries; ++i)
 	{
+		if(rowButton[i] == NULL)
+		{
+			break;
+		}
+
 		if(listChanged)
 		{
 			if(rowButton[i]->GetState() == STATE_DISABLED)
@@ -387,7 +419,9 @@ void GuiPlayerList::Update(GuiTrigger * t)
 		int currChan = t->chan;
 
 		if(t->wpad->ir.valid && !rowButton[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
+		{
 			t->chan = -1;
+		}
 
 		rowButton[i]->Update(t);
 		t->chan = currChan;
