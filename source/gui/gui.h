@@ -1103,11 +1103,7 @@ class GuiPlayerList : public GuiElement
 					 *imgDataPlayer3Ready,
 					 *imgDataPlayer4Ready;
 
-        GuiImage *imgPlayer1Ready,
-		         *imgPlayer2Ready,
-		         *imgPlayer3Ready,
-		         *imgPlayer4Ready,
-		         *imgPlayerReady[MAX_PLAYER_LIST_SIZE];
+        GuiImage *imgPlayerReady[MAX_PLAYER_LIST_SIZE];
 
 		GuiImageData *imgDataMainWindow;
 		GuiImage *imgMainWindow;

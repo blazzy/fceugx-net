@@ -73,15 +73,10 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	imgDataPlayer3Ready = new GuiImageData(player3_ready_png);
 	imgDataPlayer4Ready = new GuiImageData(player4_ready_png);
 
-	imgPlayer1Ready = new GuiImage(imgDataPlayer1Ready);
-	imgPlayer2Ready = new GuiImage(imgDataPlayer2Ready);
-	imgPlayer3Ready = new GuiImage(imgDataPlayer3Ready);
-	imgPlayer4Ready = new GuiImage(imgDataPlayer4Ready);
-
-	imgPlayerReady[0] = imgPlayer1Ready;
-	imgPlayerReady[1] = imgPlayer2Ready;
-	imgPlayerReady[2] = imgPlayer3Ready;
-	imgPlayerReady[3] = imgPlayer4Ready;
+	imgPlayerReady[0] = new GuiImage(imgDataPlayer1Ready);
+	imgPlayerReady[1] = new GuiImage(imgDataPlayer2Ready);
+	imgPlayerReady[2] = new GuiImage(imgDataPlayer3Ready);
+	imgPlayerReady[3] = new GuiImage(imgDataPlayer4Ready);;
 
 	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
 	{
