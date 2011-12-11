@@ -1090,37 +1090,38 @@ class GuiPlayerList : public GuiElement
 		bool IsPlayerReady(int playerNum);
 		bool IsEveryoneReady();
 
-		GuiButton *fileList[MAX_PLAYER_LIST_SIZE];
 	private:
-		GuiText *titleTxt;
-		GuiText *txtAllPlayersReady;
-		GuiText *fileListText[MAX_PLAYER_LIST_SIZE];
-		GuiImage *fileListBg[MAX_PLAYER_LIST_SIZE];
-		GuiImage *fileListIcon[MAX_PLAYER_LIST_SIZE];
+		GuiButton *rowButton[MAX_PLAYER_LIST_SIZE];
 
-		GuiImageData *imgDataMainWindow;
-		GuiImageData *imgDataSelectionEntry;
-		GuiImageData *imgDataPlayer1Ready;
-		GuiImageData *imgDataPlayer2Ready;
-		GuiImageData *imgDataPlayer3Ready;
-		GuiImageData *imgDataPlayer4Ready;
+		GuiText *titleTxt,
+				*txtAllPlayersReady,
+				*rowText[MAX_PLAYER_LIST_SIZE];
 
-		GuiImage *imgMainWindow,
-		         *imgPlayer1Ready,
+		GuiImageData *imgDataPlayer1Ready,
+					 *imgDataPlayer2Ready,
+					 *imgDataPlayer3Ready,
+					 *imgDataPlayer4Ready;
+
+        GuiImage *imgPlayer1Ready,
 		         *imgPlayer2Ready,
 		         *imgPlayer3Ready,
-		         *imgPlayer4Ready;
+		         *imgPlayer4Ready,
+		         *imgPlayerReady[MAX_PLAYER_LIST_SIZE];
+
+		GuiImageData *imgDataMainWindow;
+		GuiImage *imgMainWindow;
+
+		GuiImageData *imgDataSelectionEntry;
+		GuiImage *imgRowSelected[MAX_PLAYER_LIST_SIZE];
 
 		GuiSound *btnSoundOver;
 		GuiSound *btnSoundClick;
+
 		GuiTrigger *trigA;
 		GuiTrigger *trig2;
 
-		GuiText *player1ColorText,
-				*player2ColorText,
-				*player3ColorText,
-				*player4ColorText;
-
+		const GXColor *colorNotReady;
+		const GXColor *colorReady;
 
 		int selectedItem;
 		int numEntries;
