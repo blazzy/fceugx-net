@@ -1217,7 +1217,6 @@ static int MenuGameSelection()
 		disconnectBtn->SetLabel(&disconnectBtnTxt);
 		disconnectBtn->SetImage(&disconnectBtnImg);
 		disconnectBtn->SetImageOver(&disconnectBtnImgOver);
-		disconnectBtn->SetSoundOver(&btnSoundOver);
 		disconnectBtn->SetSoundClick(&btnSoundClick);
 		disconnectBtn->SetTrigger(trigA);
 		disconnectBtn->SetTrigger(trig2);
