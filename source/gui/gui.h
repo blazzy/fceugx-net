@@ -1114,7 +1114,6 @@ class GuiPlayerList : public GuiElement
 		GuiImageData *imgDataSelectionEntry;
 		GuiImage *imgRowSelected[MAX_PLAYER_LIST_SIZE];
 
-		GuiSound *btnSoundOver;
 		GuiSound *btnSoundClick;
 
 		GuiTrigger *trigA;
