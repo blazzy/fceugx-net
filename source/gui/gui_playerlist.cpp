@@ -36,7 +36,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 
 	width = w;
 	height = h;
-	numEntries = 0;
+	currIdx = -1;
 	selectedItem = 0;
 	selectable = true;
 	listChanged = true; // trigger an initial list update
@@ -164,55 +164,62 @@ void GuiPlayerList::SetFocus(int f)
 	}
 }
 
+int GuiPlayerList::GetPlayerCount()
+{
+	return currIdx < 0 ? 0 : currIdx + 1;
+}
+
 bool GuiPlayerList::AddPlayer(Player player)
 {
-	if(numEntries < MAX_PLAYER_LIST_SIZE)
+	int newIdx = currIdx + 1;
+
+	if(newIdx < MAX_PLAYER_LIST_SIZE)
 	{
 		char truncName[MAX_PLAYER_NAME_LEN+1];
 		snprintf(truncName, MAX_PLAYER_NAME_LEN+1, "%s", player.name);
 
-		rowText[numEntries] = new GuiText(truncName, 25, player.ready ? colorReady[numEntries] : *colorNotReady);
+		rowText[newIdx] = new GuiText(truncName, 25, player.ready ? colorReady[newIdx] : *colorNotReady);
 
-		if(rowText[numEntries] == NULL)
+		if(rowText[newIdx] == NULL)
 		{
 			return false;
 		}
 
-		rowText[numEntries]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
-		rowText[numEntries]->SetPosition(40,0);
-		rowText[numEntries]->SetMaxWidth(105);
+		rowText[newIdx]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+		rowText[newIdx]->SetPosition(40,0);
+		rowText[newIdx]->SetMaxWidth(105);
 
-		imgRowSelected[numEntries] = new GuiImage(imgDataSelectionEntry);
+		imgRowSelected[newIdx] = new GuiImage(imgDataSelectionEntry);
 
-		if(imgRowSelected[numEntries] == NULL)
+		if(imgRowSelected[newIdx] == NULL)
 		{
 			return false;
 		}
 
-		imgRowSelected[numEntries]->SetPosition(2,-3);
+		imgRowSelected[newIdx]->SetPosition(2,-3);
 
-		rowButton[numEntries] = new GuiButton(this->GetWidth(), imgDataSelectionEntry->GetHeight());
+		rowButton[newIdx] = new GuiButton(this->GetWidth(), imgDataSelectionEntry->GetHeight());
 
-		if(rowButton[numEntries] == NULL)
+		if(rowButton[newIdx] == NULL)
 		{
 			return false;
 		}
 		else
 		{
-			rowButton[numEntries]->SetParent(this);
-			rowButton[numEntries]->SetLabel(rowText[numEntries]);
-			rowButton[numEntries]->SetImageOver(imgRowSelected[numEntries]);
-			rowButton[numEntries]->SetPosition(2, (imgRowSelected[numEntries]->GetHeight() * numEntries) + 50);
-			rowButton[numEntries]->SetTrigger(trigA);
-			rowButton[numEntries]->SetTrigger(trig2);
-			rowButton[numEntries]->SetSoundClick(btnSoundClick);
+			rowButton[newIdx]->SetParent(this);
+			rowButton[newIdx]->SetLabel(rowText[newIdx]);
+			rowButton[newIdx]->SetImageOver(imgRowSelected[newIdx]);
+			rowButton[newIdx]->SetPosition(2, (imgRowSelected[newIdx]->GetHeight() * newIdx) + 50);
+			rowButton[newIdx]->SetTrigger(trigA);
+			rowButton[newIdx]->SetTrigger(trig2);
+			rowButton[newIdx]->SetSoundClick(btnSoundClick);
 
 			if(player.ready)
 			{
-				rowButton[numEntries]->SetIcon(imgPlayerReady[numEntries]);
+				rowButton[newIdx]->SetIcon(imgPlayerReady[newIdx]);
 			}
 
-			numEntries++;
+			currIdx = newIdx;
 			listChanged = true;
 		}
 
@@ -227,7 +234,7 @@ void GuiPlayerList::RemovePlayer(int playerNum)
 {
 	// blow stuff away
 
-	numEntries--;
+	currIdx--;
 	listChanged = true;
 }
 
@@ -237,7 +244,7 @@ int GuiPlayerList::GetPlayerNumber(char *name)
 
 	if(rowText != NULL)
 	{
-		for(int i = 0; i < numEntries; i++)
+		for(int i = 0; i <= currIdx; i++)
 		{
 			if(strcmp(name, rowText[i]->ToString()) == 0)
 			{
@@ -304,11 +311,12 @@ bool GuiPlayerList::ToggleReady()
 	return true;
 }
 
+// Note:  playerNum is 0-indexed
 bool GuiPlayerList::IsPlayerReady(int playerNum)
 {
 	bool ready = true;
 
-	if(playerNum < 0 || playerNum > numEntries || rowButton[playerNum]->GetIcon() == NULL)
+	if(playerNum < 0 || playerNum > currIdx || rowButton[playerNum]->GetIcon() == NULL)
 	{
 		ready = false;
 	}
@@ -320,15 +328,12 @@ bool GuiPlayerList::IsEveryoneReady()
 {
 	bool ready = true;
 
-	if(numEntries >= 0)
+	for(int i = 0; i <= currIdx; i++)
 	{
-		for(int i = 0; i < numEntries; i++)
+		if(!IsPlayerReady(i))
 		{
-			if(!IsPlayerReady(i))
-			{
-				ready = false;
-				break;
-			}
+			ready = false;
+			break;
 		}
 	}
 
@@ -341,7 +346,7 @@ void GuiPlayerList::ResetState()
 	stateChan = -1;
 	selectedItem = 0;
 
-	for(int i = 0; i < numEntries; i++)
+	for(int i = 0; i <= currIdx; i++)
 	{
 		if(rowButton[i] != NULL)
 		{
@@ -362,7 +367,7 @@ void GuiPlayerList::Draw()
 
 	imgMainWindow->Draw();
 
-	for(int i = 0; i <= numEntries; ++i)
+	for(int i = 0; i <= currIdx; i++)
 	{
 		if(rowButton[i] != NULL)
 		{
@@ -390,7 +395,7 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	// appears to be attempting to do this.
 	//rowButton[selectedItem]->ResetState();
 
-	for(int i=0; i<numEntries; ++i)
+	for(int i = 0; i <= currIdx; i++)
 	{
 		if(rowButton[i] == NULL)
 		{

@@ -1083,6 +1083,7 @@ class GuiPlayerList : public GuiElement
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);
 
+		int  GetPlayerCount();
 		bool AddPlayer(Player player);
 		void RemovePlayer(int playerNum);
 		int  GetPlayerNumber(char *name);
@@ -1123,7 +1124,7 @@ class GuiPlayerList : public GuiElement
 		const GXColor *colorReady;
 
 		int selectedItem;
-		int numEntries;
+		int currIdx;
 		bool listChanged;
 };
 #endif
