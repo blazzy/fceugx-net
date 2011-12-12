@@ -949,18 +949,17 @@ GuiButton *hostBtn        = NULL,
 
 void newPlayerList()
 {
-	if(playerList != NULL)
+	if(playerList == NULL)
 	{
-		mainWindow->Remove(playerList);
-		delete playerList;
+		playerList = new GuiPlayerList(152, 265);
+		playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+		playerList->SetPosition(-8, 98);
+		playerList->SetVisible(false);
+
+		HaltGui();
+		mainWindow->Append(playerList);
+		ResumeGui();
 	}
-
-	playerList = new GuiPlayerList(152, 265);
-	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-	playerList->SetPosition(-8, 98);
-	playerList->SetVisible(false);
-
-	mainWindow->Append(playerList);
 }
 
 static void pleaseWaitMsg()
@@ -971,6 +970,8 @@ static void pleaseWaitMsg()
 
 static void showNetplayGuiComponents()
 {
+	newPlayerList();
+
 	if(hostBtn != NULL)
 	{
 		hostBtn->SetClickable(false);
@@ -1045,9 +1046,14 @@ static void hideNetplayGuiComponents()
 			usleep(THREAD_SLEEP);
 		}
 
-		playerList->SetVisible(false);
 		chatBtn->SetVisible(false);
 		readyBtn->SetVisible(false);
+
+		HaltGui();
+		mainWindow->Remove(playerList);
+		delete playerList;
+		playerList = NULL;
+		ResumeGui();
 	}
 
 	newPlayerList();

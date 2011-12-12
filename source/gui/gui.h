@@ -1085,7 +1085,7 @@ class GuiPlayerList : public GuiElement
 
 		int  GetPlayerCount();
 		bool AddPlayer(Player player);
-		void RemovePlayer(int playerNum);
+		void Clear();
 		int  GetPlayerNumber(char *name);
 		bool ToggleReady();
 		bool IsPlayerReady(int playerNum);

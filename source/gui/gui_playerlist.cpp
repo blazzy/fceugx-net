@@ -224,13 +224,37 @@ bool GuiPlayerList::AddPlayer(Player player)
 	return false;
 }
 
-// TODO:  To implement or to remove, that is the question.
-void GuiPlayerList::RemovePlayer(int playerNum)
+void GuiPlayerList::Clear()
 {
-	// blow stuff away
+	//HaltGui();  // Yeah, well, that's not gonna make this thread-safe.
 
-	currIdx--;
+	for(int i = 0; i <= currIdx; i++)
+	{
+		if(rowButton[i] != NULL)
+		{
+			delete rowButton[i];
+			rowButton[i] = NULL;
+		}
+
+		if(rowText[i] != NULL)
+		{
+			delete rowText[i];
+			rowText[i] = NULL;
+		}
+
+		if(imgRowSelected[i] != NULL)
+		{
+			delete imgRowSelected[i];
+			imgRowSelected[i] = NULL;
+		}
+	}
+
+	txtAllPlayersReady->SetVisible(false);
+
+	currIdx = -1;
 	listChanged = true;
+
+	//ResumeGui();
 }
 
 int GuiPlayerList::GetPlayerNumber(char *name)
@@ -311,7 +335,8 @@ bool GuiPlayerList::IsPlayerReady(int playerNum)
 {
 	bool ready = true;
 
-	if(playerNum < 0 || playerNum > currIdx || rowButton[playerNum]->GetIcon() == NULL)
+	if(playerNum < 0 || playerNum > currIdx
+	  || rowButton[playerNum] == NULL || rowButton[playerNum]->GetIcon() == NULL)
 	{
 		ready = false;
 	}
@@ -323,12 +348,19 @@ bool GuiPlayerList::IsEveryoneReady()
 {
 	bool ready = true;
 
-	for(int i = 0; i <= currIdx; i++)
+	if(currIdx < 0)
 	{
-		if(!IsPlayerReady(i))
+		ready = false;
+	}
+	else
+	{
+		for(int i = 0; i <= currIdx; i++)
 		{
-			ready = false;
-			break;
+			if(!IsPlayerReady(i))
+			{
+				ready = false;
+				break;
+			}
 		}
 	}
 
