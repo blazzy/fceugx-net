@@ -1394,10 +1394,49 @@ static int MenuGameSelection()
 					disconnectBtn->SetSoundOver(&btnSoundOver);
 				}
 
-				playerList->AddPlayer(Player{GCSettings.netplayName, false});
-				playerList->AddPlayer(Player{"merry", true});
-				playerList->AddPlayer(Player{"pippin", true});
-				playerList->AddPlayer(Player{"1234567890ABCDEFGHIJKshouldnotseeanythingafterK", true});
+				// This fakes a response coming from the server.  The string will come from a method that receives
+				// the data over a socket.  That method will make the call to BuildPlayerList().
+				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:1");
+
+				switch(listStatus)
+				{
+					case 0:
+						break;
+
+					case -1:
+						ErrorPrompt("The host sent a player list update containing no data");
+						break;
+
+					case -2:
+						ErrorPrompt("The host sent a corrupted player list update:  Invalid status indicator");
+						break;
+
+					case -3:
+						ErrorPrompt("The host sent a corrupted player list update:  Unexpected status delimiter");
+						break;
+
+					case -4:
+						ErrorPrompt("The host sent a corrupted player list update:  Incorrect record length");
+						break;
+
+					case -5:
+						ErrorPrompt("An error occurred while formatting a player list update from the host");
+						break;
+
+					case -6:
+						ErrorPrompt("Could not update the player list:  Out of memory");
+						break;
+
+					case -7:
+						ErrorPrompt("Could add to the player list:  The list is full");
+						break;
+
+					default:
+						char errMsg[200];
+						sprintf(errMsg, "An unknown error occurred while processing a player list update:  code %d", listStatus);
+						ErrorPrompt(errMsg);
+						break;
+				}
 			}
 		}
 		else if(joinBtn->GetState() == STATE_CLICKED)

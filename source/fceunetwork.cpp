@@ -217,9 +217,9 @@ bool FCEUD_TellServerToggleReady()
 // This function sends a list of all connected players to each client for
 // update in their GUIs.  Players are marked 0-3 (indicating zero-indexed
 // Player 1, Player 2, etc.) if they have clicked READY.  If they haven't
-// clicked READY, they are marked with an X.
+// clicked READY, they aren't marked with anything.
 bool FCEUD_SendPlayerListToClients() {
-	char *list = "PLAYER_LIST:0=gandalf,1=frodo,X=merry,X=pippin\n";
+	char *list = "PLAYER_LIST:gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:1";
 
 	// foreach socket in clientSockets[]
 	// do

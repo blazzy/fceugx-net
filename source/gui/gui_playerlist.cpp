@@ -13,8 +13,8 @@
  *         we even need that functionality, but I could see a purpose arising in
  *         the future.  At least get it working, then maybe disable it with
  *         a setter.
- *     3.  Implement RemovePlayer()?  Probably not, since the server would
- *         send out an updated list which the GUI would just rebuild.
+ *     3.  FCEUX's GUI allows any character for a player name, so '|' for a
+ *         record separator is not adequate for cross-platform play.
  *
  * History:
  *
@@ -27,7 +27,8 @@
 
 #include "fceunetwork.h"  // FCEUD_TellServerToggleReady()
 #include "gui.h"
-#include "menu.h"         // Error prompts.  Don't know why they're in menu.h.
+#include "menu.h"         // Error prompts
+#include "../fceultra/utils/xstring.h"      // str_strip()
 
 GuiPlayerList::GuiPlayerList(int w, int h)
 {
@@ -86,7 +87,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 		rowButton[i] = NULL;
 	}
 
-	colorNotReady = new (GXColor){0, 0, 0, 155};
+	colorNotReady = new (GXColor){0, 0, 0, 100};
 	colorReady = new GXColor[4] {
 									(GXColor){61, 89, 144, 255},  // Player 1 ready (blue)
 									(GXColor){144, 60, 60, 255},  // Player 2 ready (red)
@@ -159,14 +160,145 @@ void GuiPlayerList::SetFocus(int f)
 	}
 }
 
-int GuiPlayerList::GetPlayerCount()
+uint8 GuiPlayerList::GetPlayerCount()
 {
 	return currIdx < 0 ? 0 : currIdx + 1;
 }
 
-bool GuiPlayerList::AddPlayer(Player player)
+// Return Codes.  If the method reports failure, the
+// return code reflects the last error encountered.
+//   0:  Success
+//  -1:  Client received a list with no data
+//  -2:  Invalid status indicator
+//  -3:  Unexpected status delimiter
+//  -4:  Invalid record length
+//  -5:  Whitespace stripping failure
+//  -6:  Out of memory
+//  -7:  List is full (should not be reported by BuildPlayerList -- only by non-wrapped calls to AddPlayer())
+//  -8:  Unknown
+int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 {
-	int newIdx = currIdx + 1;
+	const char *RECORD_SEPARATOR = "|";
+
+	int len = 0;
+	char name[NETPLAY_MAX_NAME_LEN + 1];
+	bool ready = false;
+
+	int status = 0,
+		trailingStatus = 0;
+
+	char *edible = NULL;
+
+	if(playerInfo == NULL)
+	{
+		return -1;
+	}
+	else
+	{
+		edible = strdup(playerInfo);
+	}
+
+	if(edible != NULL)
+	{
+		char *token = NULL;
+
+		Clear();
+		token = strtok(edible, RECORD_SEPARATOR);
+
+		while( token != NULL)
+		{
+			len = strlen(token);
+			name[0] = '\0';
+
+			//printf("\n\ntoken to parse:  (%s)\n", token);
+
+			if(len == NETPLAY_MAX_NAME_LEN + 2)  // +2 = colon plus ready indicator
+			{
+				if(token[NETPLAY_MAX_NAME_LEN] == ':')
+				{
+					if(token[NETPLAY_MAX_NAME_LEN + 1] == 48)
+					{
+						snprintf(name, NETPLAY_MAX_NAME_LEN + 1, token);
+						ready = false;
+
+						//printf("%s is not ready\n", name);
+					}
+					else if(token[NETPLAY_MAX_NAME_LEN + 1] == 49)
+					{
+						snprintf(name, NETPLAY_MAX_NAME_LEN + 1, token);
+						ready = true;
+
+						//printf("%s is ready\n", name);
+					}
+					else
+					{
+						status = -2;
+					}
+				}
+				else
+				{
+					status = -3;
+				}
+			}
+			else
+			{
+				status = -4;
+			}
+
+			if(status == 0)
+			{
+				if(str_strip(name, STRIP_SP | STRIP_TAB | STRIP_CR | STRIP_LF) < 0)
+				{
+					status = -5;
+				}
+				else
+				{
+					int addPlayer = AddPlayer(Player{name, ready});
+
+					switch(addPlayer)
+					{
+						case 0:
+							break;
+						case -1:
+							status = -6;
+							break;
+						case -2:
+							status = -7;
+							break;
+						default:
+							status = -8;
+							break;
+					}
+				}
+			}
+
+			if(status != 0)
+			{
+				trailingStatus = status;
+			}
+			status = 0;
+
+			token = strtok(NULL, RECORD_SEPARATOR);
+		}
+
+		free(edible);
+	}
+	else
+	{
+		status = -6;
+	}
+
+	return trailingStatus;
+}
+
+// Return Codes
+//   0:  Success
+//  -1:  Out of memory
+//  -2:  List at capacity
+//  -3:  Unknown error
+int GuiPlayerList::AddPlayer(Player player)
+{
+	uint8 newIdx = GetPlayerCount();
 
 	if(newIdx < MAX_PLAYER_LIST_SIZE)
 	{
@@ -177,7 +309,7 @@ bool GuiPlayerList::AddPlayer(Player player)
 
 		if(rowText[newIdx] == NULL)
 		{
-			return false;
+			return -1;
 		}
 
 		rowText[newIdx]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
@@ -188,7 +320,7 @@ bool GuiPlayerList::AddPlayer(Player player)
 
 		if(imgRowSelected[newIdx] == NULL)
 		{
-			return false;
+			return -1;
 		}
 
 		imgRowSelected[newIdx]->SetPosition(2,-3);
@@ -197,7 +329,7 @@ bool GuiPlayerList::AddPlayer(Player player)
 
 		if(rowButton[newIdx] == NULL)
 		{
-			return false;
+			return -1;
 		}
 		else
 		{
@@ -218,10 +350,14 @@ bool GuiPlayerList::AddPlayer(Player player)
 			listChanged = true;
 		}
 
-		return true;
+		return 0;
+	}
+	else
+	{
+		return -2;
 	}
 
-	return false;
+	return -3;
 }
 
 void GuiPlayerList::Clear()

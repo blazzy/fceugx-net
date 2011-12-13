@@ -1083,8 +1083,9 @@ class GuiPlayerList : public GuiElement
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);
 
-		int  GetPlayerCount();
-		bool AddPlayer(Player player);
+		uint8  GetPlayerCount();
+		int BuildPlayerList(const char *playerInfo);
+		int AddPlayer(Player player);
 		void Clear();
 		int  GetPlayerNumber(char *name);
 		bool ToggleReady();
