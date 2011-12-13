@@ -26,7 +26,7 @@
 //#include <debug.h>        // USB Gecko
 
 #include "fceunetwork.h"  // FCEUD_TellServerToggleReady()
-#include "gui.h"
+#include "gui_playerlist.h"
 #include "menu.h"         // Error prompts
 #include "../fceultra/utils/xstring.h"      // str_strip()
 
@@ -165,17 +165,6 @@ uint8 GuiPlayerList::GetPlayerCount()
 	return currIdx < 0 ? 0 : currIdx + 1;
 }
 
-// Return Codes.  If the method reports failure, the
-// return code reflects the last error encountered.
-//   0:  Success
-//  -1:  Client received a list with no data
-//  -2:  Invalid status indicator
-//  -3:  Unexpected status delimiter
-//  -4:  Invalid record length
-//  -5:  Whitespace stripping failure
-//  -6:  Out of memory
-//  -7:  List is full (should not be reported by BuildPlayerList -- only by non-wrapped calls to AddPlayer())
-//  -8:  Unknown
 int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 {
 	const char *RECORD_SEPARATOR = "|";
@@ -184,19 +173,21 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 	char name[NETPLAY_MAX_NAME_LEN + 1];
 	bool ready = false;
 
-	int status = 0,
-		trailingStatus = 0;
+	int status = PLAYER_LIST_SUCCESS,
+		trailingStatus = PLAYER_LIST_SUCCESS;
 
 	char *edible = NULL;
 
 	if(playerInfo == NULL)
 	{
-		return -1;
+		return PLAYER_LIST_ERR_NO_DATA;
 	}
-	else
+	else if(strlen(playerInfo) == 0)
 	{
-		edible = strdup(playerInfo);
+		return PLAYER_LIST_ERR_NO_DATA;
 	}
+
+	edible = strdup(playerInfo);
 
 	if(edible != NULL)
 	{
@@ -205,7 +196,7 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 		Clear();
 		token = strtok(edible, RECORD_SEPARATOR);
 
-		while( token != NULL)
+		while(token != NULL)
 		{
 			len = strlen(token);
 			name[0] = '\0';
@@ -232,51 +223,41 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 					}
 					else
 					{
-						status = -2;
+						status = PLAYER_LIST_ERR_STATUS_IND;
 					}
 				}
 				else
 				{
-					status = -3;
+					status = PLAYER_LIST_ERR_STATUS_DELIM;
 				}
 			}
 			else
 			{
-				status = -4;
+				status = PLAYER_LIST_ERR_RECORD_LEN;
 			}
 
-			if(status == 0)
+			if(status == PLAYER_LIST_SUCCESS)
 			{
 				if(str_strip(name, STRIP_SP | STRIP_TAB | STRIP_CR | STRIP_LF) < 0)
 				{
-					status = -5;
+					status = PLAYER_LIST_ERR_FORMATTING;
 				}
 				else
 				{
-					int addPlayer = AddPlayer(Player{name, ready});
+					const int addPlayerStatus = AddPlayer(Player{name, ready});
 
-					switch(addPlayer)
+					if(addPlayerStatus != PLAYER_LIST_SUCCESS)
 					{
-						case 0:
-							break;
-						case -1:
-							status = -6;
-							break;
-						case -2:
-							status = -7;
-							break;
-						default:
-							status = -8;
-							break;
+						status = addPlayerStatus;
 					}
 				}
 			}
 
-			if(status != 0)
+			if(status != PLAYER_LIST_SUCCESS)
 			{
 				trailingStatus = status;
 			}
-			status = 0;
+			status = PLAYER_LIST_SUCCESS;
 
 			token = strtok(NULL, RECORD_SEPARATOR);
 		}
@@ -285,17 +266,12 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 	}
 	else
 	{
-		status = -6;
+		status = PLAYER_LIST_ERR_OUT_OF_MEM;
 	}
 
 	return trailingStatus;
 }
 
-// Return Codes
-//   0:  Success
-//  -1:  Out of memory
-//  -2:  List at capacity
-//  -3:  Unknown error
 int GuiPlayerList::AddPlayer(Player player)
 {
 	uint8 newIdx = GetPlayerCount();
@@ -309,7 +285,7 @@ int GuiPlayerList::AddPlayer(Player player)
 
 		if(rowText[newIdx] == NULL)
 		{
-			return -1;
+			return PLAYER_LIST_ERR_OUT_OF_MEM;
 		}
 
 		rowText[newIdx]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
@@ -320,7 +296,7 @@ int GuiPlayerList::AddPlayer(Player player)
 
 		if(imgRowSelected[newIdx] == NULL)
 		{
-			return -1;
+			return PLAYER_LIST_ERR_OUT_OF_MEM;
 		}
 
 		imgRowSelected[newIdx]->SetPosition(2,-3);
@@ -329,7 +305,7 @@ int GuiPlayerList::AddPlayer(Player player)
 
 		if(rowButton[newIdx] == NULL)
 		{
-			return -1;
+			return PLAYER_LIST_ERR_OUT_OF_MEM;
 		}
 		else
 		{
@@ -350,14 +326,14 @@ int GuiPlayerList::AddPlayer(Player player)
 			listChanged = true;
 		}
 
-		return 0;
+		return PLAYER_LIST_SUCCESS;
 	}
 	else
 	{
-		return -2;
+		return PLAYER_LIST_ERR_LIST_FULL;
 	}
 
-	return -3;
+	return PLAYER_LIST_ERR_UNKNOWN;
 }
 
 void GuiPlayerList::Clear()

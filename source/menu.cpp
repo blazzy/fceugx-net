@@ -1400,34 +1400,34 @@ static int MenuGameSelection()
 
 				switch(listStatus)
 				{
-					case 0:
+					case PLAYER_LIST_SUCCESS:
 						break;
 
-					case -1:
+					case PLAYER_LIST_ERR_NO_DATA:
 						ErrorPrompt("The host sent a player list update containing no data");
 						break;
 
-					case -2:
+					case PLAYER_LIST_ERR_STATUS_IND:
 						ErrorPrompt("The host sent a corrupted player list update:  Invalid status indicator");
 						break;
 
-					case -3:
+					case PLAYER_LIST_ERR_STATUS_DELIM:
 						ErrorPrompt("The host sent a corrupted player list update:  Unexpected status delimiter");
 						break;
 
-					case -4:
+					case PLAYER_LIST_ERR_RECORD_LEN:
 						ErrorPrompt("The host sent a corrupted player list update:  Incorrect record length");
 						break;
 
-					case -5:
+					case PLAYER_LIST_ERR_FORMATTING:
 						ErrorPrompt("An error occurred while formatting a player list update from the host");
 						break;
 
-					case -6:
+					case PLAYER_LIST_ERR_OUT_OF_MEM:
 						ErrorPrompt("Could not update the player list:  Out of memory");
 						break;
 
-					case -7:
+					case PLAYER_LIST_ERR_LIST_FULL:
 						ErrorPrompt("Could add to the player list:  The list is full");
 						break;
 

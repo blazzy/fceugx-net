@@ -1064,64 +1064,6 @@ class GuiFileBrowser : public GuiElement
 		bool listChanged;
 };
 
-// TODO:  Relocate
-struct Player
-{
-	char *name;
-	bool ready;
-};
+#include "gui_playerlist.h"
 
-//!Netplay:  Display a list of connected players
-class GuiPlayerList : public GuiElement
-{
-	public:
-		GuiPlayerList(int w, int h);
-		~GuiPlayerList();
-		void ResetState();
-		void SetFocus(int f);
-		void Draw();
-		void TriggerUpdate();
-		void Update(GuiTrigger *t);
-
-		uint8  GetPlayerCount();
-		int BuildPlayerList(const char *playerInfo);
-		int AddPlayer(Player player);
-		void Clear();
-		int  GetPlayerNumber(char *name);
-		bool ToggleReady();
-		bool IsPlayerReady(int playerNum);
-		bool IsEveryoneReady();
-
-	private:
-		GuiButton *rowButton[MAX_PLAYER_LIST_SIZE];
-
-		GuiText *titleTxt,
-				*txtAllPlayersReady,
-				*rowText[MAX_PLAYER_LIST_SIZE];
-
-		GuiImageData *imgDataPlayer1Ready,
-					 *imgDataPlayer2Ready,
-					 *imgDataPlayer3Ready,
-					 *imgDataPlayer4Ready;
-
-        GuiImage *imgPlayerReady[MAX_PLAYER_LIST_SIZE];
-
-		GuiImageData *imgDataMainWindow;
-		GuiImage *imgMainWindow;
-
-		GuiImageData *imgDataSelectionEntry;
-		GuiImage *imgRowSelected[MAX_PLAYER_LIST_SIZE];
-
-		GuiSound *btnSoundClick;
-
-		GuiTrigger *trigA;
-		GuiTrigger *trig2;
-
-		const GXColor *colorNotReady;
-		const GXColor *colorReady;
-
-		int selectedItem;
-		int currIdx;
-		bool listChanged;
-};
 #endif
