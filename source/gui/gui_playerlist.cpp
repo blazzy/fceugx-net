@@ -30,6 +30,8 @@
 #include "menu.h"         // Error prompts
 #include "../fceultra/utils/xstring.h"      // str_strip()
 
+//static void EventHandler(void *ptr);
+
 GuiPlayerList::GuiPlayerList(int w, int h)
 {
 	//DEBUG_Init(GDBSTUB_DEVICE_USB, 1);  // USB Gecko
@@ -94,6 +96,8 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 									(GXColor){60, 144, 60, 255},  // Player 3 ready (green)
 									(GXColor){148, 147, 65, 255}  // Player 4 ready (yellow)
 								 };
+
+	//SetUpdateCallback(EventHandler);
 }
 
 GuiPlayerList::~GuiPlayerList()
@@ -524,15 +528,10 @@ void GuiPlayerList::Draw()
 
 void GuiPlayerList::Update(GuiTrigger * t)
 {
-	if(state == STATE_DISABLED || !t)
+	if(state == STATE_DISABLED || !t || !IsVisible())
 	{
 		return;
 	}
-
-	// Uncommenting this resolves the issue where player names no longer receive focus
-	// after being clicked, but it seems like this shouldn't be necessary -- other code
-	// appears to be attempting to do this.
-	//rowButton[selectedItem]->ResetState();
 
 	for(int i = 0; i <= currIdx; i++)
 	{
@@ -590,6 +589,27 @@ void GuiPlayerList::Update(GuiTrigger * t)
 
 	listChanged = false;
 
-	//if(updateCB)
-	//	updateCB(this);
+	if(updateCB)
+	{
+		updateCB(this);
+	}
 }
+
+/*
+ * Won't compile if made a part of the class?
+static void EventHandler(void *ptr)
+{
+	if(ptr != NULL)
+	{
+		GuiPlayerList *list = (GuiPlayerList*)(ptr);
+
+		if(list->rowButton[0] != NULL)
+		{
+			if(list->rowButton[0]->GetState() == STATE_CLICKED)
+			{
+				//InfoPrompt("clicked 0");   // GUI will lock up
+				list->rowButton[0]->ResetState();
+			}
+		}
+	}
+}*/

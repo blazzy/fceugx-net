@@ -315,9 +315,9 @@ UpdateGUI (void *arg)
 		if (mainWindow->GetState() != STATE_DISABLED)
 			mainWindow->DrawTooltip();
 
-		static uint8 joy[] = {0,0,0,0};
+		/*static uint8 joy[] = {0,0,0,0};
 		if(executionMode != OFFLINE)
-			NetplayUpdate(joy);
+			NetplayUpdate(joy);*/
 
 		#ifdef HW_RVL
 		i = 3;
