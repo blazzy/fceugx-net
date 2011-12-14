@@ -39,6 +39,7 @@ static int poll_one(int socket, int timeout, int event);
 #define IOS_O_NONBLOCK			0x04
 
 #define CONNECT_TIMEOUT 4000//ms
+#define RECV_TIMEOUT    4000//ms
 
 int skipgfx;
 
@@ -164,9 +165,12 @@ static int poll_one(int socket, int timeout, int event) {
 int FCEUD_RecvData(void *data, uint32 len) {
 	skipgfx = 0;
 	while (true) {
-		switch (poll_one(Socket, 10, POLLIN)) {
+		/*switch (poll_one(Socket, 10, POLLIN)) {
 			case  0: continue;
 			case -1: return 0;
+		}*/
+		if (1 != poll_one(Socket, RECV_TIMEOUT, POLLIN)) {
+			return 0;
 		}
 
 		int size = net_recv(Socket, data, len, 0);
