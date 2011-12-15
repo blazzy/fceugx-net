@@ -49,6 +49,9 @@ int FCEUD_RecvData(void *data, uint32 len);
 //Display text received over the network.
 void FCEUD_NetplayText(uint8 *text);
 
+//Handle new client announcements
+void FCEUD_NewClient(uint8 id, uint8 *name);
+
 //Encode and send text over the network.
 void FCEUI_NetplayText(uint8 *text);
 

@@ -195,6 +195,9 @@ void FCEUD_NetworkClose(void) {
 	FCEUI_NetplayStop();
 }
 
+void FCEUD_NewClient(uint8 id, uint8 *name) {
+}
+
 void FCEUD_NetplayText(uint8 *text) {
 }
 

@@ -304,6 +304,17 @@ void NetplayUpdate(uint8 *joyp)
 
 				}
 				break;
+			case FCEUNPCMD_NEWCLIENT:
+				{
+					uint8 buff[1 + NETPLAY_MAX_NAME_LEN];
+					if(!FCEUD_RecvData(buff, 1 + NETPLAY_MAX_NAME_LEN) || buff[0] > 3)
+					{
+						NetError();
+						return;
+					}
+					FCEUD_NewClient(buff[0], &buff[1]);
+				}
+				break;
 			case FCEUNPCMD_LOADCHEATS:
 				{
 					FILE *fp = FetchFile(FCEU_de32lsb(buf));

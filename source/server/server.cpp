@@ -287,8 +287,16 @@ struct Game {
 
 				fprintf(stderr, "Client %d joined as %s\n", client.id, client.name);
 
+				{ //Announce new client's presence
+					const int announce_buffer_len = NETPLAY_MAX_NAME_LEN + 1;
+					uint8_t announce_buffer[announce_buffer_len];
+
+					announce_buffer[0] = client.id;
+					memcpy(&announce_buffer[1], client.name, NETPLAY_MAX_NAME_LEN);
+					send_all(FCEUNPCMD_NEWCLIENT, announce_buffer, announce_buffer_len);
+				}
+
 				client.reset_buffer(N_UPDATEDATA, 1);
-				//TODO announce
 				return;
 			}
 
