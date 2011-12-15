@@ -23,7 +23,6 @@
 
 #include "fceultra/driver.h"
 #include "fceultra/netplay.h"
-#include "fceunetwork.h"
 
 #define APPNAME			"FCE Ultra GX"
 #define APPVERSION		"3.2.6"
