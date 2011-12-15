@@ -275,8 +275,8 @@ struct Game {
 				const int nick_len = client.command_length - ignored_bytes;
 
 				if (nick_len) {
-          int len = MIN(nick_len, NETPLAY_MAX_NAME_LEN - 1);
-          memcpy(client.name, &client.buffer[ignored_bytes], len);
+					int len = MIN(nick_len, NETPLAY_MAX_NAME_LEN - 1);
+					memcpy(client.name, &client.buffer[ignored_bytes], len);
 					client.name[len] = 0;
 
 					if (!unique_name(client)) {
@@ -290,11 +290,12 @@ struct Game {
 				fprintf(stderr, "Client %d joined as %s\n", client.id, client.name);
 
 				{ //Announce new client's presence
-					const int announce_buffer_len = NETPLAY_MAX_NAME_LEN + 1;
+					const int announce_buffer_len = NETPLAY_MAX_NAME_LEN + 2;
 					uint8_t announce_buffer[announce_buffer_len];
 
 					announce_buffer[0] = client.id;
-					memcpy(&announce_buffer[1], client.name, NETPLAY_MAX_NAME_LEN);
+					announce_buffer[1] = client.ready = false;
+					memcpy(&announce_buffer[2], client.name, NETPLAY_MAX_NAME_LEN);
 					send_all(FCEUNPCMD_NEWCLIENT, announce_buffer, announce_buffer_len);
 				}
 

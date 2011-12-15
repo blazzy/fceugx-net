@@ -311,14 +311,15 @@ void NetplayUpdate(uint8 *joyp)
 				break;
 			case FCEUNPCMD_NEWCLIENT:
 				{
-					uint8 client_buf[1 + NETPLAY_MAX_NAME_LEN];
-					if(!FCEUD_RecvData(client_buf, 1 + NETPLAY_MAX_NAME_LEN) || client_buf[0] > 3)
+					uint8 client_buf[2 + NETPLAY_MAX_NAME_LEN];
+					if(!FCEUD_RecvData(client_buf, 2 + NETPLAY_MAX_NAME_LEN) || client_buf[0] > 3)
 					{
 						NetError();
 						return;
 					}
 					client_buf[NETPLAY_MAX_NAME_LEN] = '\0';
-					FCEUD_NetplayClient(client_buf[0], &client_buf[1]);
+					FCEUD_NetplayClient(client_buf[0], &client_buf[2]);
+					FCEUD_NetplayReady(client_buf[0], client_buf[1]);
 				}
 				break;
 			case FCEUNPCMD_READY:
