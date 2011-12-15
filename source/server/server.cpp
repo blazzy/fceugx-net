@@ -336,12 +336,13 @@ struct Game {
 
 			case FCEUNPCMD_READY: {
 				client.ready = !client.ready;
+				fprintf(stderr, "%i %s ready %i\n", client.id, client.name, client.ready);
 
-				uint8 buffer[5];
+				uint8 buffer[2];
 				buffer[0] = client.id;
 				buffer[1] = client.ready;
-
-				send_all(FCEUNPCMD_READY, buffer, 5);
+				send_all(FCEUNPCMD_READY, buffer, 2);
+				client.reset_buffer(N_UPDATEDATA, 1);
 				return;
 			}
 
