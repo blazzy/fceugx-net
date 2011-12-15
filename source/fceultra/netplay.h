@@ -40,7 +40,7 @@ extern ExecutionMode executionMode;
 #define FCEUNPCMD_TEXT		0x90
 
 #define FCEUNPCMD_NEWCLIENT       0xA0
-#define FCEUNPCMD_DISCONNECT      0xA1
+#define FCEUNPCMD_READY           0xA1
 #define FCEUNPCMD_ASSIGNPLAYER    0xA2
 #define FCEUNPCMD_HALTEMULATION   0xA3
 #define FCEUNPCMD_RESUMEEMULATION 0xA4

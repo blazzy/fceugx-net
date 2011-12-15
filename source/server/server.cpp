@@ -92,8 +92,9 @@ static uint64_t gettime() {
 
 
 struct Client {
-	char name[NETPLAY_MAX_NAME_LEN ];
+	char name[NETPLAY_MAX_NAME_LEN];
 	int  id;
+	bool ready;
 
 	int  socket;
 
@@ -109,6 +110,7 @@ struct Client {
 
 	Client():
 		id(-1),
+		ready(false),
 		socket(-1),
 		buffer_used(0),
 		command_length(0),
@@ -329,6 +331,17 @@ struct Game {
 				client.buffer[MIN(client.buffer_used, client.buffer_max - 1)] = '\0';
 				fprintf(stderr, "%i %s: %s\n", client.id, client.name, client.buffer);
 				client.reset_buffer(N_UPDATEDATA, 1);
+				return;
+			}
+
+			case FCEUNPCMD_READY: {
+				client.ready = !client.ready;
+
+				uint8 buffer[5];
+				buffer[0] = client.id;
+				buffer[1] = client.ready;
+
+				send_all(FCEUNPCMD_READY, buffer, 5);
 				return;
 			}
 
