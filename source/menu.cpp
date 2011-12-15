@@ -10,13 +10,11 @@
  *
  * TODO:
  *      1.  Translations for Netplay buttons
- *      2.  'Ready' button:  assign player number 1-4 based on order of
- *          clicking in, rather than order of connection.  This will allow
- *          people to decide their player number, should they have a
- *          preference for some reason.
- *      3.  If a host unclicks READY, don't allow anyone other than the
+ *      2.  If a host unclicks READY, don't allow anyone other than the
  *          host to claim Player 1 in the player list.  This shall be
  *          enforced on the server side.
+ *      3.  To support more than one player per physical machine, we'll
+ *          need to batch client connections from the Join button.
  *
  * History:
  *
@@ -76,9 +74,19 @@ static void pleaseWaitMsg();
 static void hideNetplayGuiComponents();
 static void showNetplayGuiComponents();
 
+GuiPlayerList *playerList = NULL;
+GuiButton *hostBtn        = NULL,
+          *joinBtn        = NULL,
+          *disconnectBtn  = NULL,
+          *chatBtn        = NULL,
+          *readyBtn       = NULL;
+
 #ifdef HW_RVL
 static GuiImageData * pointer[4];
 #endif
+
+// Maps a Wii player number to an index on GuiPlayerlist:
+uint playerNumMap[4];
 
 static GuiTrigger * trigA = NULL;
 static GuiTrigger * trig2 = NULL;
@@ -110,6 +118,87 @@ static char progressTitle[101];
 static char progressMsg[201];
 static int progressDone = 0;
 static int progressTotal = 0;
+
+static void playerListEventHandler(void *ptr);
+static void updatePlayerNumMap(uint from, uint to);
+
+static void playerListEventHandler(void *ptr)
+{
+	if(ptr == NULL)
+	{
+		return;
+	}
+
+	GuiPlayerList *list = (GuiPlayerList*)(ptr);
+
+	/*if(list->rowButton[0] != NULL)
+	{
+		if(list->rowButton[0]->GetState() == STATE_CLICKED)
+		{
+			//InfoPrompt("clicked 0");   // GUI will lock up
+			list->rowButton[0]->ResetState();
+		}
+	}*/
+
+	// Assign cursors to ready players in the order they appear in the player list
+
+	int listIdxX = -1,
+		listIdxY = -1,
+		listIdxZ = -1;
+
+	if(strlen(GCSettings.netplayNameX) != 0)
+	{
+		listIdxX = list->GetPlayerNumber(GCSettings.netplayNameX);
+	}
+
+	if(strlen(GCSettings.netplayNameY) != 0)
+	{
+		listIdxY = list->GetPlayerNumber(GCSettings.netplayNameY);
+	}
+
+	if(strlen(GCSettings.netplayNameZ) != 0)
+	{
+		listIdxZ = list->GetPlayerNumber(GCSettings.netplayNameZ);
+	}
+
+/*char c[10];
+sprintf(c, "%d,%d,%d", listIdxX, listIdxY, listIdxZ);
+chatBtn->SetLabel(new GuiText(c, 19, (GXColor){0,0,0,255}));
+listIdxZ = 3;*/
+
+	int i = 0;
+	do
+	{
+		if(userInput[i].wpad != NULL)// && userInput[i].wpad->ir.valid)
+		{
+			if(listIdxX >= 0 && list->IsPlayerReady(listIdxX))
+			{
+				updatePlayerNumMap(i, listIdxX);
+				listIdxX = -1;
+			}
+			else if(listIdxY >= 0 && list->IsPlayerReady(listIdxY))
+			{
+				updatePlayerNumMap(i, listIdxY);
+				listIdxY = -1;
+			}
+			else if(listIdxZ >= 0 && list->IsPlayerReady(listIdxZ))
+			{
+				updatePlayerNumMap(i, listIdxZ);
+				listIdxZ = -1;
+			}
+		}
+
+		i++;
+	} while(i <= 3);
+}
+
+static void updatePlayerNumMap(uint from, uint to)
+{
+	if(from < 4 && to < 4)
+	{
+		playerNumMap[from] = to;
+	}
+}
 
 bool GuiLoaded()
 {
@@ -324,8 +413,10 @@ UpdateGUI (void *arg)
 		do
 		{
 			if(userInput[i].wpad->ir.valid)
+			{
 				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-					96, 96, pointer[i]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+					96, 96, pointer[playerNumMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+			}
 			DoRumble(i);
 			--i;
 		} while(i>=0);
@@ -909,10 +1000,12 @@ static void WindowCredits(void * ptr)
 		#ifdef HW_RVL
 		i = 3;
 		do {	
-		if(userInput[i].wpad->ir.valid)
-			Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-				96, 96, pointer[i]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
-			DoRumble(i);
+			if(userInput[i].wpad->ir.valid)
+			{
+				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
+					96, 96, pointer[playerNumMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+			}
+		DoRumble(i);
 			--i;
 		} while(i >= 0);
 		#endif
@@ -940,18 +1033,12 @@ static void WindowCredits(void * ptr)
 		delete txt[i];
 }
 
-GuiPlayerList *playerList = NULL;
-GuiButton *hostBtn        = NULL,
-          *joinBtn        = NULL,
-          *disconnectBtn  = NULL,
-          *chatBtn        = NULL,
-          *readyBtn       = NULL;
-
 void newPlayerList()
 {
 	if(playerList == NULL)
 	{
 		playerList = new GuiPlayerList(152, 265);
+		playerList->SetUpdateCallback(playerListEventHandler);
 		playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 		playerList->SetPosition(-8, 98);
 		playerList->SetVisible(false);
@@ -1054,6 +1141,13 @@ static void hideNetplayGuiComponents()
 		delete playerList;
 		playerList = NULL;
 		ResumeGui();
+	}
+
+	// Reset cursors for offline application use
+
+	for(int i = 0; i < 4; i++)
+	{
+		playerNumMap[i] = i;
 	}
 
 	newPlayerList();
@@ -1357,10 +1451,10 @@ static int MenuGameSelection()
 		{
 			hostBtn->ResetState();
 
-			if(GCSettings.netplayPort == NULL || GCSettings.netplayName == NULL
-			  || strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayName) == 0)
+			if(GCSettings.netplayPort == NULL || GCSettings.netplayNameX == NULL
+			  || strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayNameX) == 0)
 			{
-				ErrorPrompt("To host, you must specify the following:  Port, Player Name");
+				ErrorPrompt("To host, you must specify the following:  Port, Player Name (first slot)");
 			}
 			else
 			{
@@ -1443,8 +1537,8 @@ static int MenuGameSelection()
 		{
 			joinBtn->ResetState();
 
-			if(GCSettings.netplayIp == NULL || GCSettings.netplayPort == NULL || GCSettings.netplayName == NULL
-			  || strcmp("", GCSettings.netplayIp) == 0 || strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayName) == 0)
+			if(strcmp("", GCSettings.netplayIp) == 0 || strcmp("", GCSettings.netplayPort) == 0
+			|| (strcmp("", GCSettings.netplayNameX) == 0 && strcmp("", GCSettings.netplayNameY) == 0 && strcmp("", GCSettings.netplayNameZ) == 0))
 			{
 				ErrorPrompt("To join, you must specify the following:   IP Address, Port, Player Name");
 			}
@@ -4165,6 +4259,8 @@ static int MenuSettingsNetwork()
 	sprintf(options.name[i++], "Netplay Port");
 	sprintf(options.name[i++], "Netplay Password");
 	sprintf(options.name[i++], "Netplay Player Name");
+	sprintf(options.name[i++], "Netplay Player Name");
+	sprintf(options.name[i++], "Netplay Player Name");
 	sprintf(options.name[i++], "SMB Share IP");
 	sprintf(options.name[i++], "SMB Share Name");
 	sprintf(options.name[i++], "SMB Share Username");
@@ -4213,8 +4309,9 @@ static int MenuSettingsNetwork()
 
 	while(menu == MENU_NONE)
 	{
-		usleep(THREAD_SLEEP);
+		char netplayNameBackup[NETPLAY_MAX_NAME_LEN];
 
+		usleep(THREAD_SLEEP);
 		ret = optionBrowser.GetClickedOption();
 
 		switch (ret)
@@ -4232,22 +4329,60 @@ static int MenuSettingsNetwork()
 				break;
 
 			case 3:
-				OnScreenKeyboard(GCSettings.netplayName, NETPLAY_MAX_NAME_LEN);
+				strcpy(netplayNameBackup, GCSettings.netplayNameX);
+
+				OnScreenKeyboard(GCSettings.netplayNameX, NETPLAY_MAX_NAME_LEN);
+
+				if(strlen(GCSettings.netplayNameX) > 0
+				&& (strcmp(GCSettings.netplayNameX, GCSettings.netplayNameY) == 0 || strcmp(GCSettings.netplayNameX, GCSettings.netplayNameZ) == 0))
+				{
+					ErrorPrompt("Netplay user names must be unique");
+					strcpy(GCSettings.netplayNameX, netplayNameBackup);
+				}
+
 				break;
 
 			case 4:
-				OnScreenKeyboard(GCSettings.smbip, SIZE_SMB_IP);
+				strcpy(netplayNameBackup, GCSettings.netplayNameY);
+
+				OnScreenKeyboard(GCSettings.netplayNameY, NETPLAY_MAX_NAME_LEN);
+
+				if(strlen(GCSettings.netplayNameY) > 0
+				&& (strcmp(GCSettings.netplayNameY, GCSettings.netplayNameX) == 0 || strcmp(GCSettings.netplayNameY, GCSettings.netplayNameZ) == 0))
+				{
+					ErrorPrompt("Netplay user names must be unique");
+					strcpy(GCSettings.netplayNameY, netplayNameBackup);
+				}
+
 				break;
 
 			case 5:
-				OnScreenKeyboard(GCSettings.smbshare, SIZE_SMB_SHARE);
+				strcpy(netplayNameBackup, GCSettings.netplayNameZ);
+
+				OnScreenKeyboard(GCSettings.netplayNameZ, NETPLAY_MAX_NAME_LEN);
+
+				if(strlen(GCSettings.netplayNameZ) > 0
+				&& (strcmp(GCSettings.netplayNameZ, GCSettings.netplayNameX) == 0 || strcmp(GCSettings.netplayNameZ, GCSettings.netplayNameY) == 0))
+				{
+					ErrorPrompt("Netplay user names must be unique");
+					strcpy(GCSettings.netplayNameZ, netplayNameBackup);
+				}
+
 				break;
 
 			case 6:
-				OnScreenKeyboard(GCSettings.smbuser, SIZE_SMB_USER);
+				OnScreenKeyboard(GCSettings.smbip, SIZE_SMB_IP);
 				break;
 
 			case 7:
+				OnScreenKeyboard(GCSettings.smbshare, SIZE_SMB_SHARE);
+				break;
+
+			case 8:
+				OnScreenKeyboard(GCSettings.smbuser, SIZE_SMB_USER);
+				break;
+
+			case 9:
 				OnScreenKeyboard(GCSettings.smbpwd, SIZE_SMB_PWD);
 				break;
 		}
@@ -4258,12 +4393,14 @@ static int MenuSettingsNetwork()
 			snprintf (options.value[0], SIZE_NETPLAY_IP   - 1, "%s", GCSettings.netplayIp);
 			snprintf (options.value[1], SIZE_NETPLAY_PORT - 1, "%s", GCSettings.netplayPort);
 			snprintf (options.value[2], SIZE_NETPLAY_PWD  - 1, "%s", GCSettings.netplayPwd);
-			snprintf (options.value[3], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayName);
+			snprintf (options.value[3], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayNameX);
+			snprintf (options.value[4], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayNameY);
+			snprintf (options.value[5], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayNameZ);
 
-			snprintf (options.value[4], 25, "%s", GCSettings.smbip);   // midnak:  Why didn't he use (size - 1) here like he did with the others?  Question 2:  why's the array so big to begin with?
-			snprintf (options.value[5], SIZE_SMB_SHARE - 1, "%s", GCSettings.smbshare);
-			snprintf (options.value[6], SIZE_SMB_USER  - 1, "%s", GCSettings.smbuser);
-			snprintf (options.value[7], SIZE_SMB_PWD   - 1, "%s", GCSettings.smbpwd);
+			snprintf (options.value[6], 25, "%s", GCSettings.smbip);   // midnak:  Why didn't he use (size - 1) here like he did with the others?  Question 2:  why's the array so big to begin with?
+			snprintf (options.value[7], SIZE_SMB_SHARE - 1, "%s", GCSettings.smbshare);
+			snprintf (options.value[8], SIZE_SMB_USER  - 1, "%s", GCSettings.smbuser);
+			snprintf (options.value[9], SIZE_SMB_PWD   - 1, "%s", GCSettings.smbpwd);
 			optionBrowser.TriggerUpdate();
 		}
 
@@ -4296,6 +4433,11 @@ MainMenu (int menu)
 	{
 		init = true;
 		#ifdef HW_RVL
+		playerNumMap[0] = 0;
+		playerNumMap[1] = 1;
+		playerNumMap[2] = 2;
+		playerNumMap[3] = 3;
+
 		pointer[0] = new GuiImageData(player1_point_png);
 		pointer[1] = new GuiImageData(player2_point_png);
 		pointer[2] = new GuiImageData(player3_point_png);

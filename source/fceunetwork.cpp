@@ -44,7 +44,7 @@ int skipgfx;
 
 int FCEUD_NetworkConnect() {
 	const char *host     = GCSettings.netplayIp;
-	const char *name     = GCSettings.netplayName;
+	const char *name     = GCSettings.netplayNameX;  // TODO:  Connect method will have to accept a name, since we can have more than one player per physical machine
 	const char *password = GCSettings.netplayPwd;
 	const u32 port       = (u32) strtol(GCSettings.netplayPort, NULL, 10);
 	uint8 local_players  = 1;
