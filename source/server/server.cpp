@@ -125,6 +125,19 @@ struct Client {
 		return (socket != -1);
 	}
 
+	int send_cmd(int cmd, uint8_t *data, uint32_t length) {
+		uint8_t buffer[5];
+		buffer[4] = cmd;
+		en32(buffer, length);
+
+		int sent = send(buffer, 5);
+		if (sent && length) {
+			sent = send(data, length);
+		}
+
+		return sent;
+	}
+
 	int send(uint8_t *data, uint32_t length) {
 		if (::send(socket, data, length, MSG_NOSIGNAL) == length) {
 			return 1;
@@ -166,8 +179,8 @@ struct Game {
 		password(0),
 		last_time(0) {
 			for (int i = 0; i < 4; ++i) {
-				player[i] = 0;
-				client[i].id = i;
+				players[i] = 0;
+				clients[i].id = i;
 			}
 			for (int i = 0; i < 5; ++i) {
 				joybuf[i] = 0;
@@ -182,8 +195,8 @@ struct Game {
 
 	int unique_name(Client &c) {
 		for (int i = 0; i < 4; ++i) {
-			if (&c != &client[i] && client[i].connected()) {
-				if (0 == strcmp(c.name, client[i].name)) {
+			if (&c != &clients[i] && clients[i].connected()) {
+				if (0 == strcmp(c.name, clients[i].name)) {
 					return 0;
 				}
 			}
@@ -196,19 +209,15 @@ struct Game {
 		buffer[4] = cmd;
 
 		for (int i=0; i < 4; i++) {
-			if (client[i].connected()) {
-				en32(buffer, len);
-				client[i].send(buffer, 5);
-				if (len) {
-					client[i].send(data, len);
-				}
+			if (clients[i].connected()) {
+				clients[i].send_cmd(cmd, data, len);
 			}
 		}
 	}
 
 	void receive() {
 		for (int i = 0; i < 4; ++i) {
-			receive(client[i]);
+			receive(clients[i]);
 		}
 	}
 
@@ -264,8 +273,8 @@ struct Game {
 				}
 
 				for (int i = 0; i < 4; ++i) {
-					if (!player[i]) {
-						player[i] = &client;
+					if (!players[i]) {
+						players[i] = &client;
 						fprintf(stderr, "Player %d\n", i);
 						break;
 					}
@@ -297,6 +306,16 @@ struct Game {
 					announce_buffer[1] = client.ready = false;
 					memcpy(&announce_buffer[2], client.name, NETPLAY_MAX_NAME_LEN);
 					send_all(FCEUNPCMD_NEWCLIENT, announce_buffer, announce_buffer_len);
+
+					//Inform new client of existing players
+					for (int i=0; i < 4; i++) {
+						if (clients[i].connected() && clients[i].id != client.id) {
+							announce_buffer[0] = clients[i].id;
+							announce_buffer[1] = clients[i].ready;
+							memcpy(&announce_buffer[1], clients[i].name, NETPLAY_MAX_NAME_LEN);
+							client.send_cmd(FCEUNPCMD_NEWCLIENT, announce_buffer, announce_buffer_len);
+						}
+					}
 				}
 
 				client.reset_buffer(N_UPDATEDATA, 1);
@@ -310,7 +329,7 @@ struct Game {
 				}
 
 				for (int i = 0; i < 4; ++i) {
-					if (player[i] == &client) {
+					if (players[i] == &client) {
 						joybuf[i] = client.buffer[0];
 					}
 				}
@@ -373,16 +392,16 @@ struct Game {
 
 	void update_players() {
 		for (int i = 0; i < 4; ++i) {
-			if (player[i] && !player[i]->connected()) {
-				player[i] = 0;
+			if (players[i] && !players[i]->connected()) {
+				players[i] = 0;
 			}
 		}
 	}
 
 	void send_next_frame() {
 		for (int i = 0; i < 4; ++i) {
-			if (client[i].connected())  {
-				client[i].send(joybuf, 5);
+			if (clients[i].connected())  {
+				clients[i].send(joybuf, 5);
 			}
 		}
 	}
@@ -420,8 +439,8 @@ struct Game {
 
 	uint8_t joybuf[5];  /* 4 player data + 1 command byte */
 
-	Client  client[4];
-	Client *player[4];
+	Client  clients[4];
+	Client *players[4];
 };
 
 
@@ -534,9 +553,9 @@ void check_for_connections(int listen_socket, Game &game) {
 
 	int i;
 	for (i = 0; i < 4; ++i) {
-		if (!game.client[i].connected()) {
-			game.client[i].socket = client_socket;
-			game.client[i].reset_buffer(N_LOGINLEN, 4);
+		if (!game.clients[i].connected()) {
+			game.clients[i].socket = client_socket;
+			game.clients[i].reset_buffer(N_LOGINLEN, 4);
 			break;
 		}
 	}
@@ -550,7 +569,7 @@ void check_for_connections(int listen_socket, Game &game) {
 
 	fprintf(stderr, "Client %d connecting from %s\n", i, inet_ntoa(addr.sin_addr));
 
-	game.client[i].send(&game.frame_divisor, 1);
+	game.clients[i].send(&game.frame_divisor, 1);
 }
 
 
