@@ -312,6 +312,7 @@ void NetplayUpdate(uint8 *joyp)
 						NetError();
 						return;
 					}
+					buff[NETPLAY_MAX_NAME_LEN] = '\0';
 					FCEUD_NewClient(buff[0], &buff[1]);
 				}
 				break;
