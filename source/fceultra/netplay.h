@@ -39,6 +39,12 @@ extern ExecutionMode executionMode;
 #define FCEUNPCMD_LOADCHEATS	0x82
 #define FCEUNPCMD_TEXT		0x90
 
+#define FCEUNPCMD_NEWCLIENT       0xA0
+#define FCEUNPCMD_DISCONNECT      0xA1
+#define FCEUNPCMD_ASSIGNPLAYER    0xA2
+#define FCEUNPCMD_HALTEMULATION   0xA3
+#define FCEUNPCMD_RESUMEEMULATION 0xA4
+
 int InitNetplay(void);
 void NetplayUpdate(uint8 *joyp);
 
