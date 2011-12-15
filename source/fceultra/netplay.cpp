@@ -59,12 +59,7 @@ void FCEUI_NetplayStop(void)
 {
 	if(executionMode != OFFLINE)
 	{
-		// Commented out for FCEUGX so you can continue to use the main lobby with other
-		// players after exiting a game (connection is not terminated).  Netplay GUI
-		// components don't work if executionMode is set to OFFLINE.  It looks like it's
-		// okay to do this in FCEU -- it just sets executionMode to ONLINE when a socket
-		// is opened.
-		//executionMode = OFFLINE;
+		executionMode = OFFLINE;
 
 		FCEU_FlushGameCheats(0,1);  //Don't save netplay cheats.
 		FCEU_LoadGameCheats(0);    //Reload our original cheats.
