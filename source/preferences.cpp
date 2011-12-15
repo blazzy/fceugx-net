@@ -140,7 +140,9 @@ preparePrefsData ()
 	createXMLSetting("netplayIp", "Netplay IP Address", GCSettings.netplayIp);
 	createXMLSetting("netplayPort", "Netplay Port", GCSettings.netplayPort);
 	createXMLSetting("netplayPwd", "Netplay Password", GCSettings.netplayPwd);
-	createXMLSetting("netplayName", "Netplay User Name", GCSettings.netplayName);
+	createXMLSetting("netplayNameX", "Netplay User Name", GCSettings.netplayNameX);
+	createXMLSetting("netplayNameY", "Netplay User Name", GCSettings.netplayNameY);
+	createXMLSetting("netplayNameZ", "Netplay User Name", GCSettings.netplayNameZ);
 	createXMLSetting("smbip", "Share Computer IP", GCSettings.smbip);
 	createXMLSetting("smbshare", "Share Name", GCSettings.smbshare);
 	createXMLSetting("smbuser", "Share Username", GCSettings.smbuser);
@@ -316,7 +318,9 @@ decodePrefsData ()
 			loadXMLSetting(GCSettings.netplayIp, "netplayIp", sizeof(GCSettings.netplayIp));
 			loadXMLSetting(GCSettings.netplayPort, "netplayPort", sizeof(GCSettings.netplayPort));
 			loadXMLSetting(GCSettings.netplayPwd, "netplayPwd", sizeof(GCSettings.netplayPwd));
-			loadXMLSetting(GCSettings.netplayName, "netplayName", sizeof(GCSettings.netplayName));
+			loadXMLSetting(GCSettings.netplayNameX, "netplayNameX", sizeof(GCSettings.netplayNameX));
+			loadXMLSetting(GCSettings.netplayNameY, "netplayNameY", sizeof(GCSettings.netplayNameY));
+			loadXMLSetting(GCSettings.netplayNameZ, "netplayNameZ", sizeof(GCSettings.netplayNameZ));
 			loadXMLSetting(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
 			loadXMLSetting(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
 			loadXMLSetting(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));

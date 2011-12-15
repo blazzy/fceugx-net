@@ -594,22 +594,3 @@ void GuiPlayerList::Update(GuiTrigger * t)
 		updateCB(this);
 	}
 }
-
-/*
- * Won't compile if made a part of the class?
-static void EventHandler(void *ptr)
-{
-	if(ptr != NULL)
-	{
-		GuiPlayerList *list = (GuiPlayerList*)(ptr);
-
-		if(list->rowButton[0] != NULL)
-		{
-			if(list->rowButton[0]->GetState() == STATE_CLICKED)
-			{
-				//InfoPrompt("clicked 0");   // GUI will lock up
-				list->rowButton[0]->ResetState();
-			}
-		}
-	}
-}*/

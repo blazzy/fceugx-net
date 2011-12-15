@@ -95,7 +95,9 @@ struct SGCSettings{
 	char    netplayIp[17];  // Forward compatibility:  IPv6 IPs are 128 bits
 	char    netplayPort[6];
 	char    netplayPwd[21];
-	char    netplayName[NETPLAY_MAX_NAME_LEN];
+	char    netplayNameX[NETPLAY_MAX_NAME_LEN];
+	char    netplayNameY[NETPLAY_MAX_NAME_LEN];
+	char    netplayNameZ[NETPLAY_MAX_NAME_LEN];
 
 	char	smbip[80];
 	char	smbuser[20];
