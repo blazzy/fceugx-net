@@ -188,7 +188,7 @@ int FCEUD_RecvData(void *data, uint32 len) {
 
 void FCEUD_NetworkClose(void) {
 	if (Socket != -1) {
-		close(Socket);
+		net_close(Socket);
 	}
 	Socket = -1;
 
