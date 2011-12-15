@@ -164,26 +164,20 @@ static int poll_one(int socket, int timeout, int event) {
 
 int FCEUD_RecvData(void *data, uint32 len) {
 	skipgfx = 0;
-	while (true) {
-		/*switch (poll_one(Socket, 10, POLLIN)) {
-			case  0: continue;
-			case -1: return 0;
-		}*/
-		if (1 != poll_one(Socket, RECV_TIMEOUT, POLLIN)) {
-			return 0;
-		}
-
-		int size = net_recv(Socket, data, len, 0);
-
-		if (size == int(len)) {
-			if (poll_one(Socket, 0, POLLIN)) {
-				skipgfx = 1;
-			}
-			return 1;
-		}
-
+	if (1 != poll_one(Socket, RECV_TIMEOUT, POLLIN)) {
 		return 0;
 	}
+
+	int size = net_recv(Socket, data, len, 0);
+
+	if (size == int(len)) {
+		if (poll_one(Socket, 0, POLLIN)) {
+			skipgfx = 1;
+		}
+		return 1;
+	}
+
+	return 0;
 }
 
 void FCEUD_NetworkClose(void) {
