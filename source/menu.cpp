@@ -108,10 +108,12 @@ static int mapMenuCtrlNES = 0;
 
 static lwp_t guithread = LWP_THREAD_NULL;
 static lwp_t progressthread = LWP_THREAD_NULL;
+static lwp_t netplaythread = LWP_THREAD_NULL;
 #ifdef HW_RVL
 static lwp_t updatethread = LWP_THREAD_NULL;
 #endif
 static bool guiHalt = true;
+static bool netplayHalt = true;
 static int showProgress = 0;
 
 static char progressTitle[101];
@@ -404,10 +406,6 @@ UpdateGUI (void *arg)
 		if (mainWindow->GetState() != STATE_DISABLED)
 			mainWindow->DrawTooltip();
 
-		/*static uint8 joy[] = {0,0,0,0};
-		if(executionMode != OFFLINE)
-			NetplayUpdate(joy);*/
-
 		#ifdef HW_RVL
 		i = 3;
 		do
@@ -451,6 +449,51 @@ UpdateGUI (void *arg)
 		usleep(THREAD_SLEEP);
 	}
 	return NULL;
+}
+
+/****************************************************************************
+ * NetplayThread
+ *
+ * Responds to netplay events
+ ***************************************************************************/
+static void *
+NetplayThread(void *arg)
+{
+	while (1)
+	{
+		if (executionMode == OFFLINE || netplayHalt)
+			LWP_SuspendThread(netplaythread);
+		
+		static uint8 joy[] = {0,0,0,0};
+		NetplayUpdate(joy);
+	}
+	return NULL;
+}
+
+/****************************************************************************
+ * HaltNetplay
+ *
+ * Signals the netplay thread to stop, and waits for NetPlay thread to stop
+ ***************************************************************************/
+static void
+HaltNetplay()
+{
+	netplayHalt = true;
+
+	while(!LWP_ThreadIsSuspended(netplaythread))
+		usleep(THREAD_SLEEP);
+}
+
+/****************************************************************************
+ * ResumeNetplay
+ *
+ * Signals the netplay thread to start, and resumes the thread.
+ ***************************************************************************/
+static void
+ResumeNetplay()
+{
+	netplayHalt = false;
+	LWP_ResumeThread(netplaythread);
 }
 
 /****************************************************************************
@@ -601,6 +644,7 @@ InitGUIThreads()
 {
 	LWP_CreateThread (&guithread, UpdateGUI, NULL, NULL, 0, 70);
 	LWP_CreateThread (&progressthread, ProgressThread, NULL, NULL, 0, 40);
+	LWP_CreateThread (&netplaythread, NetplayThread, NULL, NULL, 0, 40);
 }
 
 /****************************************************************************
@@ -1438,7 +1482,7 @@ static int MenuGameSelection()
 		{
 			if(playerList != NULL)
 			{
-				playerList->ToggleReady();
+				FCEUI_NetplayToggleReady();
 			}
 
 			menu = MENU_SETTINGS;
@@ -1570,6 +1614,7 @@ static int MenuGameSelection()
 				{
 					showNetplayGuiComponents();
 					disconnectBtn->SetSoundOver(&btnSoundOver);
+					ResumeNetplay();
 				}
 			}
 		}
@@ -1591,7 +1636,7 @@ static int MenuGameSelection()
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
 			readyBtn->ResetState();
-			playerList->ToggleReady();
+			FCEUI_NetplayToggleReady();
 		}
 	}
 
@@ -4508,6 +4553,8 @@ MainMenu (int menu)
 	if(currentMenu == MENU_GAMESELECTION)
 		ResumeGui();
 
+	ResumeNetplay();
+
 	// Load preferences
 	if(!LoadPrefs())
 		SavePrefs(SILENT);
@@ -4599,6 +4646,7 @@ MainMenu (int menu)
 
 	CancelAction();
 	HaltGui();
+	HaltNetplay();
 
 	#ifdef HW_RVL
 	if(updatethread != LWP_THREAD_NULL)

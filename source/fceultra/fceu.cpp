@@ -149,11 +149,6 @@ static void FCEU_CloseGame(void)
 	}
 #endif
 
-		if(executionMode != OFFLINE)
-		{
-			FCEUD_NetworkClose();
-		}
-
 		if(GameInfo->name)
 		{
 			free(GameInfo->name);

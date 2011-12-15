@@ -59,12 +59,7 @@ void FCEUI_NetplayStop(void)
 {
 	if(executionMode != OFFLINE)
 	{
-		// Commented out for FCEUGX so you can continue to use the main lobby with other
-		// players after exiting a game (connection is not terminated).  Netplay GUI
-		// components don't work if executionMode is set to OFFLINE.  It looks like it's
-		// okay to do this in FCEU -- it just sets executionMode to ONLINE when a socket
-		// is opened.
-		//executionMode = OFFLINE;
+		executionMode = OFFLINE;
 
 		FCEU_FlushGameCheats(0,1);  //Don't save netplay cheats.
 		FCEU_LoadGameCheats(0);    //Reload our original cheats.
@@ -121,6 +116,11 @@ void FCEUI_NetplayText(uint8 *text)
 
 	if(!FCEUD_SendData(text,len))
 		NetError();
+}
+
+void FCEUI_NetplayToggleReady()
+{
+	FCEUNET_SendCommand(FCEUNPCMD_READY, 0);
 }
 
 int FCEUNET_SendFile(uint8 cmd, char *fn)
@@ -307,6 +307,29 @@ void NetplayUpdate(uint8 *joyp)
 					//	return;
 					//}
 
+				}
+				break;
+			case FCEUNPCMD_NEWCLIENT:
+				{
+					uint8 client_buf[1 + NETPLAY_MAX_NAME_LEN];
+					if(!FCEUD_RecvData(client_buf, 1 + NETPLAY_MAX_NAME_LEN) || client_buf[0] > 3)
+					{
+						NetError();
+						return;
+					}
+					client_buf[NETPLAY_MAX_NAME_LEN] = '\0';
+					FCEUD_NetplayClient(client_buf[0], &client_buf[1]);
+				}
+				break;
+			case FCEUNPCMD_READY:
+				{
+					uint8 ready_buf[2];
+					if(!FCEUD_RecvData(ready_buf, 2) || ready_buf[0] > 3)
+					{
+						NetError();
+						return;
+					}
+					FCEUD_NetplayReady(ready_buf[0], ready_buf[1]);
 				}
 				break;
 			case FCEUNPCMD_LOADCHEATS:

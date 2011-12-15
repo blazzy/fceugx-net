@@ -39,6 +39,7 @@ static int poll_one(int socket, int timeout, int event);
 #define IOS_O_NONBLOCK			0x04
 
 #define CONNECT_TIMEOUT 4000//ms
+#define RECV_TIMEOUT    4000//ms
 
 int skipgfx;
 
@@ -163,55 +164,38 @@ static int poll_one(int socket, int timeout, int event) {
 
 int FCEUD_RecvData(void *data, uint32 len) {
 	skipgfx = 0;
-	while (true) {
-		switch (poll_one(Socket, 10, POLLIN)) {
-			case  0: continue;
-			case -1: return 0;
-		}
-
-		int size = net_recv(Socket, data, len, 0);
-
-		if (size == int(len)) {
-			if (poll_one(Socket, 0, POLLIN)) {
-				skipgfx = 1;
-			}
-			return 1;
-		}
-
+	if (1 != poll_one(Socket, RECV_TIMEOUT, POLLIN)) {
 		return 0;
 	}
+
+	int size = net_recv(Socket, data, len, 0);
+
+	if (size == int(len)) {
+		if (poll_one(Socket, 0, POLLIN)) {
+			skipgfx = 1;
+		}
+		return 1;
+	}
+
+	return 0;
 }
 
 void FCEUD_NetworkClose(void) {
 	if (Socket != -1) {
-		close(Socket);
+		net_close(Socket);
 	}
 	Socket = -1;
 
 	FCEUI_NetplayStop();
 }
 
-void FCEUD_NetplayText(uint8 *text) {
+void FCEUD_NetplayClient(uint8 id, uint8 *name) {
 }
 
-// Originally took a char *name, but that's insecure.
-// The client will send a general request; the server
-// will identify the client based on which socket the
-// request came from.
-bool FCEUD_TellServerToggleReady()
-{
-	bool ret = true;
+void FCEUD_NetplayReady(uint8 id, uint8 ready) {
+}
 
-	if(executionMode == NETPLAY_CLIENT)
-	{
-		// socketed stuff
-	}
-	else
-	{
-
-	}
-
-	return ret;
+void FCEUD_NetplayText(uint8 *text) {
 }
 
 // This function sends a list of all connected players to each client for
