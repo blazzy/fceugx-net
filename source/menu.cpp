@@ -1388,7 +1388,7 @@ static int MenuGameSelection()
 		{
 			if(playerList != NULL)
 			{
-				playerList->ToggleReady();
+				FCEUI_NetplayToggleReady();
 			}
 
 			menu = MENU_SETTINGS;
@@ -1542,7 +1542,7 @@ static int MenuGameSelection()
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
 			readyBtn->ResetState();
-			playerList->ToggleReady();
+			FCEUI_NetplayToggleReady();
 		}
 	}
 

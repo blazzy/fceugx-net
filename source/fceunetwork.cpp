@@ -189,30 +189,13 @@ void FCEUD_NetworkClose(void) {
 	FCEUI_NetplayStop();
 }
 
-void FCEUD_NewClient(uint8 id, uint8 *name) {
+void FCEUD_NetplayClient(uint8 id, uint8 *name) {
+}
+
+void FCEUD_NetplayReady(uint8 id, uint8 ready) {
 }
 
 void FCEUD_NetplayText(uint8 *text) {
-}
-
-// Originally took a char *name, but that's insecure.
-// The client will send a general request; the server
-// will identify the client based on which socket the
-// request came from.
-bool FCEUD_TellServerToggleReady()
-{
-	bool ret = true;
-
-	if(executionMode == NETPLAY_CLIENT)
-	{
-		// socketed stuff
-	}
-	else
-	{
-
-	}
-
-	return ret;
 }
 
 // This function sends a list of all connected players to each client for

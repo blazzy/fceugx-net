@@ -118,6 +118,11 @@ void FCEUI_NetplayText(uint8 *text)
 		NetError();
 }
 
+void FCEUI_NetplayToggleReady()
+{
+	FCEUNET_SendCommand(FCEUNPCMD_READY, 0);
+}
+
 int FCEUNET_SendFile(uint8 cmd, char *fn)
 {
 	uint32 len;
@@ -306,14 +311,25 @@ void NetplayUpdate(uint8 *joyp)
 				break;
 			case FCEUNPCMD_NEWCLIENT:
 				{
-					uint8 buff[1 + NETPLAY_MAX_NAME_LEN];
-					if(!FCEUD_RecvData(buff, 1 + NETPLAY_MAX_NAME_LEN) || buff[0] > 3)
+					uint8 client_buf[1 + NETPLAY_MAX_NAME_LEN];
+					if(!FCEUD_RecvData(client_buf, 1 + NETPLAY_MAX_NAME_LEN) || client_buf[0] > 3)
 					{
 						NetError();
 						return;
 					}
-					buff[NETPLAY_MAX_NAME_LEN] = '\0';
-					FCEUD_NewClient(buff[0], &buff[1]);
+					client_buf[NETPLAY_MAX_NAME_LEN] = '\0';
+					FCEUD_NetplayClient(client_buf[0], &client_buf[1]);
+				}
+				break;
+			case FCEUNPCMD_READY:
+				{
+					uint8 ready_buf[2];
+					if(!FCEUD_RecvData(ready_buf, 2) || ready_buf[0] > 3)
+					{
+						NetError();
+						return;
+					}
+					FCEUD_NetplayReady(ready_buf[0], ready_buf[1]);
 				}
 				break;
 			case FCEUNPCMD_LOADCHEATS:
