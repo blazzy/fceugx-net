@@ -433,8 +433,8 @@ struct Game {
 	int max_clients;
 	int connect_timeout;
 	uint8_t frame_divisor;
-	int frame_delay;
-	int last_time;
+	uint64_t frame_delay;
+	uint64_t last_time;
 	uint8_t *password;
 
 	uint8_t joybuf[5];  /* 4 player data + 1 command byte */
