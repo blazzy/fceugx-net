@@ -1130,22 +1130,18 @@ static void showNetplayGuiComponents()
 
 	if(playerList != NULL && chatBtn != NULL && readyBtn != NULL)
 	{
-		// About the SetEffectGrow() being here... Don't know why, but setting the grow effect
-		// while the chat/ready buttons are invisible (at their place of instantiation) jacks
-		// them up if they receive a mouse event before they are made visible:  they expand to
-		// their full size from a singularity.  Maybe it's a bug in Tantric's API -- I haven't
-		// a clue.  Relocating the assignment of the grow effect to this function, the
-		// function which makes them visible, fixes the problem.
+		// The SetVisible calls for chatBtn/readyBtn are no longer necessary because we position them far offscreen when
+		// not in use, then zap them back on-screen when we need them.  Keeping the SetVisible calls in, however, makes
+		// it clear to the reader as to what their state should be.  This odd positioning scheme is a kludge that gets
+		// around a display bug.  The slide-out and slide-in effect, combined with receiving mouse events while onscreen
+		// and invisible, causes the buttons to be shrunk down to a singularity, which they they Big Bang themselves out
+		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
 
+		chatBtn->SetPosition(0, -58);
 		chatBtn->SetVisible(true);
-		chatBtn->SetClickable(true);
-		chatBtn->SetSoundOver(btnSoundOver);
-		chatBtn->SetEffectGrow();
 
+		readyBtn->SetPosition(0, -17);
 		readyBtn->SetVisible(true);
-		readyBtn->SetClickable(true);
-		readyBtn->SetSoundOver(btnSoundOver);
-		readyBtn->SetEffectGrow();
 
 		playerList->SetVisible(true);
 
@@ -1196,13 +1192,18 @@ static void hideNetplayGuiComponents()
 			usleep(THREAD_SLEEP);
 		}
 
-		chatBtn->SetVisible(false);
-		chatBtn->SetClickable(false);
-		chatBtn->SetSoundOver(NULL);
+		// The SetVisible calls for chatBtn/readyBtn are no longer necessary because we position them far offscreen when
+		// not in use, then zap them back on-screen when we need them.  Keeping the SetVisible calls in, however, makes
+		// it clear to the reader as to what their state should be.  This odd positioning scheme is a kludge that gets
+		// around a display bug.  The slide-out and slide-in effect, combined with receiving mouse events while onscreen
+		// and invisible, causes the buttons to be shrunk down to a singularity, which they they Big Bang themselves out
+		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
 
+		chatBtn->SetPosition(100, -58);
+		chatBtn->SetVisible(false);
+
+		readyBtn->SetPosition(100, -17);
 		readyBtn->SetVisible(false);
-		readyBtn->SetClickable(false);
-		readyBtn->SetSoundOver(NULL);
 
 		HaltGui();
 		mainWindow->Remove(playerList);
@@ -1340,14 +1341,15 @@ static int MenuGameSelection()
 
 		chatBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
 		chatBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-		chatBtn->SetPosition(0, -58);
+		chatBtn->SetPosition(100, -58);
 		chatBtn->SetLabel(&chatBtnTxt);
 		chatBtn->SetImage(&chatBtnImg);
 		chatBtn->SetImageOver(&chatBtnImgOver);
-		chatBtn->SetClickable(false);
 		chatBtn->SetSoundClick(&btnSoundClick);
+		chatBtn->SetSoundOver(btnSoundOver);
 		chatBtn->SetTrigger(trigA);
 		chatBtn->SetTrigger(trig2);
+		chatBtn->SetEffectGrow();
 		chatBtn->SetVisible(false);
 	}
 
@@ -1359,15 +1361,16 @@ static int MenuGameSelection()
 
 		readyBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
 		readyBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-		readyBtn->SetPosition(0, -17);
+		readyBtn->SetPosition(100, -17);
 		readyBtn->SetLabel(&readyBtnTxt);
 		readyBtn->SetImage(&readyBtnImg);
 		readyBtn->SetImageOver(&readyBtnImgOver);
-		readyBtn->SetClickable(false);
 		readyBtn->SetSoundClick(&btnSoundClick);
+		readyBtn->SetSoundOver(btnSoundOver);
 		readyBtn->SetTrigger(trigA);
 		readyBtn->SetTrigger(trig2);
 		readyBtn->SetLabel(&readyBtnTxt);
+		readyBtn->SetEffectGrow();
 		readyBtn->SetVisible(false);
 	}
 
