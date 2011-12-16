@@ -4386,7 +4386,6 @@ static int MenuSettingsNetwork()
 		switch (ret)
 		{
 			case 0:
-InfoPrompt(GCSettings.netplayIp);
 				OnScreenKeyboard(GCSettings.netplayIp, SIZE_NETPLAY_IP - 1);
 				break;
 
@@ -4402,7 +4401,7 @@ InfoPrompt(GCSettings.netplayIp);
 				strcpy(netplayNameBackup, GCSettings.netplayNameX);
 
 				OnScreenKeyboard(GCSettings.netplayNameX, NETPLAY_MAX_NAME_LEN - 1);
-InfoPrompt(GCSettings.netplayNameX);
+
 				if(strlen(GCSettings.netplayNameX) > 0
 				&& (strcmp(GCSettings.netplayNameX, GCSettings.netplayNameY) == 0 || strcmp(GCSettings.netplayNameX, GCSettings.netplayNameZ) == 0))
 				{
