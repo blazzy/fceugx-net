@@ -21,7 +21,7 @@
 enum ExecutionMode { OFFLINE, NETPLAY_HOST, NETPLAY_CLIENT };
 extern ExecutionMode executionMode;
 
-#define NETPLAY_MAX_NAME_LEN  20
+#define NETPLAY_MAX_NAME_LEN  21
 
 #define FCEUNPCMD_RESET   0x01
 #define FCEUNPCMD_POWER   0x02

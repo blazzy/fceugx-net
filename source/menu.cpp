@@ -765,6 +765,10 @@ void AutoSave()
  *
  * Opens an on-screen keyboard window, with the data entered being stored
  * into the specified variable.
+ *
+ * NOTE:  Your buffer must be one larger than maxlen to account for the null
+ *        terminator.  Maxlen refers to how many letters you are allowed to
+ *        type, not the size of the buffer.
  ***************************************************************************/
 static void OnScreenKeyboard(char * var, u32 maxlen)
 {
@@ -830,7 +834,7 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 
 	if(save)
 	{
-		snprintf(var, maxlen, "%s", keyboard.kbtextstr);
+		snprintf(var, maxlen + 1, "%s", keyboard.kbtextstr);
 	}
 
 	HaltGui();
@@ -4311,8 +4315,7 @@ static int MenuSettingsNetwork()
 	int i = 0;
 	bool firstRun = true;
 	OptionList options;
-	//char blah[17] = {'\0'};
-	//OnScreenKeyboard(blah, (u32)17);
+
 	const u32 SIZE_NETPLAY_IP   = (u32) sizeof(GCSettings.netplayIp),
 	          SIZE_NETPLAY_PORT = (u32) sizeof(GCSettings.netplayPort),
 	          SIZE_NETPLAY_PWD  = (u32) sizeof(GCSettings.netplayPwd),
@@ -4383,22 +4386,23 @@ static int MenuSettingsNetwork()
 		switch (ret)
 		{
 			case 0:
-				OnScreenKeyboard(GCSettings.netplayIp, SIZE_NETPLAY_IP);
+InfoPrompt(GCSettings.netplayIp);
+				OnScreenKeyboard(GCSettings.netplayIp, SIZE_NETPLAY_IP - 1);
 				break;
 
 			case 1:
-				OnScreenKeyboard(GCSettings.netplayPort, SIZE_NETPLAY_PORT);
+				OnScreenKeyboard(GCSettings.netplayPort, SIZE_NETPLAY_PORT - 1);
 				break;
 
 			case 2:
-				OnScreenKeyboard(GCSettings.netplayPwd, SIZE_NETPLAY_PWD);
+				OnScreenKeyboard(GCSettings.netplayPwd, SIZE_NETPLAY_PWD - 1);
 				break;
 
 			case 3:
 				strcpy(netplayNameBackup, GCSettings.netplayNameX);
 
-				OnScreenKeyboard(GCSettings.netplayNameX, NETPLAY_MAX_NAME_LEN);
-
+				OnScreenKeyboard(GCSettings.netplayNameX, NETPLAY_MAX_NAME_LEN - 1);
+InfoPrompt(GCSettings.netplayNameX);
 				if(strlen(GCSettings.netplayNameX) > 0
 				&& (strcmp(GCSettings.netplayNameX, GCSettings.netplayNameY) == 0 || strcmp(GCSettings.netplayNameX, GCSettings.netplayNameZ) == 0))
 				{
@@ -4411,7 +4415,7 @@ static int MenuSettingsNetwork()
 			case 4:
 				strcpy(netplayNameBackup, GCSettings.netplayNameY);
 
-				OnScreenKeyboard(GCSettings.netplayNameY, NETPLAY_MAX_NAME_LEN);
+				OnScreenKeyboard(GCSettings.netplayNameY, NETPLAY_MAX_NAME_LEN - 1);
 
 				if(strlen(GCSettings.netplayNameY) > 0
 				&& (strcmp(GCSettings.netplayNameY, GCSettings.netplayNameX) == 0 || strcmp(GCSettings.netplayNameY, GCSettings.netplayNameZ) == 0))
@@ -4425,7 +4429,7 @@ static int MenuSettingsNetwork()
 			case 5:
 				strcpy(netplayNameBackup, GCSettings.netplayNameZ);
 
-				OnScreenKeyboard(GCSettings.netplayNameZ, NETPLAY_MAX_NAME_LEN);
+				OnScreenKeyboard(GCSettings.netplayNameZ, NETPLAY_MAX_NAME_LEN - 1);
 
 				if(strlen(GCSettings.netplayNameZ) > 0
 				&& (strcmp(GCSettings.netplayNameZ, GCSettings.netplayNameX) == 0 || strcmp(GCSettings.netplayNameZ, GCSettings.netplayNameY) == 0))
@@ -4437,36 +4441,36 @@ static int MenuSettingsNetwork()
 				break;
 
 			case 6:
-				OnScreenKeyboard(GCSettings.smbip, SIZE_SMB_IP);
+				OnScreenKeyboard(GCSettings.smbip, SIZE_SMB_IP - 1);
 				break;
 
 			case 7:
-				OnScreenKeyboard(GCSettings.smbshare, SIZE_SMB_SHARE);
+				OnScreenKeyboard(GCSettings.smbshare, SIZE_SMB_SHARE - 1);
 				break;
 
 			case 8:
-				OnScreenKeyboard(GCSettings.smbuser, SIZE_SMB_USER);
+				OnScreenKeyboard(GCSettings.smbuser, SIZE_SMB_USER - 1);
 				break;
 
 			case 9:
-				OnScreenKeyboard(GCSettings.smbpwd, SIZE_SMB_PWD);
+				OnScreenKeyboard(GCSettings.smbpwd, SIZE_SMB_PWD - 1);
 				break;
 		}
 
 		if(ret >= 0 || firstRun)
 		{
 			firstRun = false;
-			snprintf (options.value[0], SIZE_NETPLAY_IP   - 1, "%s", GCSettings.netplayIp);
-			snprintf (options.value[1], SIZE_NETPLAY_PORT - 1, "%s", GCSettings.netplayPort);
-			snprintf (options.value[2], SIZE_NETPLAY_PWD  - 1, "%s", GCSettings.netplayPwd);
-			snprintf (options.value[3], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayNameX);
-			snprintf (options.value[4], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayNameY);
-			snprintf (options.value[5], NETPLAY_MAX_NAME_LEN - 1, "%s", GCSettings.netplayNameZ);
+			snprintf (options.value[0], SIZE_NETPLAY_IP, "%s", GCSettings.netplayIp);
+			snprintf (options.value[1], SIZE_NETPLAY_PORT, "%s", GCSettings.netplayPort);
+			snprintf (options.value[2], SIZE_NETPLAY_PWD, "%s", GCSettings.netplayPwd);
+			snprintf (options.value[3], NETPLAY_MAX_NAME_LEN, "%s", GCSettings.netplayNameX);
+			snprintf (options.value[4], NETPLAY_MAX_NAME_LEN, "%s", GCSettings.netplayNameY);
+			snprintf (options.value[5], NETPLAY_MAX_NAME_LEN, "%s", GCSettings.netplayNameZ);
 
-			snprintf (options.value[6], 25, "%s", GCSettings.smbip);   // midnak:  Why didn't he use (size - 1) here like he did with the others?  Question 2:  why's the array so big to begin with?
-			snprintf (options.value[7], SIZE_SMB_SHARE - 1, "%s", GCSettings.smbshare);
-			snprintf (options.value[8], SIZE_SMB_USER  - 1, "%s", GCSettings.smbuser);
-			snprintf (options.value[9], SIZE_SMB_PWD   - 1, "%s", GCSettings.smbpwd);
+			snprintf (options.value[6], 25, "%s", GCSettings.smbip);
+			snprintf (options.value[7], SIZE_SMB_SHARE, "%s", GCSettings.smbshare);
+			snprintf (options.value[8], SIZE_SMB_USER, "%s", GCSettings.smbuser);
+			snprintf (options.value[9], SIZE_SMB_PWD, "%s", GCSettings.smbpwd);
 			optionBrowser.TriggerUpdate();
 		}
 

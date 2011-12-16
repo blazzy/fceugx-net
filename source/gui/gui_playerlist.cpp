@@ -172,7 +172,7 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 	const char *RECORD_SEPARATOR = "|";
 
 	int len = 0;
-	char name[NETPLAY_MAX_NAME_LEN + 1];
+	char name[NETPLAY_MAX_NAME_LEN];
 	bool ready = false;
 
 	int status = PLAYER_LIST_SUCCESS,
@@ -205,20 +205,20 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 
 			//printf("\n\ntoken to parse:  (%s)\n", token);
 
-			if(len == NETPLAY_MAX_NAME_LEN + 2)  // +2 = colon plus ready indicator
+			if(len == NETPLAY_MAX_NAME_LEN + 1)  // 21st space + 1 = colon plus ready indicator
 			{
-				if(token[NETPLAY_MAX_NAME_LEN] == ':')
+				if(token[NETPLAY_MAX_NAME_LEN - 1] == ':')
 				{
-					if(token[NETPLAY_MAX_NAME_LEN + 1] == 48)
+					if(token[NETPLAY_MAX_NAME_LEN] == 48)  // ASCII '0'
 					{
-						snprintf(name, NETPLAY_MAX_NAME_LEN + 1, token);
+						snprintf(name, NETPLAY_MAX_NAME_LEN, token);
 						ready = false;
 
 						//printf("%s is not ready\n", name);
 					}
-					else if(token[NETPLAY_MAX_NAME_LEN + 1] == 49)
+					else if(token[NETPLAY_MAX_NAME_LEN] == 49)  // ASCII '1'
 					{
-						snprintf(name, NETPLAY_MAX_NAME_LEN + 1, token);
+						snprintf(name, NETPLAY_MAX_NAME_LEN, token);
 						ready = true;
 
 						//printf("%s is ready\n", name);
