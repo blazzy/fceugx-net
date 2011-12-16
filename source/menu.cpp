@@ -1130,13 +1130,23 @@ static void showNetplayGuiComponents()
 
 	if(playerList != NULL && chatBtn != NULL && readyBtn != NULL)
 	{
+		// About the SetEffectGrow() being here... I have no idea why, but if you call SetEffectGrow()
+		// on chatBtn and readyBtn where they are instantiated, and you mouse over the area of the
+		// screen where they appear (when they're still hidden), they won't display when you click
+		// Host/Join.  Then, if you click Host/Join and mouse over the blank areas, they appear,
+		// growing out of a singularity until they reach their full size.  I likened this to the
+		// Grow effect since they were, well, growing, and moved the SetEffectGrow() calls here on a
+		// hunch.  It worked; it decisively fixed the issue, so whatever.
+
 		chatBtn->SetVisible(true);
 		chatBtn->SetClickable(true);
 		chatBtn->SetSoundOver(btnSoundOver);
+		chatBtn->SetEffectGrow();
 
 		readyBtn->SetVisible(true);
 		readyBtn->SetClickable(true);
 		readyBtn->SetSoundOver(btnSoundOver);
+		readyBtn->SetEffectGrow();
 
 		playerList->SetVisible(true);
 
@@ -1339,7 +1349,6 @@ static int MenuGameSelection()
 		chatBtn->SetSoundClick(&btnSoundClick);
 		chatBtn->SetTrigger(trigA);
 		chatBtn->SetTrigger(trig2);
-		chatBtn->SetEffectGrow();
 		chatBtn->SetVisible(false);
 	}
 
@@ -1360,7 +1369,6 @@ static int MenuGameSelection()
 		readyBtn->SetTrigger(trigA);
 		readyBtn->SetTrigger(trig2);
 		readyBtn->SetLabel(&readyBtnTxt);
-		readyBtn->SetEffectGrow();
 		readyBtn->SetVisible(false);
 	}
 
