@@ -80,6 +80,7 @@ GuiButton *hostBtn        = NULL,
           *disconnectBtn  = NULL,
           *chatBtn        = NULL,
           *readyBtn       = NULL;
+static GuiSound *btnSoundOver;
 
 #ifdef HW_RVL
 static GuiImageData * pointer[4];
@@ -1123,14 +1124,21 @@ static void showNetplayGuiComponents()
 	{
 		disconnectBtn->SetClickable(true);
 		disconnectBtn->SetRumble(true);
+		disconnectBtn->SetSoundOver(btnSoundOver);
 		disconnectBtn->SetVisible(true);
 	}
 
 	if(playerList != NULL && chatBtn != NULL && readyBtn != NULL)
 	{
-		playerList->SetVisible(true);
 		chatBtn->SetVisible(true);
+		chatBtn->SetClickable(true);
+		chatBtn->SetSoundOver(btnSoundOver);
+
 		readyBtn->SetVisible(true);
+		readyBtn->SetClickable(true);
+		readyBtn->SetSoundOver(btnSoundOver);
+
+		playerList->SetVisible(true);
 
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
 		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
@@ -1149,6 +1157,7 @@ static void hideNetplayGuiComponents()
 	{
 		hostBtn->SetClickable(true);
 		hostBtn->SetRumble(true);
+		hostBtn->SetSoundOver(btnSoundOver);
 		hostBtn->SetVisible(true);
 	}
 
@@ -1156,6 +1165,7 @@ static void hideNetplayGuiComponents()
 	{
 		joinBtn->SetClickable(true);
 		joinBtn->SetRumble(true);
+		joinBtn->SetSoundOver(btnSoundOver);
 		joinBtn->SetVisible(true);
 	}
 
@@ -1178,7 +1188,12 @@ static void hideNetplayGuiComponents()
 		}
 
 		chatBtn->SetVisible(false);
+		chatBtn->SetClickable(false);
+		chatBtn->SetSoundOver(NULL);
+
 		readyBtn->SetVisible(false);
+		readyBtn->SetClickable(false);
+		readyBtn->SetSoundOver(NULL);
 
 		HaltGui();
 		mainWindow->Remove(playerList);
@@ -1213,7 +1228,7 @@ static int MenuGameSelection()
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,50);
 
-	static GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
+	btnSoundOver = new GuiSound(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	static GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 
 	GuiImageData iconHome(icon_home_png);
@@ -1244,7 +1259,7 @@ static int MenuGameSelection()
 	settingsBtn.SetIcon(&settingsBtnIcon);
 	settingsBtn.SetImage(&settingsBtnImg);
 	settingsBtn.SetImageOver(&settingsBtnImgOver);
-	settingsBtn.SetSoundOver(&btnSoundOver);
+	settingsBtn.SetSoundOver(btnSoundOver);
 	settingsBtn.SetSoundClick(&btnSoundClick);
 	settingsBtn.SetTrigger(trigA);
 	settingsBtn.SetTrigger(trig2);
@@ -1263,7 +1278,7 @@ static int MenuGameSelection()
 	exitBtn.SetIcon(&exitBtnIcon);
 	exitBtn.SetImage(&exitBtnImg);
 	exitBtn.SetImageOver(&exitBtnImgOver);
-	exitBtn.SetSoundOver(&btnSoundOver);
+	exitBtn.SetSoundOver(btnSoundOver);
 	exitBtn.SetSoundClick(&btnSoundClick);
 	exitBtn.SetTrigger(trigA);
 	exitBtn.SetTrigger(trig2);
@@ -1282,7 +1297,7 @@ static int MenuGameSelection()
 		hostBtn->SetLabel(&hostBtnTxt);
 		hostBtn->SetImage(&hostBtnImg);
 		hostBtn->SetImageOver(&hostBtnImgOver);
-		hostBtn->SetSoundOver(&btnSoundOver);
+		hostBtn->SetSoundOver(btnSoundOver);
 		hostBtn->SetSoundClick(&btnSoundClick);
 		hostBtn->SetTrigger(trigA);
 		hostBtn->SetTrigger(trig2);
@@ -1301,7 +1316,7 @@ static int MenuGameSelection()
 		joinBtn->SetLabel(&joinBtnTxt);
 		joinBtn->SetImage(&joinBtnImg);
 		joinBtn->SetImageOver(&joinBtnImgOver);
-		joinBtn->SetSoundOver(&btnSoundOver);
+		joinBtn->SetSoundOver(btnSoundOver);
 		joinBtn->SetSoundClick(&btnSoundClick);
 		joinBtn->SetTrigger(trigA);
 		joinBtn->SetTrigger(trig2);
@@ -1320,7 +1335,7 @@ static int MenuGameSelection()
 		chatBtn->SetLabel(&chatBtnTxt);
 		chatBtn->SetImage(&chatBtnImg);
 		chatBtn->SetImageOver(&chatBtnImgOver);
-		chatBtn->SetSoundOver(&btnSoundOver);
+		chatBtn->SetClickable(false);
 		chatBtn->SetSoundClick(&btnSoundClick);
 		chatBtn->SetTrigger(trigA);
 		chatBtn->SetTrigger(trig2);
@@ -1340,7 +1355,7 @@ static int MenuGameSelection()
 		readyBtn->SetLabel(&readyBtnTxt);
 		readyBtn->SetImage(&readyBtnImg);
 		readyBtn->SetImageOver(&readyBtnImgOver);
-		readyBtn->SetSoundOver(&btnSoundOver);
+		readyBtn->SetClickable(false);
 		readyBtn->SetSoundClick(&btnSoundClick);
 		readyBtn->SetTrigger(trigA);
 		readyBtn->SetTrigger(trig2);
@@ -1533,7 +1548,6 @@ static int MenuGameSelection()
 				{
 					executionMode = NETPLAY_HOST;
 					showNetplayGuiComponents();
-					disconnectBtn->SetSoundOver(&btnSoundOver);
 				}
 
 				// This fakes a response coming from the server.  The string will come from a method that receives
@@ -1617,7 +1631,6 @@ static int MenuGameSelection()
 				if(connected)
 				{
 					showNetplayGuiComponents();
-					disconnectBtn->SetSoundOver(&btnSoundOver);
 					ResumeNetplay();
 				}
 			}
@@ -1630,8 +1643,6 @@ static int MenuGameSelection()
 
 			FCEUD_NetworkClose();
 			hideNetplayGuiComponents();
-			hostBtn->SetSoundOver(&btnSoundOver);
-			joinBtn->SetSoundOver(&btnSoundOver);
 		}
 		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
