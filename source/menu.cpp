@@ -1130,13 +1130,12 @@ static void showNetplayGuiComponents()
 
 	if(playerList != NULL && chatBtn != NULL && readyBtn != NULL)
 	{
-		// About the SetEffectGrow() being here... I have no idea why, but if you call SetEffectGrow()
-		// on chatBtn and readyBtn where they are instantiated, and you mouse over the area of the
-		// screen where they appear (when they're still hidden), they won't display when you click
-		// Host/Join.  Then, if you click Host/Join and mouse over the blank areas, they appear,
-		// growing out of a singularity until they reach their full size.  I likened this to the
-		// Grow effect since they were, well, growing, and moved the SetEffectGrow() calls here on a
-		// hunch.  It worked; it decisively fixed the issue, so whatever.
+		// About the SetEffectGrow() being here... Don't know why, but setting the grow effect
+		// while the chat/ready buttons are invisible (at their place of instantiation) jacks
+		// them up if they receive a mouse event before they are made visible:  they expand to
+		// their full size from a singularity.  Maybe it's a bug in Tantric's API -- I haven't
+		// a clue.  Relocating the assignment of the grow effect to this function, the
+		// function which makes them visible, fixes the problem.
 
 		chatBtn->SetVisible(true);
 		chatBtn->SetClickable(true);
@@ -1458,7 +1457,8 @@ static int MenuGameSelection()
 				{
 					InfoPrompt("Everyone must click in as READY before launching a game");
 				}
-				else if((executionMode == NETPLAY_HOST && playerList->IsEveryoneReady()) || executionMode == OFFLINE)
+				else if( (executionMode == NETPLAY_HOST && (playerList->IsEveryoneReady() || browserList[browser.selIndex].icon != ICON_NONE))
+				|| executionMode == OFFLINE )
 				{
 					// check corresponding browser entry
 					if(browserList[browser.selIndex].isdir || IsSz())
