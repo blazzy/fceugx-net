@@ -1456,11 +1456,9 @@ static int MenuGameSelection()
 			{
 				gameBrowser.fileList[i]->ResetState();
 
-				if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
-				{
-					InfoPrompt("Everyone must click in as READY before launching a game");
-				}
-				else if((executionMode == NETPLAY_HOST && playerList->IsEveryoneReady()) || executionMode == OFFLINE)
+				if( (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
+				||  (executionMode == NETPLAY_HOST && browserList[browser.selIndex].isdir)
+				||  (executionMode == OFFLINE) )
 				{
 					// check corresponding browser entry
 					if(browserList[browser.selIndex].isdir || IsSz())
@@ -1494,14 +1492,12 @@ static int MenuGameSelection()
 							mainWindow->SetState(STATE_DEFAULT);
 					}
 				}
-				else if(executionMode == NETPLAY_HOST)
+				else if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
 				{
 					InfoPrompt("Everyone must click in as READY before launching a game");
 				}
-				else
+				else if(executionMode == NETPLAY_CLIENT)
 				{
-					// I suppose there's nothing stopping us from letting clients start games, though that
-					// could make for a chaotic experience.  We'll stick with letting the host do the honors.
 					InfoPrompt("Only the host can start games");
 				}
 			}
