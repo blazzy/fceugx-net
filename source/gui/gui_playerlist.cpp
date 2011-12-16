@@ -96,8 +96,6 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 									(GXColor){60, 144, 60, 255},  // Player 3 ready (green)
 									(GXColor){148, 147, 65, 255}  // Player 4 ready (yellow)
 								 };
-
-	//SetUpdateCallback(EventHandler);
 }
 
 GuiPlayerList::~GuiPlayerList()
@@ -285,10 +283,16 @@ int GuiPlayerList::AddPlayer(Player player)
 		char truncName[MAX_PLAYER_NAME_LEN+1];
 		snprintf(truncName, MAX_PLAYER_NAME_LEN+1, "%s", player.name);
 
-		rowText[newIdx] = new GuiText(truncName, 25, player.ready ? colorReady[newIdx] : *colorNotReady);
+		bool alloc = (rowText[newIdx] = new GuiText(truncName, 25, player.ready ? colorReady[newIdx] : *colorNotReady)) &&
+					 (imgRowSelected[newIdx] = new GuiImage(imgDataSelectionEntry)) &&
+					 (rowButton[newIdx] = new GuiButton(this->GetWidth(), imgDataSelectionEntry->GetHeight()));
 
-		if(rowText[newIdx] == NULL)
+		if(!alloc)
 		{
+			if(rowText[newIdx]) delete rowText[newIdx];
+			if(imgRowSelected[newIdx]) delete imgRowSelected[newIdx];
+			if(rowButton[newIdx]) delete rowButton[newIdx];
+
 			return PLAYER_LIST_ERR_OUT_OF_MEM;
 		}
 
@@ -296,39 +300,23 @@ int GuiPlayerList::AddPlayer(Player player)
 		rowText[newIdx]->SetPosition(40,0);
 		rowText[newIdx]->SetMaxWidth(105);
 
-		imgRowSelected[newIdx] = new GuiImage(imgDataSelectionEntry);
-
-		if(imgRowSelected[newIdx] == NULL)
-		{
-			return PLAYER_LIST_ERR_OUT_OF_MEM;
-		}
-
 		imgRowSelected[newIdx]->SetPosition(2,-3);
 
-		rowButton[newIdx] = new GuiButton(this->GetWidth(), imgDataSelectionEntry->GetHeight());
+		rowButton[newIdx]->SetParent(this);
+		rowButton[newIdx]->SetLabel(rowText[newIdx]);
+		rowButton[newIdx]->SetImageOver(imgRowSelected[newIdx]);
+		rowButton[newIdx]->SetPosition(2, (imgRowSelected[newIdx]->GetHeight() * newIdx) + 50);
+		rowButton[newIdx]->SetTrigger(trigA);
+		rowButton[newIdx]->SetTrigger(trig2);
+		rowButton[newIdx]->SetSoundClick(btnSoundClick);
 
-		if(rowButton[newIdx] == NULL)
+		if(player.ready)
 		{
-			return PLAYER_LIST_ERR_OUT_OF_MEM;
+			rowButton[newIdx]->SetIcon(imgPlayerReady[newIdx]);
 		}
-		else
-		{
-			rowButton[newIdx]->SetParent(this);
-			rowButton[newIdx]->SetLabel(rowText[newIdx]);
-			rowButton[newIdx]->SetImageOver(imgRowSelected[newIdx]);
-			rowButton[newIdx]->SetPosition(2, (imgRowSelected[newIdx]->GetHeight() * newIdx) + 50);
-			rowButton[newIdx]->SetTrigger(trigA);
-			rowButton[newIdx]->SetTrigger(trig2);
-			rowButton[newIdx]->SetSoundClick(btnSoundClick);
 
-			if(player.ready)
-			{
-				rowButton[newIdx]->SetIcon(imgPlayerReady[newIdx]);
-			}
-
-			currIdx = newIdx;
-			listChanged = true;
-		}
+		currIdx = newIdx;
+		listChanged = true;
 
 		return PLAYER_LIST_SUCCESS;
 	}
@@ -381,7 +369,7 @@ int GuiPlayerList::GetPlayerNumber(char *name)
 	{
 		for(int i = 0; i <= currIdx; i++)
 		{
-			if(strcmp(name, rowText[i]->ToString()) == 0)
+			if(rowText[i] != NULL && strcmp(name, rowText[i]->ToString()) == 0)
 			{
 				idx = i;
 				break;
