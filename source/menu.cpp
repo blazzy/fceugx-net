@@ -1369,6 +1369,8 @@ static int MenuGameSelection()
 		disconnectBtn->SetVisible(false);
 	}
 
+	HaltGui();
+
 	GuiWindow buttonWindow(screenwidth, screenheight);
 	buttonWindow.Append(joinBtn);
 	buttonWindow.Append(hostBtn);
@@ -1377,6 +1379,8 @@ static int MenuGameSelection()
 	buttonWindow.Append(readyBtn);
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
+
+	ResumeGui();
 
 	GuiFileBrowser gameBrowser(424, 268);
 	gameBrowser.SetPosition(50, 98);
