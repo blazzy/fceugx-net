@@ -1457,8 +1457,7 @@ static int MenuGameSelection()
 				{
 					InfoPrompt("Everyone must click in as READY before launching a game");
 				}
-				else if( (executionMode == NETPLAY_HOST && (playerList->IsEveryoneReady() || browserList[browser.selIndex].icon != ICON_NONE))
-				|| executionMode == OFFLINE )
+				else if((executionMode == NETPLAY_HOST && playerList->IsEveryoneReady()) || executionMode == OFFLINE)
 				{
 					// check corresponding browser entry
 					if(browserList[browser.selIndex].isdir || IsSz())
