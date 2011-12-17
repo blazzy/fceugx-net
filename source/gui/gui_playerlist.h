@@ -34,14 +34,12 @@ struct Player
 	bool ready;
 };
 
-class GuiPlayerList : public GuiElement
+class GuiPlayerList : public GuiWindow
 {
 	public:
 		GuiPlayerList(int w, int h);
 		~GuiPlayerList();
-		void ResetState();
 		void SetFocus(int f);
-		void Draw();
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);
 

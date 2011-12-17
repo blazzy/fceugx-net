@@ -164,11 +164,6 @@ static void playerListEventHandler(void *ptr)
 		listIdxZ = list->GetPlayerNumber(GCSettings.netplayNameZ);
 	}
 
-/*char c[10];
-sprintf(c, "%d,%d,%d", listIdxX, listIdxY, listIdxZ);
-chatBtn->SetLabel(new GuiText(c, 19, (GXColor){0,0,0,255}));
-listIdxZ = 3;*/
-
 	int i = 0;
 	do
 	{

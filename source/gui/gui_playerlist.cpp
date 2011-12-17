@@ -30,7 +30,6 @@
 #include "menu.h"         // Error prompts
 #include "../fceultra/utils/xstring.h"      // str_strip()
 
-//static void EventHandler(void *ptr);
 
 GuiPlayerList::GuiPlayerList(int w, int h)
 {
@@ -96,10 +95,18 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 									(GXColor){60, 144, 60, 255},  // Player 3 ready (green)
 									(GXColor){148, 147, 65, 255}  // Player 4 ready (yellow)
 								 };
+
+	Append(imgMainWindow);
+	Append(titleTxt);
+	Append(txtAllPlayersReady);
 }
 
 GuiPlayerList::~GuiPlayerList()
 {
+	Remove(imgMainWindow);
+	Remove(titleTxt);
+	Remove(txtAllPlayersReady);
+
 	delete titleTxt;
 	delete txtAllPlayersReady;
 
@@ -131,6 +138,7 @@ GuiPlayerList::~GuiPlayerList()
 
 		if(rowButton[i])
 		{
+			Remove(rowButton[i]);
 			delete rowButton[i];
 		}
 	}
@@ -315,6 +323,8 @@ int GuiPlayerList::AddPlayer(Player player)
 			rowButton[newIdx]->SetIcon(imgPlayerReady[newIdx]);
 		}
 
+		Append(rowButton[newIdx]);
+
 		currIdx = newIdx;
 		listChanged = true;
 
@@ -336,6 +346,7 @@ void GuiPlayerList::Clear()
 	{
 		if(rowButton[i] != NULL)
 		{
+			Remove(rowButton[i]);
 			delete rowButton[i];
 			rowButton[i] = NULL;
 		}
@@ -471,55 +482,14 @@ bool GuiPlayerList::IsEveryoneReady()
 	return ready;
 }
 
-void GuiPlayerList::ResetState()
-{
-	state = STATE_DEFAULT;
-	stateChan = -1;
-	selectedItem = 0;
-
-	for(int i = 0; i <= currIdx; i++)
-	{
-		if(rowButton[i] != NULL)
-		{
-			rowButton[i]->ResetState();
-		}
-	}
-}
-
-/**
- * Draw the button on screen
- */
-void GuiPlayerList::Draw()
-{
-	if(!this->IsVisible())
-	{
-		return;
-	}
-
-	imgMainWindow->Draw();
-
-	for(int i = 0; i <= currIdx; i++)
-	{
-		if(rowButton[i] != NULL)
-		{
-			rowButton[i]->Draw();
-		}
-	}
-
-	titleTxt->Draw();
-
-	txtAllPlayersReady->SetVisible(IsEveryoneReady());
-	txtAllPlayersReady->Draw();
-
-	this->UpdateEffects();
-}
-
 void GuiPlayerList::Update(GuiTrigger * t)
 {
-	if(state == STATE_DISABLED || !t || !IsVisible())
+	if(GetState() == STATE_DISABLED || !t || !IsVisible())
 	{
 		return;
 	}
+
+	txtAllPlayersReady->SetVisible(IsEveryoneReady());
 
 	for(int i = 0; i <= currIdx; i++)
 	{
@@ -534,8 +504,6 @@ void GuiPlayerList::Update(GuiTrigger * t)
 			{
 				rowButton[i]->SetState(STATE_DEFAULT);
 			}
-
-			rowButton[i]->SetVisible(true);
 		}
 
 		if(i != selectedItem && rowButton[i]->GetState() == STATE_SELECTED)
