@@ -376,14 +376,25 @@ int GuiPlayerList::GetPlayerNumber(char *name)
 {
 	int idx = -1;
 
-	if(rowText != NULL)
+	if(name != NULL)
 	{
 		for(int i = 0; i <= currIdx; i++)
 		{
-			if(rowText[i] != NULL && strcmp(name, rowText[i]->ToString()) == 0)
+			if(rowText[i] != NULL)
 			{
-				idx = i;
-				break;
+				char *textCopy = rowText[i]->ToString();
+
+				if(textCopy != NULL)
+				{
+					if(strcmp(name, textCopy) == 0)
+					{
+						idx = i;
+						free(textCopy);
+						break;
+					}
+
+					free(textCopy);
+				}
 			}
 		}
 	}

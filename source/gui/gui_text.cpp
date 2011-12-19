@@ -486,6 +486,9 @@ void GuiText::Draw()
 	this->UpdateEffects();
 }
 
+// Returns a copy of the string text.  The copy is allocated with malloc().
+// To avoid leaking memory, you must free() the string when you're done
+// with it!
 char * GuiText::ToString()
 {
 	return strdup(origText);
