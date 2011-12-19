@@ -495,7 +495,7 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	{
 		if(rowButton[i] == NULL)
 		{
-			break;
+			continue;
 		}
 
 		if(listChanged)
@@ -543,6 +543,7 @@ void GuiPlayerList::Update(GuiTrigger * t)
 		}
 	}
 
+	focus = false;
 	listChanged = false;
 
 	if(updateCB)
