@@ -500,8 +500,6 @@ void GuiPlayerList::Update(GuiTrigger * t)
 		return;
 	}
 
-	txtAllPlayersReady->SetVisible(IsEveryoneReady());
-
 	for(int i = 0; i <= currIdx; i++)
 	{
 		if(rowButton[i] == NULL)
@@ -555,10 +553,15 @@ void GuiPlayerList::Update(GuiTrigger * t)
 	}
 
 	focus = false;
-	listChanged = false;
 
-	if(updateCB)
+	if(updateCB != NULL && listChanged)
 	{
+		txtAllPlayersReady->SetVisible(IsEveryoneReady());
+		listChanged = false;
 		updateCB(this);
+	}
+	else
+	{
+		listChanged = false;
 	}
 }
