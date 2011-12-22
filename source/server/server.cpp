@@ -45,12 +45,6 @@
 #define DEFAULT_FRAMEDIVISOR 1
 #define DEFAULT_NAME         "UnnamedClient"
 
-#define FCEUNPCMD_RESET      0x01
-#define FCEUNPCMD_POWER      0x02
-#define FCEUNPCMD_VSUNICOIN  0x07
-#define FCEUNPCMD_VSUNIDIP0  0x08
-#define FCEUNPCMD_TEXT       0x90
-
 #define N_LOGINLEN   0x1000
 #define N_LOGIN      0x2000
 #define N_COMMAND    0x4000
@@ -94,7 +88,7 @@ static uint64_t gettime() {
 struct Client {
 	char name[NETPLAY_MAX_NAME_LEN];
 	int  id;
-	bool ready;
+	bool disconnecting;
 
 	int  socket;
 
@@ -110,8 +104,8 @@ struct Client {
 
 	Client():
 		id(-1),
-		ready(false),
 		socket(-1),
+		disconnecting(false),
 		buffer_used(0),
 		command_length(0),
 		command_type(0) {
@@ -149,8 +143,12 @@ struct Client {
 
 	void disconnect() {
 		fprintf(stderr, "Client %d %s disconnecting\n", id, name);
-		close(socket);
-		socket  = -1;
+		if (socket != -1) {
+			close(socket);
+
+			socket  = -1;
+			disconnecting = true;
+		}
 	}
 
 	void reset_buffer(int type, int length) {
@@ -168,6 +166,13 @@ struct Client {
 	void set_default_name() {
 		snprintf(name, NETPLAY_MAX_NAME_LEN, "%s%i", DEFAULT_NAME, id);
 	}
+
+	const static int serialize_len = 1 + NETPLAY_MAX_NAME_LEN;
+	void serialize(uint8_t (*buf)[serialize_len]) {
+		uint8_t *sbuf = (uint8_t*)buf;
+		sbuf[0] = id;
+		memcpy(&sbuf[1], name, NETPLAY_MAX_NAME_LEN);
+	}
 };
 
 
@@ -180,7 +185,7 @@ struct Game {
 		password(0),
 		last_time(0) {
 			for (int i = 0; i < 4; ++i) {
-				players[i] = 0;
+				nes_controllers[i] = 0;
 				clients[i].id = i;
 			}
 			for (int i = 0; i < 5; ++i) {
@@ -273,14 +278,6 @@ struct Game {
 					}
 				}
 
-				for (int i = 0; i < 4; ++i) {
-					if (!players[i]) {
-						players[i] = &client;
-						fprintf(stderr, "Player %d\n", i);
-						break;
-					}
-				}
-
 				int ignored_bytes = 16 + 16 + 64 + 1;
 				const int nick_len = client.command_length - ignored_bytes;
 
@@ -299,22 +296,25 @@ struct Game {
 
 				fprintf(stderr, "Client %d joined as %s\n", client.id, client.name);
 
-				{ //Announce new client's presence
-					const int announce_buffer_len = NETPLAY_MAX_NAME_LEN + 2;
-					uint8_t announce_buffer[announce_buffer_len];
+				{ //Announce new client's presence to everyone
+					uint8_t announce_buffer[client.serialize_len];
+					client.serialize(&announce_buffer);
+					send_all(FCEUNPCMD_NEWCLIENT, announce_buffer, client.serialize_len);
 
-					announce_buffer[0] = client.id;
-					announce_buffer[1] = client.ready = false;
-					memcpy(&announce_buffer[2], client.name, NETPLAY_MAX_NAME_LEN);
-					send_all(FCEUNPCMD_NEWCLIENT, announce_buffer, announce_buffer_len);
-
-					//Inform new client of existing players
+					//Inform new client of existing clients and controllers 
 					for (int i=0; i < 4; i++) {
+						//clients
 						if (clients[i].connected() && clients[i].id != client.id) {
-							announce_buffer[0] = clients[i].id;
-							announce_buffer[1] = clients[i].ready;
-							memcpy(&announce_buffer[1], clients[i].name, NETPLAY_MAX_NAME_LEN);
-							client.send_cmd(FCEUNPCMD_NEWCLIENT, announce_buffer, announce_buffer_len);
+							uint8_t announce_buffer[client.serialize_len];
+							clients[i].serialize(&announce_buffer);
+							client.send_cmd(FCEUNPCMD_NEWCLIENT, announce_buffer, client.serialize_len);
+						}
+						//controllers
+						if (nes_controllers[i]) {
+							uint8 controller_buffer[2];
+							controller_buffer[0] = nes_controllers[i]->id;
+							controller_buffer[1] = i;
+							send_all(FCEUNPCMD_PICKUPCONTROLLER, controller_buffer, 2);
 						}
 					}
 				}
@@ -329,9 +329,11 @@ struct Game {
 					return;
 				}
 
-				for (int i = 0; i < 4; ++i) {
-					if (players[i] == &client) {
-						joybuf[i] = client.buffer[0];
+				//Update game input state
+				int i = 0;
+				for (int j = 0; j < 4; ++j) {
+					if (nes_controllers[j] == &client) {
+						joybuf[j] = client.buffer[i++];
 					}
 				}
 
@@ -355,14 +357,49 @@ struct Game {
 				return;
 			}
 
-			case FCEUNPCMD_READY: {
-				client.ready = !client.ready;
-				fprintf(stderr, "%i %s ready %i\n", client.id, client.name, client.ready);
+			case FCEUNPCMD_PICKUPCONTROLLER: {
+				int controller = client.buffer[0];
 
-				uint8 buffer[2];
-				buffer[0] = client.id;
-				buffer[1] = client.ready;
-				send_all(FCEUNPCMD_READY, buffer, 2);
+				if (controller > 3) {
+					fprintf(stderr, "Invalid controller id\n");
+					client.disconnect();
+					return;
+				}
+
+				if (!nes_controllers[controller]) {
+					nes_controllers[controller] = &client;
+
+					uint8 buffer[2];
+					buffer[0] = client.id;
+					buffer[1] = controller;
+					send_all(FCEUNPCMD_PICKUPCONTROLLER, buffer, 2);
+
+					fprintf(stderr, "Client %d %s taking controller %i \n", client.id, client.name, controller);
+				}
+
+				client.reset_buffer(N_UPDATEDATA, 1);
+				return;
+			}
+
+			case FCEUNPCMD_DROPCONTROLLER: {
+				int controller = client.buffer[0];
+
+				if (controller > 3) {
+					fprintf(stderr, "Invalid controller id\n");
+					client.disconnect();
+					return;
+				}
+
+				if (nes_controllers[controller] == &client) {
+					nes_controllers[controller] = 0;
+
+					uint8 buffer[1];
+					buffer[0] = controller;
+					send_all(FCEUNPCMD_DROPCONTROLLER, buffer, 1);
+
+					fprintf(stderr, "Client %d %s dropping controller %i \n", client.id, client.name, controller);
+				}
+
 				client.reset_buffer(N_UPDATEDATA, 1);
 				return;
 			}
@@ -387,14 +424,6 @@ struct Game {
 				fprintf(stderr, "Invalid command\n");
 				client.disconnect();
 				return;
-			}
-		}
-	}
-
-	void update_players() {
-		for (int i = 0; i < 4; ++i) {
-			if (players[i] && !players[i]->connected()) {
-				players[i] = 0;
 			}
 		}
 	}
@@ -430,6 +459,25 @@ struct Game {
 		last_time += frame_delay;
 	}
 
+	void handle_disconnects() {
+		for (int c = 0; c < 4; ++c) {
+			if (clients[c].disconnecting) {
+
+				clients[c].disconnecting = false;
+
+				for (int n = 0; n < 4; ++n) {
+					if (nes_controllers[n] == &clients[c]) {
+						nes_controllers[n] = 0;
+					}
+				}
+
+				uint8 buffer[1];
+				buffer[0] = c;
+				send_all(FCEUNPCMD_CLIENTDISCONNECT, buffer, 1);
+			}
+		}
+	}
+
 	int port;
 	int max_clients;
 	int connect_timeout;
@@ -441,7 +489,7 @@ struct Game {
 	uint8_t joybuf[5];  /* 4 player data + 1 command byte */
 
 	Client  clients[4];
-	Client *players[4];
+	Client  *nes_controllers[4];
 };
 
 
@@ -588,8 +636,8 @@ int main(int argc, char *argv[]) {
 		check_for_connections(listen_socket, game);
 
 		game.receive();
-		game.update_players();
 		game.send_next_frame();
+		game.handle_disconnects();
 
 		game.delay();
 	}
