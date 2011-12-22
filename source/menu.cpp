@@ -83,11 +83,11 @@ GuiButton *hostBtn        = NULL,
 static GuiSound *btnSoundOver;
 
 #ifdef HW_RVL
-static GuiImageData * pointer[4];
+static GuiImageData * pointer[5];
 #endif
 
 // Maps a Wii player number to an index on GuiPlayerlist:
-uint playerNumMap[4];
+int playerPointerMap[4];
 
 static GuiTrigger * trigA = NULL;
 static GuiTrigger * trig2 = NULL;
@@ -123,7 +123,7 @@ static int progressDone = 0;
 static int progressTotal = 0;
 
 static void playerListEventHandler(void *ptr);
-static void updatePlayerNumMap(uint from, uint to);
+static void updatePlayerPointerMap(uint from, uint to);
 
 static void playerListEventHandler(void *ptr)
 {
@@ -164,25 +164,30 @@ static void playerListEventHandler(void *ptr)
 		listIdxZ = list->GetPlayerNumber(GCSettings.netplayNameZ);
 	}
 
-	int i = 0;
+	uint i = 0;
+
 	do
 	{
 		if(userInput[i].wpad != NULL)// && userInput[i].wpad->ir.valid)
 		{
 			if(listIdxX >= 0 && list->IsPlayerReady(listIdxX))
 			{
-				updatePlayerNumMap(i, listIdxX);
+				updatePlayerPointerMap(i, listIdxX);
 				listIdxX = -1;
 			}
 			else if(listIdxY >= 0 && list->IsPlayerReady(listIdxY))
 			{
-				updatePlayerNumMap(i, listIdxY);
+				updatePlayerPointerMap(i, listIdxY);
 				listIdxY = -1;
 			}
 			else if(listIdxZ >= 0 && list->IsPlayerReady(listIdxZ))
 			{
-				updatePlayerNumMap(i, listIdxZ);
+				updatePlayerPointerMap(i, listIdxZ);
 				listIdxZ = -1;
+			}
+			else
+			{
+				updatePlayerPointerMap(i, 4);   // a cursor without a player number
 			}
 		}
 
@@ -190,11 +195,11 @@ static void playerListEventHandler(void *ptr)
 	} while(i <= 3);
 }
 
-static void updatePlayerNumMap(uint from, uint to)
+static void updatePlayerPointerMap(uint from, uint to)
 {
-	if(from < 4 && to < 4)
+	if(from < 4 && to <= 4)
 	{
-		playerNumMap[from] = to;
+		playerPointerMap[from] = to;
 	}
 }
 
@@ -409,7 +414,7 @@ UpdateGUI (void *arg)
 			if(userInput[i].wpad->ir.valid)
 			{
 				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-					96, 96, pointer[playerNumMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+					96, 96, pointer[playerPointerMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
 			}
 			DoRumble(i);
 			--i;
@@ -1047,7 +1052,7 @@ static void WindowCredits(void * ptr)
 			if(userInput[i].wpad->ir.valid)
 			{
 				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-					96, 96, pointer[playerNumMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+					96, 96, pointer[playerPointerMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
 			}
 		DoRumble(i);
 			--i;
@@ -1215,7 +1220,7 @@ static void hideNetplayGuiComponents()
 
 	for(int i = 0; i < 4; i++)
 	{
-		playerNumMap[i] = i;
+		playerPointerMap[i] = i;
 	}
 
 	newPlayerList();
@@ -1557,7 +1562,7 @@ static int MenuGameSelection()
 
 				// This fakes a response coming from the server.  The string will come from a method that receives
 				// the data over a socket.  That method will make the call to BuildPlayerList().
-				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:1");
+				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:0");
 
 				switch(listStatus)
 				{
@@ -1656,7 +1661,8 @@ static int MenuGameSelection()
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
 			readyBtn->ResetState();
-			FCEUI_NetplayToggleReady();
+			playerList->ToggleReady();  // here temporarily.  TODO:  remove call once networked
+			FCEUI_NetplayToggleReady(/* name of whoever clicked me */);
 		}
 	}
 
@@ -4497,15 +4503,16 @@ MainMenu (int menu)
 	{
 		init = true;
 		#ifdef HW_RVL
-		playerNumMap[0] = 0;
-		playerNumMap[1] = 1;
-		playerNumMap[2] = 2;
-		playerNumMap[3] = 3;
+		playerPointerMap[0] = 0;
+		playerPointerMap[1] = 1;
+		playerPointerMap[2] = 2;
+		playerPointerMap[3] = 3;
 
 		pointer[0] = new GuiImageData(player1_point_png);
 		pointer[1] = new GuiImageData(player2_point_png);
 		pointer[2] = new GuiImageData(player3_point_png);
 		pointer[3] = new GuiImageData(player4_point_png);
+		pointer[4] = new GuiImageData(player_unassigned_point_png);
 		#endif
 
 		trigA = new GuiTrigger;

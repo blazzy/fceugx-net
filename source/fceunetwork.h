@@ -34,6 +34,4 @@ int FCEUD_NetworkConnect();
  */
 bool FCEUD_SendPlayerListToClients();
 
-bool FCEUD_TellServerToggleReady();
-
 #endif

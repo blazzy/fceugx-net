@@ -322,6 +322,9 @@ extern const u32	player3_point_png_size;
 extern const u8		player4_point_png[];
 extern const u32	player4_point_png_size;
 
+extern const u8		player_unassigned_point_png[];
+extern const u32	player_unassigned_point_png_size;
+
 extern const u8		player1_grab_png[];
 extern const u32	player1_grab_png_size;
 

@@ -7,14 +7,12 @@
  * Description:  Lists connected players in netplay
  *
  * TODO:
- *     1.  ToggleReady():  Implement FCEUD_TellServerToggleReady()
- *     2.  Players can only be moused over/clicked once - after that, they
+ *     1.  Players can only be moused over/clicked once - after that, they
  *         become disabled.  Might be the update() method.  Don't know if
  *         we even need that functionality, but I could see a purpose arising in
  *         the future.  At least get it working, then maybe disable it with
  *         a setter.
- *     3.  FCEUX's GUI allows any character for a player name, so '|' for a
- *         record separator is not adequate for cross-platform play.
+ *     2.  Delete ToggleReady() once we're networked.
  *
  * History:
  *
@@ -25,7 +23,7 @@
 
 //#include <debug.h>        // USB Gecko
 
-#include "fceunetwork.h"  // FCEUD_TellServerToggleReady()
+#include "fceunetwork.h"
 #include "gui_playerlist.h"
 #include "menu.h"         // Error prompts
 #include "../fceultra/utils/xstring.h"      // str_strip()
@@ -438,7 +436,7 @@ bool GuiPlayerList::ToggleReady()
 		}
 		else if(executionMode == NETPLAY_CLIENT)
 		{
-			if(!FCEUD_TellServerToggleReady())
+			if(false/*!FCEUI_NetplayToggleReady()*/)
 			{
 				ErrorPrompt("Could not send 'ready' message to server");
 				return false;
