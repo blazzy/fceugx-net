@@ -74,13 +74,18 @@ static void pleaseWaitMsg();
 static void hideNetplayGuiComponents();
 static void showNetplayGuiComponents();
 
+// Netplay GUI components are not explicitly deleted, so that the
+// GUI will maintain state while navigating between screens.  Even
+// though the main screen is created from scrach every time it's
+// displayed, memory is not leaked because these are only
+// instantiated once.
 GuiPlayerList *playerList = NULL;
 GuiButton *hostBtn        = NULL,
           *joinBtn        = NULL,
           *disconnectBtn  = NULL,
           *chatBtn        = NULL,
           *readyBtn       = NULL;
-static GuiSound *btnSoundOver;
+GuiSound  *btnSoundOver   = NULL;
 
 #ifdef HW_RVL
 static GuiImageData * pointer[5];
@@ -1247,7 +1252,11 @@ static int MenuGameSelection()
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,50);
 
-	btnSoundOver = new GuiSound(button_over_pcm, button_over_pcm_size, SOUND_PCM);
+	if(btnSoundOver == NULL)
+	{
+		btnSoundOver = new GuiSound(button_over_pcm, button_over_pcm_size, SOUND_PCM);
+	}
+
 	static GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 
 	GuiImageData iconHome(icon_home_png);
