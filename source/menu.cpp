@@ -1226,8 +1226,6 @@ static void hideNetplayGuiComponents()
 	{
 		playerPointerMap[i] = i;
 	}
-
-	newPlayerList();
 }
 
 /****************************************************************************
