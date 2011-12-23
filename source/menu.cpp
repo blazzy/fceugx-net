@@ -463,10 +463,14 @@ NetplayThread(void *arg)
 	while (1)
 	{
 		if (executionMode == OFFLINE || netplayHalt)
+		{
 			LWP_SuspendThread(netplaythread);
-		
-		static uint8 joy[] = {0,0,0,0};
-		NetplayUpdate(joy);
+		}
+		else
+		{
+			static uint8 joy[] = {0,0,0,0};
+			NetplayUpdate(joy);
+		}
 	}
 	return NULL;
 }
