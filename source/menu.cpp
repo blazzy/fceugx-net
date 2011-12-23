@@ -1095,10 +1095,6 @@ void newPlayerList()
 		playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 		playerList->SetPosition(-8, 98);
 		playerList->SetVisible(false);
-
-		HaltGui();
-		mainWindow->Append(playerList);
-		ResumeGui();
 	}
 }
 
@@ -1111,6 +1107,13 @@ static void pleaseWaitMsg()
 static void showNetplayGuiComponents()
 {
 	newPlayerList();
+
+	if(mainWindow != NULL && playerList != NULL)
+	{
+		HaltGui();
+		mainWindow->Append(playerList);
+		ResumeGui();
+	}
 
 	if(hostBtn != NULL)
 	{
@@ -1417,18 +1420,12 @@ static int MenuGameSelection()
 	gameBrowser.SetPosition(50, 98);
 	ResetBrowser();
 
-	if(playerList == NULL)
-	{
-		newPlayerList();
-	}
-
 	HaltGui();
 	btnLogo->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 	btnLogo->SetPosition(-50, 24);
 	mainWindow->Append(&titleTxt);
 	mainWindow->Append(&gameBrowser);
 	mainWindow->Append(&buttonWindow);
-	mainWindow->Append(playerList);
 	ResumeGui();
 
 	#ifdef HW_RVL
