@@ -4328,7 +4328,7 @@ static int MenuSettingsNetwork()
 	sprintf(options.name[i++], "Netplay IP");
 	sprintf(options.name[i++], "Netplay Port");
 	sprintf(options.name[i++], "Netplay Password");
-	sprintf(options.name[i++], "Netplay Player Name");
+	sprintf(options.name[i++], "Netplay Player/Host Name");
 	sprintf(options.name[i++], "Netplay Player Name");
 	sprintf(options.name[i++], "Netplay Player Name");
 	sprintf(options.name[i++], "SMB Share IP");

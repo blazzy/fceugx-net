@@ -137,12 +137,12 @@ preparePrefsData ()
 
 	createXMLSection("Network", "Network Settings");
 
-	createXMLSetting("netplayIp", "Netplay IP Address", GCSettings.netplayIp);
+	createXMLSetting("netplayIp", "Netplay IP", GCSettings.netplayIp);
 	createXMLSetting("netplayPort", "Netplay Port", GCSettings.netplayPort);
 	createXMLSetting("netplayPwd", "Netplay Password", GCSettings.netplayPwd);
-	createXMLSetting("netplayNameX", "Netplay User Name", GCSettings.netplayNameX);
-	createXMLSetting("netplayNameY", "Netplay User Name", GCSettings.netplayNameY);
-	createXMLSetting("netplayNameZ", "Netplay User Name", GCSettings.netplayNameZ);
+	createXMLSetting("netplayNameX", "Netplay Player/Host Name", GCSettings.netplayNameX);
+	createXMLSetting("netplayNameY", "Netplay Player Name", GCSettings.netplayNameY);
+	createXMLSetting("netplayNameZ", "Netplay Player Name", GCSettings.netplayNameZ);
 	createXMLSetting("smbip", "Share Computer IP", GCSettings.smbip);
 	createXMLSetting("smbshare", "Share Name", GCSettings.smbshare);
 	createXMLSetting("smbuser", "Share Username", GCSettings.smbuser);
