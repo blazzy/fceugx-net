@@ -1405,6 +1405,10 @@ static int MenuGameSelection()
 
 	HaltGui();
 
+	GuiFileBrowser gameBrowser(424, 268);
+	gameBrowser.SetPosition(50, 98);
+	ResetBrowser();
+
 	GuiWindow buttonWindow(screenwidth, screenheight);
 	buttonWindow.Append(joinBtn);
 	buttonWindow.Append(hostBtn);
@@ -1414,18 +1418,13 @@ static int MenuGameSelection()
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
 
-	ResumeGui();
-
-	GuiFileBrowser gameBrowser(424, 268);
-	gameBrowser.SetPosition(50, 98);
-	ResetBrowser();
-
-	HaltGui();
 	btnLogo->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 	btnLogo->SetPosition(-50, 24);
 	mainWindow->Append(&titleTxt);
 	mainWindow->Append(&gameBrowser);
 	mainWindow->Append(&buttonWindow);
+	mainWindow->Append(playerList);
+
 	ResumeGui();
 
 	#ifdef HW_RVL
