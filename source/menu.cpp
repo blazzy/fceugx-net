@@ -32,6 +32,7 @@
  *                         away from the main screen.
  * midnak      12/02/2011  GUI and server use same player name length
  ****************************************************************************/
+#include <debug.h>  // USB Gecko
 
 #include <gccore.h>
 #include <ogcsys.h>
@@ -69,7 +70,7 @@
 
 #define THREAD_SLEEP 100
 
-static void newPlayerList();
+static void newNetplayWindows();
 static void pleaseWaitMsg();
 static void hideNetplayGuiComponents();
 static void showNetplayGuiComponents();
@@ -79,11 +80,14 @@ static void showNetplayGuiComponents();
 // though the main screen is created from scrach every time it's
 // displayed, memory is not leaked because these are only
 // instantiated once.
+GuiFileBrowser *gameBrowser = NULL;
+GuiChatWindow *chatWindow = NULL;
 GuiPlayerList *playerList = NULL;
 GuiButton *hostBtn        = NULL,
           *joinBtn        = NULL,
           *disconnectBtn  = NULL,
           *chatBtn        = NULL,
+          *romsBtn        = NULL,
           *readyBtn       = NULL;
 GuiSound  *btnSoundOver   = NULL;
 
@@ -1091,16 +1095,26 @@ static void WindowCredits(void * ptr)
 		delete txt[i];
 }
 
-void newPlayerList()
+void newNetplayWindows()
 {
-	if(playerList == NULL)
+	bool alloc = (chatWindow = chatWindow == NULL ? new GuiChatWindow(424, 268) : chatWindow)
+				&& (playerList = playerList == NULL ? new GuiPlayerList(152, 265) : playerList);
+
+	if(!alloc)
 	{
-		playerList = new GuiPlayerList(152, 265);
-		playerList->SetUpdateCallback(playerListEventHandler);
-		playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-		playerList->SetPosition(-8, 98);
-		playerList->SetVisible(false);
+		if(chatWindow != NULL) delete chatWindow;
+		if(playerList != NULL) delete playerList;
+
+		return;
 	}
+
+	chatWindow->SetPosition(50, 98);
+	chatWindow->SetVisible(false);
+
+	playerList->SetUpdateCallback(playerListEventHandler);
+	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	playerList->SetPosition(-8, 98);
+	playerList->SetVisible(false);
 }
 
 static void pleaseWaitMsg()
@@ -1109,16 +1123,76 @@ static void pleaseWaitMsg()
 	ShowAction("Opening connection");
 }
 
+static void swapChatAndBrowserWin()
+{
+	if(chatWindow->IsVisible())
+	{
+		chatWindow->SetState(STATE_DISABLED);
+
+		romsBtn->SetPosition(100, -58);
+		romsBtn->SetVisible(false);
+
+		chatBtn->SetPosition(0, -58);
+		chatBtn->SetVisible(true);
+
+		gameBrowser->SetVisible(true);
+
+		// Replace this comment with slide animations, if desired.
+		// That might be overdoing it with animations.
+
+		gameBrowser->ResetState();
+
+
+		chatWindow->SetVisible(false);
+	}
+	else if(gameBrowser->IsVisible())
+	{
+		gameBrowser->SetState(STATE_DISABLED);
+
+		romsBtn->SetPosition(0, -58);
+		romsBtn->SetVisible(true);
+
+		chatWindow->SetVisible(true);
+
+		// Replace this comment with slide animations, if desired.
+		// That might be overdoing it with animations.
+
+		chatWindow->ResetState();
+
+		chatBtn->SetPosition(100, -58);
+		chatBtn->SetVisible(false);
+
+		gameBrowser->SetVisible(false);
+	}
+
+
+	/*chatWindow->SetVisible( !chatWindow->IsVisible() );
+	chatBtn->SetVisible( !chatBtn->IsVisible() );
+
+	gameBrowser->SetVisible( !gameBrowser->IsVisible() );
+	romsBtn->SetVisible( !romsBtn->IsVisible() );*/
+}
+
 static void showNetplayGuiComponents()
 {
-	newPlayerList();
+	newNetplayWindows();
 
-	if(mainWindow != NULL && playerList != NULL)
+	HaltGui();
+
+	if(mainWindow != NULL)
 	{
-		HaltGui();
-		mainWindow->Append(playerList);
-		ResumeGui();
+		if(playerList != NULL)
+		{
+			mainWindow->Append(playerList);
+		}
+
+		if(chatWindow != NULL)
+		{
+			mainWindow->Append(chatWindow);
+		}
 	}
+
+	ResumeGui();
 
 	if(hostBtn != NULL)
 	{
@@ -1144,36 +1218,49 @@ static void showNetplayGuiComponents()
 		disconnectBtn->SetVisible(true);
 	}
 
-	if(playerList != NULL && chatBtn != NULL && readyBtn != NULL)
+	if(gameBrowser != NULL && chatWindow != NULL && playerList != NULL && romsBtn != NULL && readyBtn != NULL)
 	{
-		// The SetVisible calls for chatBtn/readyBtn are no longer necessary because we position them far offscreen when
+		// The SetVisible calls for romsBtn/readyBtn are no longer necessary because we position them far offscreen when
 		// not in use, then zap them back on-screen when we need them.  Keeping the SetVisible calls in, however, makes
 		// it clear to the reader as to what their state should be.  This odd positioning scheme is a kludge that gets
 		// around a display bug.  The slide-out and slide-in effect, combined with receiving mouse events while onscreen
 		// and invisible, causes the buttons to be shrunk down to a singularity, which they they Big Bang themselves out
 		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
 
-		chatBtn->SetPosition(0, -58);
-		chatBtn->SetVisible(true);
+		romsBtn->SetPosition(0, -58);
+		romsBtn->SetVisible(true);
 
 		readyBtn->SetPosition(0, -17);
 		readyBtn->SetVisible(true);
 
+		chatWindow->SetVisible(true);
 		playerList->SetVisible(true);
 
+		chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
+		gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
-		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
+		romsBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
 		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
 
-		while(playerList->GetEffect() > 0 || chatBtn->GetEffect() > 0 || readyBtn->GetEffect() > 0)
+		while(gameBrowser->GetEffect() > 0 || chatWindow->GetEffect() > 0 || playerList->GetEffect() > 0
+		|| romsBtn->GetEffect() > 0 || readyBtn->GetEffect() > 0)
 		{
 			usleep(THREAD_SLEEP);
 		}
+
+		gameBrowser->SetVisible(false);
 	}
 }
 
 static void hideNetplayGuiComponents()
 {
+	if(disconnectBtn != NULL)
+	{
+		disconnectBtn->SetClickable(false);
+		disconnectBtn->SetVisible(false);
+		disconnectBtn->SetSoundOver(NULL);
+	}
+
 	if(hostBtn != NULL)
 	{
 		hostBtn->SetClickable(true);
@@ -1190,20 +1277,45 @@ static void hideNetplayGuiComponents()
 		joinBtn->SetVisible(true);
 	}
 
-	if(disconnectBtn != NULL)
+	if(gameBrowser != NULL && chatWindow != NULL && readyBtn != NULL && chatBtn != NULL && romsBtn != NULL && chatWindow != NULL && playerList != NULL)
 	{
-		disconnectBtn->SetClickable(false);
-		disconnectBtn->SetVisible(false);
-		disconnectBtn->SetSoundOver(NULL);
-	}
+		// Netplay's going away; set up ROM browser for single-player use
+		if(!gameBrowser->IsVisible())
+		{
+			gameBrowser->SetVisible(true);
+			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
+		}
 
-	if(readyBtn != NULL && chatBtn != NULL && playerList != NULL)
-	{
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
-		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
+
+		// Setting a slide effect on an invisible GUI element screws it up.  The GetEffect() method will not
+		// return 0, which would cause an infinite loop down below.
+		// Depending on whether we're in file-browsing mode or chat mode, one set of GUI components will always be
+		// invisible.  Therefore, we need to tie all work with an object's effects to its visibility.
+
+		if(chatWindow->IsVisible())
+		{
+			chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
+		}
+
+		if(chatBtn->IsVisible())
+		{
+			chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
+		}
+
+		if(romsBtn->IsVisible())
+		{
+			romsBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
+		}
+
 		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
 
-		while(playerList->GetEffect() > 0 || chatBtn->GetEffect() > 0 || readyBtn->GetEffect() > 0)
+		while(playerList->GetEffect() > 0
+		|| (gameBrowser->GetEffect() > 0 && gameBrowser->IsVisible())
+		|| (chatWindow->GetEffect() > 0 && chatWindow->IsVisible())
+		|| (chatBtn->GetEffect() > 0 && chatBtn->IsVisible())
+		|| (romsBtn->GetEffect() > 0 && romsBtn->IsVisible())
+		|| readyBtn->GetEffect() > 0)
 		{
 			usleep(THREAD_SLEEP);
 		}
@@ -1218,13 +1330,22 @@ static void hideNetplayGuiComponents()
 		chatBtn->SetPosition(100, -58);
 		chatBtn->SetVisible(false);
 
+		romsBtn->SetPosition(100, -58);
+		romsBtn->SetVisible(false);
+
 		readyBtn->SetPosition(100, -17);
 		readyBtn->SetVisible(false);
 
 		HaltGui();
+
 		mainWindow->Remove(playerList);
 		delete playerList;
 		playerList = NULL;
+
+		mainWindow->Remove(chatWindow);
+		delete chatWindow;
+		chatWindow = NULL;
+
 		ResumeGui();
 	}
 
@@ -1371,6 +1492,26 @@ static int MenuGameSelection()
 		chatBtn->SetVisible(false);
 	}
 
+	if(romsBtn == NULL)
+	{
+		static GuiText romsBtnTxt("ROMs", 22, (GXColor){0, 0, 0, 255});
+		static GuiImage romsBtnImg(&btnOutlineMicro);
+		static GuiImage romsBtnImgOver(&btnOutlineOverMicro);
+
+		romsBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
+		romsBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+		romsBtn->SetPosition(100, -58);
+		romsBtn->SetLabel(&romsBtnTxt);
+		romsBtn->SetImage(&romsBtnImg);
+		romsBtn->SetImageOver(&romsBtnImgOver);
+		romsBtn->SetSoundClick(&btnSoundClick);
+		romsBtn->SetSoundOver(btnSoundOver);
+		romsBtn->SetTrigger(trigA);
+		romsBtn->SetTrigger(trig2);
+		romsBtn->SetEffectGrow();
+		romsBtn->SetVisible(false);
+	}
+
 	if(readyBtn == NULL)
 	{
 		static GuiText readyBtnTxt("READY", 22, (GXColor){0, 0, 0, 255});
@@ -1414,8 +1555,8 @@ static int MenuGameSelection()
 
 	HaltGui();
 
-	GuiFileBrowser gameBrowser(424, 268);
-	gameBrowser.SetPosition(50, 98);
+	gameBrowser = new GuiFileBrowser(424, 268);
+	gameBrowser->SetPosition(50, 98);
 	ResetBrowser();
 
 	GuiWindow buttonWindow(screenwidth, screenheight);
@@ -1423,6 +1564,7 @@ static int MenuGameSelection()
 	buttonWindow.Append(hostBtn);
 	buttonWindow.Append(disconnectBtn);
 	buttonWindow.Append(chatBtn);
+	buttonWindow.Append(romsBtn);
 	buttonWindow.Append(readyBtn);
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
@@ -1430,7 +1572,7 @@ static int MenuGameSelection()
 	btnLogo->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 	btnLogo->SetPosition(-50, 24);
 	mainWindow->Append(&titleTxt);
-	mainWindow->Append(&gameBrowser);
+	mainWindow->Append(gameBrowser);
 	mainWindow->Append(&buttonWindow);
 	mainWindow->Append(playerList);
 
@@ -1444,9 +1586,9 @@ static int MenuGameSelection()
 	selectLoadedFile = 1;
 	OpenGameList();
 
-	gameBrowser.ResetState();
-	gameBrowser.fileList[0]->SetState(STATE_SELECTED);
-	gameBrowser.TriggerUpdate();
+	gameBrowser->ResetState();
+	gameBrowser->fileList[0]->SetState(STATE_SELECTED);
+	gameBrowser->TriggerUpdate();
 
 	while(menu == MENU_NONE)
 	{
@@ -1455,61 +1597,64 @@ static int MenuGameSelection()
 		if(selectLoadedFile == 2)
 		{
 			selectLoadedFile = 0;
-			mainWindow->ChangeFocus(&gameBrowser);
-			gameBrowser.TriggerUpdate();
+			mainWindow->ChangeFocus(gameBrowser);
+			gameBrowser->TriggerUpdate();
 		}
 
 		// update gameWindow based on arrow buttons
 		// set MENU_EXIT if A button pressed on a game
-		for(i=0; i < FILE_PAGESIZE; i++)
+		if(gameBrowser->IsVisible())
 		{
-			if(gameBrowser.fileList[i]->GetState() == STATE_CLICKED)
+			for(i=0; i < FILE_PAGESIZE; i++)
 			{
-				gameBrowser.fileList[i]->ResetState();
-
-				if( (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
-				||  (executionMode == NETPLAY_HOST && browserList[browser.selIndex].isdir)
-				||  (executionMode == OFFLINE) )
+				if(gameBrowser->fileList[i]->GetState() == STATE_CLICKED)
 				{
-					// check corresponding browser entry
-					if(browserList[browser.selIndex].isdir || IsSz())
-					{
-						if(IsSz())
-							res = BrowserLoadSz();
-						else
-							res = BrowserChangeFolder();
+					gameBrowser->fileList[i]->ResetState();
 
-						if(res)
+					if( (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
+					||  (executionMode == NETPLAY_HOST && browserList[browser.selIndex].isdir)
+					||  (executionMode == OFFLINE) )
+					{
+						// check corresponding browser entry
+						if(browserList[browser.selIndex].isdir || IsSz())
 						{
-							gameBrowser.ResetState();
-							gameBrowser.fileList[0]->SetState(STATE_SELECTED);
-							gameBrowser.TriggerUpdate();
+							if(IsSz())
+								res = BrowserLoadSz();
+							else
+								res = BrowserChangeFolder();
+
+							if(res)
+							{
+								gameBrowser->ResetState();
+								gameBrowser->fileList[0]->SetState(STATE_SELECTED);
+								gameBrowser->TriggerUpdate();
+							}
+							else
+							{
+								menu = MENU_GAMESELECTION;
+								break;
+							}
 						}
 						else
 						{
-							menu = MENU_GAMESELECTION;
-							break;
+							#ifdef HW_RVL
+							ShutoffRumble();
+							#endif
+							mainWindow->SetState(STATE_DISABLED);
+							if(BrowserLoadFile())
+								menu = MENU_EXIT;
+							else
+								mainWindow->SetState(STATE_DEFAULT);
 						}
 					}
-					else
+					else if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
 					{
-						#ifdef HW_RVL
-						ShutoffRumble();
-						#endif
-						mainWindow->SetState(STATE_DISABLED);
-						if(BrowserLoadFile())
-							menu = MENU_EXIT;
-						else
-							mainWindow->SetState(STATE_DEFAULT);
+						InfoPrompt("Everyone must click in as READY before launching a game");
 					}
-				}
-				else if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
-				{
-					InfoPrompt("Everyone must click in as READY before launching a game");
-				}
-				else if(executionMode == NETPLAY_CLIENT)
-				{
-					InfoPrompt("Only the host can start games");
+					else if(executionMode == NETPLAY_CLIENT)
+					{
+						InfoPrompt("Only the host can start games");
+					}
 				}
 			}
 		}
@@ -1654,8 +1799,9 @@ static int MenuGameSelection()
 		}
 		else if(disconnectBtn->GetState() == STATE_CLICKED)
 		{
-			disconnectBtn->ResetState();
+			//_break();							// USB Gecko
 
+			disconnectBtn->ResetState();
 			executionMode = OFFLINE;
 
 			FCEUD_NetworkClose();
@@ -1664,6 +1810,13 @@ static int MenuGameSelection()
 		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
 			chatBtn->ResetState();
+			swapChatAndBrowserWin();
+		}
+		else if(romsBtn->GetState() == STATE_CLICKED)
+		{
+			//_break();							// USB Gecko
+			romsBtn->ResetState();
+			swapChatAndBrowserWin();
 		}
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
@@ -1678,8 +1831,12 @@ static int MenuGameSelection()
 	ResetBrowser();
 	mainWindow->Remove(&titleTxt);
 	mainWindow->Remove(&buttonWindow);
-	mainWindow->Remove(&gameBrowser);
+	mainWindow->Remove(gameBrowser);
+	mainWindow->Remove(chatWindow);
 	mainWindow->Remove(playerList);
+
+	delete gameBrowser;
+	gameBrowser = NULL;
 
 	return menu;
 }
@@ -4502,6 +4659,7 @@ static int MenuSettingsNetwork()
 void
 MainMenu (int menu)
 {
+	DEBUG_Init(GDBSTUB_DEVICE_USB, 1);  // USB Gecko
 	static bool init = false;
 	int currentMenu = menu;
 	lastMenu = MENU_NONE;

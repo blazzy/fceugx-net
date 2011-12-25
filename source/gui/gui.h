@@ -1065,5 +1065,6 @@ class GuiFileBrowser : public GuiElement
 };
 
 #include "gui_playerlist.h"
+#include "gui_chatwindow.h"
 
 #endif
