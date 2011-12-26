@@ -71,7 +71,7 @@
 #define THREAD_SLEEP 100
 
 static void disableButton(GuiButton*, bool);
-static void enableButton(GuiButton*);
+static void enableButton(GuiButton *button, bool visible);
 static void newNetplayWindows();
 static void pleaseWaitMsg();
 static void hideNetplayGuiComponents();
@@ -1104,23 +1104,19 @@ static void disableButton(GuiButton *button, bool visible = false)
 		return;
 	}
 
-	button->SetClickable(false);
-	button->SetRumble(false);
-	button->SetSoundOver(NULL);
 	button->SetVisible(visible);
+	button->SetState(STATE_DISABLED);
 }
 
-static void enableButton(GuiButton *button)
+static void enableButton(GuiButton *button, bool visible = true)
 {
 	if(button == NULL)
 	{
 		return;
 	}
 
-	button->SetClickable(true);
-	button->SetRumble(true);
-	button->SetSoundOver(btnSoundOver);
-	button->SetVisible(true);
+	button->SetVisible(visible);
+	button->SetState(STATE_DEFAULT);
 }
 
 void newNetplayWindows()
@@ -1186,10 +1182,7 @@ static void showNetplayGuiComponents()
 		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
 
 		enableButton(romsBtn);
-		romsBtn->SetPosition(0, -58);
-
 		enableButton(readyBtn);
-		readyBtn->SetPosition(0, -17);
 
 		chatWindow->SetVisible(true);
 		playerList->SetVisible(true);
@@ -1267,13 +1260,8 @@ static void hideNetplayGuiComponents()
 		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
 
 		disableButton(chatBtn);
-		chatBtn->SetPosition(100, -58);
-
 		disableButton(romsBtn);
-		romsBtn->SetPosition(100, -58);
-
 		disableButton(readyBtn);
-		readyBtn->SetPosition(100, -17);
 
 		HaltGui();
 
@@ -1419,16 +1407,17 @@ static int MenuGameSelection()
 
 		chatBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
 		chatBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-		chatBtn->SetPosition(100, -58);
+		chatBtn->SetPosition(0, -58);
 		chatBtn->SetLabel(&chatBtnTxt);
 		chatBtn->SetImage(&chatBtnImg);
 		chatBtn->SetImageOver(&chatBtnImgOver);
-		chatBtn->SetSoundClick(&btnSoundClick);
 		chatBtn->SetSoundOver(btnSoundOver);
+		chatBtn->SetSoundClick(&btnSoundClick);
 		chatBtn->SetTrigger(trigA);
 		chatBtn->SetTrigger(trig2);
 		chatBtn->SetEffectGrow();
-		chatBtn->SetVisible(false);
+
+		disableButton(chatBtn);
 	}
 
 	if(romsBtn == NULL)
@@ -1439,16 +1428,17 @@ static int MenuGameSelection()
 
 		romsBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
 		romsBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-		romsBtn->SetPosition(100, -58);
+		romsBtn->SetPosition(0, -58);
 		romsBtn->SetLabel(&romsBtnTxt);
 		romsBtn->SetImage(&romsBtnImg);
 		romsBtn->SetImageOver(&romsBtnImgOver);
-		romsBtn->SetSoundClick(&btnSoundClick);
 		romsBtn->SetSoundOver(btnSoundOver);
+		romsBtn->SetSoundClick(&btnSoundClick);
 		romsBtn->SetTrigger(trigA);
 		romsBtn->SetTrigger(trig2);
 		romsBtn->SetEffectGrow();
-		romsBtn->SetVisible(false);
+
+		disableButton(romsBtn);
 	}
 
 	if(readyBtn == NULL)
@@ -1459,17 +1449,17 @@ static int MenuGameSelection()
 
 		readyBtn = new GuiButton(btnOutlineMicro.GetWidth(), btnOutlineMicro.GetHeight());
 		readyBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-		readyBtn->SetPosition(100, -17);
+		readyBtn->SetPosition(0, -17);
 		readyBtn->SetLabel(&readyBtnTxt);
 		readyBtn->SetImage(&readyBtnImg);
 		readyBtn->SetImageOver(&readyBtnImgOver);
-		readyBtn->SetSoundClick(&btnSoundClick);
 		readyBtn->SetSoundOver(btnSoundOver);
+		readyBtn->SetSoundClick(&btnSoundClick);
 		readyBtn->SetTrigger(trigA);
 		readyBtn->SetTrigger(trig2);
-		readyBtn->SetLabel(&readyBtnTxt);
 		readyBtn->SetEffectGrow();
-		readyBtn->SetVisible(false);
+
+		disableButton(readyBtn);
 	}
 
 	if(disconnectBtn == NULL)
@@ -1484,12 +1474,13 @@ static int MenuGameSelection()
 		disconnectBtn->SetLabel(&disconnectBtnTxt);
 		disconnectBtn->SetImage(&disconnectBtnImg);
 		disconnectBtn->SetImageOver(&disconnectBtnImgOver);
+		disconnectBtn->SetSoundOver(btnSoundOver);
 		disconnectBtn->SetSoundClick(&btnSoundClick);
 		disconnectBtn->SetTrigger(trigA);
 		disconnectBtn->SetTrigger(trig2);
 		disconnectBtn->SetEffectGrow();
-		disconnectBtn->SetClickable(false);
-		disconnectBtn->SetVisible(false);
+
+		disableButton(disconnectBtn);
 	}
 
 	HaltGui();
@@ -1754,13 +1745,11 @@ static int MenuGameSelection()
 			chatBtn->ResetState();
 
 			disableButton(chatBtn);
-			chatBtn->SetPosition(100, -58);
 
 			gameBrowser->SetState(STATE_DISABLED);
 			gameBrowser->SetVisible(false);
 
 			enableButton(romsBtn);
-			romsBtn->SetPosition(0, -58);
 
 			chatWindow->ResetState();
 			chatWindow->SetVisible(true);
@@ -1772,13 +1761,11 @@ static int MenuGameSelection()
 			romsBtn->ResetState();
 
 			disableButton(romsBtn);
-			romsBtn->SetPosition(100, -58);
 
 			chatWindow->SetState(STATE_DISABLED);
 			chatWindow->SetVisible(false);
 
 			enableButton(chatBtn);
-			chatBtn->SetPosition(0, -58);
 
 			gameBrowser->ResetState();
 			gameBrowser->SetVisible(true);
