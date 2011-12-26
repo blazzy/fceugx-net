@@ -1489,8 +1489,14 @@ static int MenuGameSelection()
 	btnLogo->SetPosition(-50, 24);
 	mainWindow->Append(&titleTxt);
 	mainWindow->Append(gameBrowser);
+	mainWindow->Append(chatWindow);
 	mainWindow->Append(&buttonWindow);
 	mainWindow->Append(playerList);
+
+	if(chatWindow != NULL && chatWindow->IsVisible())
+	{
+		gameBrowser->SetVisible(false);
+	}
 
 	ResumeGui();
 
