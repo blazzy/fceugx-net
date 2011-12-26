@@ -70,6 +70,8 @@
 
 #define THREAD_SLEEP 100
 
+static void disableButton(GuiButton*, bool);
+static void enableButton(GuiButton*);
 static void newNetplayWindows();
 static void pleaseWaitMsg();
 static void hideNetplayGuiComponents();
@@ -1095,6 +1097,32 @@ static void WindowCredits(void * ptr)
 		delete txt[i];
 }
 
+static void disableButton(GuiButton *button, bool visible = false)
+{
+	if(button == NULL)
+	{
+		return;
+	}
+
+	button->SetClickable(false);
+	button->SetRumble(false);
+	button->SetSoundOver(NULL);
+	button->SetVisible(visible);
+}
+
+static void enableButton(GuiButton *button)
+{
+	if(button == NULL)
+	{
+		return;
+	}
+
+	button->SetClickable(true);
+	button->SetRumble(true);
+	button->SetSoundOver(btnSoundOver);
+	button->SetVisible(true);
+}
+
 void newNetplayWindows()
 {
 	bool alloc = (chatWindow = chatWindow == NULL ? new GuiChatWindow(424, 268) : chatWindow)
@@ -1123,56 +1151,6 @@ static void pleaseWaitMsg()
 	ShowAction("Opening connection");
 }
 
-static void swapChatAndBrowserWin()
-{
-	if(chatWindow->IsVisible())
-	{
-		chatWindow->SetState(STATE_DISABLED);
-
-		romsBtn->SetPosition(100, -58);
-		romsBtn->SetVisible(false);
-
-		chatBtn->SetPosition(0, -58);
-		chatBtn->SetVisible(true);
-
-		gameBrowser->SetVisible(true);
-
-		// Replace this comment with slide animations, if desired.
-		// That might be overdoing it with animations.
-
-		gameBrowser->ResetState();
-
-
-		chatWindow->SetVisible(false);
-	}
-	else if(gameBrowser->IsVisible())
-	{
-		gameBrowser->SetState(STATE_DISABLED);
-
-		romsBtn->SetPosition(0, -58);
-		romsBtn->SetVisible(true);
-
-		chatWindow->SetVisible(true);
-
-		// Replace this comment with slide animations, if desired.
-		// That might be overdoing it with animations.
-
-		chatWindow->ResetState();
-
-		chatBtn->SetPosition(100, -58);
-		chatBtn->SetVisible(false);
-
-		gameBrowser->SetVisible(false);
-	}
-
-
-	/*chatWindow->SetVisible( !chatWindow->IsVisible() );
-	chatBtn->SetVisible( !chatBtn->IsVisible() );
-
-	gameBrowser->SetVisible( !gameBrowser->IsVisible() );
-	romsBtn->SetVisible( !romsBtn->IsVisible() );*/
-}
-
 static void showNetplayGuiComponents()
 {
 	newNetplayWindows();
@@ -1194,29 +1172,9 @@ static void showNetplayGuiComponents()
 
 	ResumeGui();
 
-	if(hostBtn != NULL)
-	{
-		hostBtn->SetClickable(false);
-		hostBtn->SetVisible(false);
-		hostBtn->SetSoundOver(NULL);
-		hostBtn->SetRumble(false);
-	}
-
-	if(joinBtn != NULL)
-	{
-		joinBtn->SetClickable(false);
-		joinBtn->SetVisible(false);
-		joinBtn->SetSoundOver(NULL);
-		joinBtn->SetRumble(false);
-	}
-
-	if(disconnectBtn != NULL)
-	{
-		disconnectBtn->SetClickable(true);
-		disconnectBtn->SetRumble(true);
-		disconnectBtn->SetSoundOver(btnSoundOver);
-		disconnectBtn->SetVisible(true);
-	}
+	disableButton(hostBtn);
+	disableButton(joinBtn);
+	enableButton(disconnectBtn);
 
 	if(gameBrowser != NULL && chatWindow != NULL && playerList != NULL && romsBtn != NULL && readyBtn != NULL)
 	{
@@ -1227,11 +1185,11 @@ static void showNetplayGuiComponents()
 		// and invisible, causes the buttons to be shrunk down to a singularity, which they they Big Bang themselves out
 		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
 
+		enableButton(romsBtn);
 		romsBtn->SetPosition(0, -58);
-		romsBtn->SetVisible(true);
 
+		enableButton(readyBtn);
 		readyBtn->SetPosition(0, -17);
-		readyBtn->SetVisible(true);
 
 		chatWindow->SetVisible(true);
 		playerList->SetVisible(true);
@@ -1254,28 +1212,9 @@ static void showNetplayGuiComponents()
 
 static void hideNetplayGuiComponents()
 {
-	if(disconnectBtn != NULL)
-	{
-		disconnectBtn->SetClickable(false);
-		disconnectBtn->SetVisible(false);
-		disconnectBtn->SetSoundOver(NULL);
-	}
-
-	if(hostBtn != NULL)
-	{
-		hostBtn->SetClickable(true);
-		hostBtn->SetRumble(true);
-		hostBtn->SetSoundOver(btnSoundOver);
-		hostBtn->SetVisible(true);
-	}
-
-	if(joinBtn != NULL)
-	{
-		joinBtn->SetClickable(true);
-		joinBtn->SetRumble(true);
-		joinBtn->SetSoundOver(btnSoundOver);
-		joinBtn->SetVisible(true);
-	}
+	disableButton(disconnectBtn);
+	enableButton(hostBtn);
+	enableButton(joinBtn);
 
 	if(gameBrowser != NULL && chatWindow != NULL && readyBtn != NULL && chatBtn != NULL && romsBtn != NULL && chatWindow != NULL && playerList != NULL)
 	{
@@ -1327,14 +1266,14 @@ static void hideNetplayGuiComponents()
 		// and invisible, causes the buttons to be shrunk down to a singularity, which they they Big Bang themselves out
 		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
 
+		disableButton(chatBtn);
 		chatBtn->SetPosition(100, -58);
-		chatBtn->SetVisible(false);
 
+		disableButton(romsBtn);
 		romsBtn->SetPosition(100, -58);
-		romsBtn->SetVisible(false);
 
+		disableButton(readyBtn);
 		readyBtn->SetPosition(100, -17);
-		readyBtn->SetVisible(false);
 
 		HaltGui();
 
@@ -1802,21 +1741,47 @@ static int MenuGameSelection()
 			//_break();							// USB Gecko
 
 			disconnectBtn->ResetState();
-			executionMode = OFFLINE;
 
+			executionMode = OFFLINE;
 			FCEUD_NetworkClose();
+
 			hideNetplayGuiComponents();
 		}
 		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
+			//_break();							// USB Gecko
+
 			chatBtn->ResetState();
-			swapChatAndBrowserWin();
+
+			disableButton(chatBtn);
+			chatBtn->SetPosition(100, -58);
+
+			gameBrowser->SetState(STATE_DISABLED);
+			gameBrowser->SetVisible(false);
+
+			enableButton(romsBtn);
+			romsBtn->SetPosition(0, -58);
+
+			chatWindow->ResetState();
+			chatWindow->SetVisible(true);
 		}
 		else if(romsBtn->GetState() == STATE_CLICKED)
 		{
 			//_break();							// USB Gecko
+
 			romsBtn->ResetState();
-			swapChatAndBrowserWin();
+
+			disableButton(romsBtn);
+			romsBtn->SetPosition(100, -58);
+
+			chatWindow->SetState(STATE_DISABLED);
+			chatWindow->SetVisible(false);
+
+			enableButton(chatBtn);
+			chatBtn->SetPosition(0, -58);
+
+			gameBrowser->ResetState();
+			gameBrowser->SetVisible(true);
 		}
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
@@ -4659,7 +4624,7 @@ static int MenuSettingsNetwork()
 void
 MainMenu (int menu)
 {
-	DEBUG_Init(GDBSTUB_DEVICE_USB, 1);  // USB Gecko
+	//DEBUG_Init(GDBSTUB_DEVICE_USB, 1);  // USB Gecko
 	static bool init = false;
 	int currentMenu = menu;
 	lastMenu = MENU_NONE;
