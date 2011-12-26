@@ -1174,13 +1174,6 @@ static void showNetplayGuiComponents()
 
 	if(gameBrowser != NULL && chatWindow != NULL && playerList != NULL && romsBtn != NULL && readyBtn != NULL)
 	{
-		// The SetVisible calls for romsBtn/readyBtn are no longer necessary because we position them far offscreen when
-		// not in use, then zap them back on-screen when we need them.  Keeping the SetVisible calls in, however, makes
-		// it clear to the reader as to what their state should be.  This odd positioning scheme is a kludge that gets
-		// around a display bug.  The slide-out and slide-in effect, combined with receiving mouse events while onscreen
-		// and invisible, causes the buttons to be shrunk down to a singularity, which they they Big Bang themselves out
-		// of when set to visible again.  It's freaky; we never do anything programatically to resize the buttons.
-
 		enableButton(romsBtn);
 		enableButton(readyBtn);
 
