@@ -1174,6 +1174,19 @@ static void showNetplayGuiComponents()
 
 	if(gameBrowser != NULL && chatWindow != NULL && playerList != NULL && romsBtn != NULL && chatBtn != NULL && readyBtn != NULL)
 	{
+		chatWindow->SetVisible(true);
+		chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
+
+		// Hack.  By sliding the browser in too quickly to notice (even though it's already onscreen), we successfully
+		// re-enable the slide-out animation.  This is the solution used to resolve the same problem with the Chat
+		// button.
+		// Unlike the Chat button, there's nothing to obscure the browser while it's being slid in, so it introduces
+		// the slightest amount of flicker.  It's probably not noticeable unless you run without the hack in place and
+		// then *look* for the difference.  I don't think a better solution will be found.  I tried to obscure it as
+		// best as possible by starting the chat window animation first.
+		//gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 5000);
+		//while(gameBrowser->GetEffect() > 0 ){ usleep(1); }
+
 		enableButton(romsBtn);
 
 		// Hack.  This button should be invisible, but sliding it in as visible and obscured by the ROMS button, and then
@@ -1183,31 +1196,7 @@ static void showNetplayGuiComponents()
 		enableButton(chatBtn);
 
 		enableButton(readyBtn);
-
-		chatWindow->SetVisible(true);
 		playerList->SetVisible(true);
-
-		chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
-
-		// Hack.  By sliding the browser in too quickly to notice (even though it's already onscreen), we successfully
-		// re-enable the slide-out animation.  This is the solution used to resolve the same problem with chatBtn,
-		// but it doesn't quite work with the browser.  This is a two-line hack; uncomment the lines one at a time
-		// and run to see what happens.  An explanation of what you'll see follows:
-		//
-		// 1.  With just the slide-in, the browser vanishes and the chat window slides in.  This is actually a clean
-		//     look, but is far from the intent.  We want both the browser and chat window to slide, just as they do
-		//     the first time the Join button is clicked.
-		//
-		//     The hack probably doesn't work here b/c chatBtn pulls off the hack over two functions
-		//     (show/hideNetplayGuiComponents()), whereas we're doing it in one function for the browser.
-		//
-		// 2.  With the slide-in and while loop, the sliding animation is fixed.  There is a side effect for the
-		//     player list and roms/chat/ready buttons, however.  Due to the delay incurred by the while loop,
-		//     these GUI components flicker before being slid in.  This is because they're added to the window/made
-		//     visible at the start of thise function rather than after the while loop.  It may be possible to have
-		//     a beautifylly-functioning hack just by relocating that code.
-		//gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 2000);
-		//while(gameBrowser->GetEffect() > 0 ){ usleep(THREAD_SLEEP); }
 
 		gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
@@ -1245,7 +1234,7 @@ static void hideNetplayGuiComponents()
 			// Hack.  This is an alternative to the gameBrowser hack in showNetplayGuiComponents().  The
 			// player list, roms/chat/ready buttons do not flicker as they do with that hack, but with
 			// this one, the browser flickers.
-			//gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 1000);
+			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 1000);
 		}
 
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
