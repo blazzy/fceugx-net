@@ -1172,9 +1172,16 @@ static void showNetplayGuiComponents()
 	disableButton(joinBtn);
 	enableButton(disconnectBtn);
 
-	if(gameBrowser != NULL && chatWindow != NULL && playerList != NULL && romsBtn != NULL && readyBtn != NULL)
+	if(gameBrowser != NULL && chatWindow != NULL && playerList != NULL && romsBtn != NULL && chatBtn != NULL && readyBtn != NULL)
 	{
 		enableButton(romsBtn);
+
+		// Hack.  This button should be invisible, but sliding it in as visible and obscured by the ROMS button, and then
+		// immediately making it invisible, prevents this button's slide-out animation from screwing up the second time
+		// it's performed.  What part of that made sense?  If you answered none of it, you aren't alone.  This hack has
+		// no basis in sense that I can perceive, but it's the only thing that fixes the animation.
+		enableButton(chatBtn);
+
 		enableButton(readyBtn);
 
 		chatWindow->SetVisible(true);
@@ -1184,14 +1191,16 @@ static void showNetplayGuiComponents()
 		gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
 		romsBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
+		chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
 		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_IN, 45);
 
 		while(gameBrowser->GetEffect() > 0 || chatWindow->GetEffect() > 0 || playerList->GetEffect() > 0
-		|| romsBtn->GetEffect() > 0 || readyBtn->GetEffect() > 0)
+		|| romsBtn->GetEffect() > 0 || chatBtn->GetEffect() > 0 || readyBtn->GetEffect() > 0)
 		{
 			usleep(THREAD_SLEEP);
 		}
 
+		disableButton(chatBtn);
 		gameBrowser->SetVisible(false);
 	}
 }
@@ -1223,14 +1232,14 @@ static void hideNetplayGuiComponents()
 			chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
 		}
 
-		if(chatBtn->IsVisible())
-		{
-			chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
-		}
-
 		if(romsBtn->IsVisible())
 		{
 			romsBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
+		}
+
+		if(chatBtn->IsVisible())
+		{
+			chatBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
 		}
 
 		readyBtn->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
@@ -1244,9 +1253,9 @@ static void hideNetplayGuiComponents()
 		{
 			usleep(THREAD_SLEEP);
 		}
-
-		disableButton(chatBtn);
+		
 		disableButton(romsBtn);
+		disableButton(chatBtn);
 		disableButton(readyBtn);
 
 		HaltGui();
