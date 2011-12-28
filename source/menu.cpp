@@ -1234,7 +1234,7 @@ static void hideNetplayGuiComponents()
 			// Hack.  This is an alternative to the gameBrowser hack in showNetplayGuiComponents().  The
 			// player list, roms/chat/ready buttons do not flicker as they do with that hack, but with
 			// this one, the browser flickers.
-			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 1000);
+			//gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 1000);
 		}
 
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
@@ -1764,13 +1764,24 @@ static int MenuGameSelection()
 
 			disableButton(chatBtn);
 
-			gameBrowser->SetState(STATE_DISABLED);
-			gameBrowser->SetVisible(false);
+			//gameBrowser->SetState(STATE_DISABLED);
+			//gameBrowser->SetVisible(false);
 
 			enableButton(romsBtn);
 
-			chatWindow->ResetState();
+			//chatWindow->ResetState();
+			//chatWindow->SetVisible(true);
+
 			chatWindow->SetVisible(true);
+			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
+			chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
+
+			while(gameBrowser->GetEffect() > 0 && chatWindow->GetEffect() > 0)
+			{
+				usleep(THREAD_SLEEP);
+			}
+
+			gameBrowser->SetVisible(false);
 		}
 		else if(romsBtn->GetState() == STATE_CLICKED)
 		{
@@ -1789,11 +1800,22 @@ static int MenuGameSelection()
 			disableButton(romsBtn, true);  // For whatever reason, if we make it invisible, the freaking Singularity Problem shows up.  Again.  If it's disabled with another button displayed over top, no one will know it's there, so I'm okay with leaving it visible.
 			romsBtn->SetEffectGrow();
 
-			chatWindow->SetState(STATE_DISABLED);
+			/*chatWindow->SetState(STATE_DISABLED);
 			chatWindow->SetVisible(false);
 
 			gameBrowser->ResetState();
+			gameBrowser->SetVisible(true);*/
+
 			gameBrowser->SetVisible(true);
+			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
+			chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
+
+			while(gameBrowser->GetEffect() > 0 && chatWindow->GetEffect() > 0)
+			{
+				usleep(THREAD_SLEEP);
+			}
+
+			chatWindow->SetVisible(false);
 		}
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
