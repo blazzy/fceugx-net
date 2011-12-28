@@ -1479,8 +1479,8 @@ static int MenuGameSelection()
 	buttonWindow.Append(joinBtn);
 	buttonWindow.Append(hostBtn);
 	buttonWindow.Append(disconnectBtn);
-	buttonWindow.Append(chatBtn);
 	buttonWindow.Append(romsBtn);
+	buttonWindow.Append(chatBtn);
 	buttonWindow.Append(readyBtn);
 	buttonWindow.Append(&settingsBtn);
 	buttonWindow.Append(&exitBtn);
@@ -1752,12 +1752,19 @@ static int MenuGameSelection()
 
 			romsBtn->ResetState();
 
-			disableButton(romsBtn);
+			// At this point in time, the ROMs button is enlarged because of the scaling induced
+			// by setEffectGrow().  We have to disable the button and display the Chat button in
+			// its place, but since the ROMS button never loses cursor hover, it never shrinks
+			// back to its original size.  If we disable it, it will retain that size and will be
+			// that size the next time it's displayed.  So here begins a carefully-orchestrated
+			// order of events to forcibly undo the scaling and display the Chat button over top:
+			enableButton(chatBtn);
+			romsBtn->SetEffect(EFFECT_SCALE, -1, 100);
+			disableButton(romsBtn, true);  // For whatever reason, if we make it invisible, the freaking Singularity Problem shows up.  Again.  If it's disabled with another button displayed over top, no one will know it's there, so I'm okay with leaving it visible.
+			romsBtn->SetEffectGrow();
 
 			chatWindow->SetState(STATE_DISABLED);
 			chatWindow->SetVisible(false);
-
-			enableButton(chatBtn);
 
 			gameBrowser->ResetState();
 			gameBrowser->SetVisible(true);
