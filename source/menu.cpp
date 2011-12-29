@@ -1201,6 +1201,7 @@ static void showNetplayGuiComponents()
 
 		disableButton(chatBtn);
 		gameBrowser->SetVisible(false);
+		gameBrowser->SetState(STATE_DISABLED);
 	}
 }
 
@@ -1256,6 +1257,7 @@ static void hideNetplayGuiComponents()
 		disableButton(romsBtn);
 		disableButton(chatBtn);
 		disableButton(readyBtn);
+		gameBrowser->ResetState();
 
 		HaltGui();
 
@@ -1518,6 +1520,7 @@ static int MenuGameSelection()
 	if(chatWindow != NULL && chatWindow->IsVisible())
 	{
 		gameBrowser->SetVisible(false);
+		gameBrowser->SetState(STATE_DISABLED);
 	}
 
 	ResumeGui();
@@ -1773,6 +1776,8 @@ static int MenuGameSelection()
 			}
 
 			gameBrowser->SetVisible(false);
+			gameBrowser->SetState(STATE_DISABLED);
+
 			titleTxt.SetText(txtChat);
 		}
 		else if(romsBtn->GetState() == STATE_CLICKED)
@@ -1801,7 +1806,9 @@ static int MenuGameSelection()
 				usleep(THREAD_SLEEP);
 			}
 
+			gameBrowser->ResetState();
 			chatWindow->SetVisible(false);
+
 			titleTxt.SetText(txtChooseGame);
 		}
 		else if(readyBtn->GetState() == STATE_CLICKED)
