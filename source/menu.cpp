@@ -1177,24 +1177,13 @@ static void showNetplayGuiComponents()
 		chatWindow->SetVisible(true);
 		chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
 
-		// Hack.  By sliding the browser in too quickly to notice (even though it's already onscreen), we successfully
-		// re-enable the slide-out animation.  This is the solution used to resolve the same problem with the Chat
-		// button.
-		// Unlike the Chat button, there's nothing to obscure the browser while it's being slid in, so it introduces
-		// the slightest amount of flicker.  It's probably not noticeable unless you run without the hack in place and
-		// then *look* for the difference.  I don't think a better solution will be found.  I tried to obscure it as
-		// best as possible by starting the chat window animation first.
-		//gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 5000);
-		//while(gameBrowser->GetEffect() > 0 ){ usleep(1); }
-
-		enableButton(romsBtn);
-
 		// Hack.  This button should be invisible, but sliding it in as visible and obscured by the ROMS button, and then
 		// immediately making it invisible, prevents this button's slide-out animation from screwing up the second time
 		// it's performed.  What part of that made sense?  If you answered none of it, you aren't alone.  This hack has
 		// no basis in sense that I can perceive, but it's the only thing that fixes the animation.
 		enableButton(chatBtn);
 
+		enableButton(romsBtn);
 		enableButton(readyBtn);
 		playerList->SetVisible(true);
 
@@ -1229,20 +1218,13 @@ static void hideNetplayGuiComponents()
 			gameBrowser->SetVisible(true);
 			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
 		}
-		else
-		{
-			// Hack.  This is an alternative to the gameBrowser hack in showNetplayGuiComponents().  The
-			// player list, roms/chat/ready buttons do not flicker as they do with that hack, but with
-			// this one, the browser flickers.
-			//gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 1000);
-		}
 
 		playerList->SetEffect(EFFECT_SLIDE_RIGHT | EFFECT_SLIDE_OUT, 45);
 
-		// Setting a slide effect on an invisible GUI element screws it up.  The GetEffect() method will not
-		// return 0, which would cause an infinite loop down below.
-		// Depending on whether we're in file-browsing mode or chat mode, one set of GUI components will always be
-		// invisible.  Therefore, we need to tie all work with an object's effects to its visibility.
+		// Setting a slide effect on invisible GUI elements causes an infinite loop when checking the effects
+		// status.  This is because Draw() returns immediately on hidden elements, never calling UpdateEffects().
+		// Whether we're in file-browsing mode or chat mode, something will always be invisible.  Therefore, we
+		// need to tie all work with an object's effects to its visibility.
 
 		if(chatWindow->IsVisible())
 		{
@@ -1761,18 +1743,10 @@ static int MenuGameSelection()
 			//_break();							// USB Gecko
 
 			chatBtn->ResetState();
-
 			disableButton(chatBtn);
-
-			//gameBrowser->SetState(STATE_DISABLED);
-			//gameBrowser->SetVisible(false);
-
 			enableButton(romsBtn);
-
-			//chatWindow->ResetState();
-			//chatWindow->SetVisible(true);
-
 			chatWindow->SetVisible(true);
+
 			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
 			chatWindow->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
 
@@ -1794,17 +1768,11 @@ static int MenuGameSelection()
 			// its place, but since the ROMS button never loses cursor hover, it never shrinks
 			// back to its original size.  If we disable it, it will retain that size and will be
 			// that size the next time it's displayed.  So here begins a carefully-orchestrated
-			// order of events to forcibly undo the scaling and display the Chat button over top:
+			// set of events to forcibly undo the scaling and display the Chat button over top:
 			enableButton(chatBtn);
 			romsBtn->SetEffect(EFFECT_SCALE, -1, 100);
 			disableButton(romsBtn, true);  // For whatever reason, if we make it invisible, the freaking Singularity Problem shows up.  Again.  If it's disabled with another button displayed over top, no one will know it's there, so I'm okay with leaving it visible.
 			romsBtn->SetEffectGrow();
-
-			/*chatWindow->SetState(STATE_DISABLED);
-			chatWindow->SetVisible(false);
-
-			gameBrowser->ResetState();
-			gameBrowser->SetVisible(true);*/
 
 			gameBrowser->SetVisible(true);
 			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_IN, 45);
