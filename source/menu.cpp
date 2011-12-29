@@ -1290,9 +1290,22 @@ static int MenuGameSelection()
 	int i;
 	bool res;
 
-	GuiText titleTxt("Choose Game", 26, (GXColor){255, 255, 255, 255});
+	char txtChooseGame[] = "Choose Game",
+		 txtChat[] = "Chat Window";
+
+	GuiText titleTxt(txtChooseGame, 26, (GXColor){255, 255, 255, 255});
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,50);
+
+	// Returning from the Settings screen
+	if(gameBrowser != NULL && gameBrowser->IsVisible())
+	{
+		titleTxt.SetText(txtChooseGame);
+	}
+	else if(chatWindow != NULL && chatWindow->IsVisible())
+	{
+		titleTxt.SetText(txtChat);
+	}
 
 	if(btnSoundOver == NULL)
 	{
@@ -1475,6 +1488,7 @@ static int MenuGameSelection()
 		disconnectBtn->SetEffectGrow();
 
 		disableButton(disconnectBtn);
+		titleTxt.SetText(txtChooseGame);
 	}
 
 	HaltGui();
@@ -1640,6 +1654,7 @@ static int MenuGameSelection()
 				{
 					executionMode = NETPLAY_HOST;
 					showNetplayGuiComponents();
+					titleTxt.SetText(txtChat);
 				}
 
 				// This fakes a response coming from the server.  The string will come from a method that receives
@@ -1723,6 +1738,7 @@ static int MenuGameSelection()
 				if(connected)
 				{
 					showNetplayGuiComponents();
+					titleTxt.SetText(txtChat);
 					ResumeNetplay();
 				}
 			}
@@ -1737,6 +1753,7 @@ static int MenuGameSelection()
 			FCEUD_NetworkClose();
 
 			hideNetplayGuiComponents();
+			titleTxt.SetText(txtChooseGame);
 		}
 		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
@@ -1756,6 +1773,7 @@ static int MenuGameSelection()
 			}
 
 			gameBrowser->SetVisible(false);
+			titleTxt.SetText(txtChat);
 		}
 		else if(romsBtn->GetState() == STATE_CLICKED)
 		{
@@ -1784,6 +1802,7 @@ static int MenuGameSelection()
 			}
 
 			chatWindow->SetVisible(false);
+			titleTxt.SetText(txtChooseGame);
 		}
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
