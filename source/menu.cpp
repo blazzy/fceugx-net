@@ -1558,9 +1558,9 @@ static int MenuGameSelection()
 				{
 					gameBrowser->fileList[i]->ResetState();
 
-					if( (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
-					||  (executionMode == NETPLAY_HOST && browserList[browser.selIndex].isdir)
-					||  (executionMode == OFFLINE) )
+					if( (executionMode == OFFLINE)
+					||  (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
+					||  (executionMode != OFFLINE && browserList[browser.selIndex].isdir) )
 					{
 						// check corresponding browser entry
 						if(browserList[browser.selIndex].isdir || IsSz())
@@ -1662,7 +1662,7 @@ static int MenuGameSelection()
 
 				// This fakes a response coming from the server.  The string will come from a method that receives
 				// the data over a socket.  That method will make the call to BuildPlayerList().
-				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:0");
+				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:1");
 
 				switch(listStatus)
 				{
