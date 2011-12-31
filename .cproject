@@ -39,8 +39,8 @@
 									<listOptionValue builtIn="false" value="HAVE_ASPRINTF"/>
 									<listOptionValue builtIn="false" value="PATH_MAX=1024"/>
 									<listOptionValue builtIn="false" value="PSS_STYLE=1"/>
-									<listOptionValue builtIn="false" value="FT_FREETYPE_H=/home/kurt/git_repos/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/freetype.h"/>
-									<listOptionValue builtIn="false" value="FT_TYPES_H=/home/kurt/git_repos/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/fttypes.h"/>
+									<listOptionValue builtIn="false" value="FT_FREETYPE_H=/home/kurt/git/blazzy/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/freetype.h"/>
+									<listOptionValue builtIn="false" value="FT_TYPES_H=/home/kurt/git/blazzy/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/fttypes.h"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.460939608" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -61,8 +61,8 @@
 									<listOptionValue builtIn="false" value="FRAMESKIP"/>
 									<listOptionValue builtIn="false" value="HAVE_ASPRINTF"/>
 									<listOptionValue builtIn="false" value="PATH_MAX=1024"/>
-									<listOptionValue builtIn="false" value="FT_FREETYPE_H=/home/kurt/git_repos/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/freetype.h"/>
-									<listOptionValue builtIn="false" value="FT_TYPES_H=/home/kurt/git_repos/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/fttypes.h"/>
+									<listOptionValue builtIn="false" value="FT_FREETYPE_H=/home/kurt/git/blazzy/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/freetype.h"/>
+									<listOptionValue builtIn="false" value="FT_TYPES_H=/home/kurt/git/blazzy/fceugx-net/devkitpro/portlibs/ppc/include/freetype2/freetype/fttypes.h"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2035618591" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
