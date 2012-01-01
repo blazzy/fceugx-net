@@ -1590,7 +1590,7 @@ static int MenuGameSelection()
 							mainWindow->SetState(STATE_DISABLED);
 							if(BrowserLoadFile())
 								menu = MENU_EXIT;
-							else
+							//else
 								mainWindow->SetState(STATE_DEFAULT);
 						}
 					}
@@ -1748,8 +1748,6 @@ static int MenuGameSelection()
 		}
 		else if(disconnectBtn->GetState() == STATE_CLICKED)
 		{
-			//_break();							// USB Gecko
-
 			disconnectBtn->ResetState();
 
 			executionMode = OFFLINE;
@@ -1760,8 +1758,6 @@ static int MenuGameSelection()
 		}
 		else if(chatBtn->GetState() == STATE_CLICKED)
 		{
-			//_break();							// USB Gecko
-
 			chatBtn->ResetState();
 			disableButton(chatBtn);
 			enableButton(romsBtn);
@@ -1782,8 +1778,6 @@ static int MenuGameSelection()
 		}
 		else if(romsBtn->GetState() == STATE_CLICKED)
 		{
-			//_break();							// USB Gecko
-
 			romsBtn->ResetState();
 
 			// At this point in time, the ROMs button is enlarged because of the scaling induced
@@ -4653,6 +4647,8 @@ void
 MainMenu (int menu)
 {
 	//DEBUG_Init(GDBSTUB_DEVICE_USB, 1);  // USB Gecko
+	//_break();                           // USB Gecko
+
 	static bool init = false;
 	int currentMenu = menu;
 	lastMenu = MENU_NONE;
