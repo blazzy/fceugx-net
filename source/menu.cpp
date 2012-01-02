@@ -160,50 +160,35 @@ static void playerListEventHandler(void *ptr)
 		listIdxY = -1,
 		listIdxZ = -1;
 
-	if(strlen(GCSettings.netplayNameX) != 0)
+	if(strlen(GCSettings.netplayNameX) > 0)
 	{
 		listIdxX = list->GetPlayerNumber(GCSettings.netplayNameX);
+
+		if(listIdxX >= 0)
+		{
+			updatePlayerPointerMap(0, list->IsPlayerReady(listIdxX) ? listIdxX : 4);
+		}
 	}
 
-	if(strlen(GCSettings.netplayNameY) != 0)
+	if(strlen(GCSettings.netplayNameY) > 0)
 	{
 		listIdxY = list->GetPlayerNumber(GCSettings.netplayNameY);
+
+		if(listIdxY >= 0)
+		{
+			updatePlayerPointerMap(1, list->IsPlayerReady(listIdxY) ? listIdxY : 4);
+		}
 	}
 
-	if(strlen(GCSettings.netplayNameZ) != 0)
+	if(strlen(GCSettings.netplayNameZ) > 0)
 	{
 		listIdxZ = list->GetPlayerNumber(GCSettings.netplayNameZ);
-	}
 
-	uint i = 0;
-
-	do
-	{
-		if(userInput[i].wpad != NULL)// && userInput[i].wpad->ir.valid)
+		if(listIdxZ >= 0)
 		{
-			if(listIdxX >= 0 && list->IsPlayerReady(listIdxX))
-			{
-				updatePlayerPointerMap(i, listIdxX);
-				listIdxX = -1;
-			}
-			else if(listIdxY >= 0 && list->IsPlayerReady(listIdxY))
-			{
-				updatePlayerPointerMap(i, listIdxY);
-				listIdxY = -1;
-			}
-			else if(listIdxZ >= 0 && list->IsPlayerReady(listIdxZ))
-			{
-				updatePlayerPointerMap(i, listIdxZ);
-				listIdxZ = -1;
-			}
-			else
-			{
-				updatePlayerPointerMap(i, 4);   // a cursor without a player number
-			}
+			updatePlayerPointerMap(2, list->IsPlayerReady(listIdxZ) ? listIdxZ : 4);
 		}
-
-		i++;
-	} while(i <= 3);
+	}
 }
 
 static void updatePlayerPointerMap(uint from, uint to)
