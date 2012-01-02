@@ -370,11 +370,11 @@ void GuiPlayerList::Clear()
 	//ResumeGui();
 }
 
-int GuiPlayerList::GetPlayerNumber(char *name)
+int GuiPlayerList::GetPlayerNumber(char *playerName)
 {
 	int idx = -1;
 
-	if(name != NULL)
+	if(playerName != NULL)
 	{
 		for(int i = 0; i <= currIdx; i++)
 		{
@@ -384,7 +384,7 @@ int GuiPlayerList::GetPlayerNumber(char *name)
 
 				if(textCopy != NULL)
 				{
-					if(strcmp(name, textCopy) == 0)
+					if(strcmp(playerName, textCopy) == 0)
 					{
 						idx = i;
 						free(textCopy);
@@ -460,12 +460,17 @@ bool GuiPlayerList::IsPlayerReady(int playerNum)
 	bool ready = true;
 
 	if(playerNum < 0 || playerNum > currIdx
-	  || rowButton[playerNum] == NULL || rowButton[playerNum]->GetIcon() == NULL)
+	|| rowButton[playerNum] == NULL || rowButton[playerNum]->GetIcon() == NULL)
 	{
 		ready = false;
 	}
 
 	return ready;
+}
+
+bool GuiPlayerList::IsPlayerReady(char *playerName)
+{
+	return IsPlayerReady(GetPlayerNumber(playerName));
 }
 
 bool GuiPlayerList::IsEveryoneReady()

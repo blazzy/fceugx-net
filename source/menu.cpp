@@ -1593,7 +1593,10 @@ static int MenuGameSelection()
 
 		if(settingsBtn.GetState() == STATE_CLICKED)
 		{
-			if(playerList != NULL)
+			// Leaving the main screen when marked ready has the effect of marking you not ready
+
+			if(executionMode != OFFLINE && playerList != NULL
+			&& (playerList->IsPlayerReady(GCSettings.netplayNameX) || playerList->IsPlayerReady(GCSettings.netplayNameY) || playerList->IsPlayerReady(GCSettings.netplayNameZ)))
 			{
 				FCEUI_NetplayToggleReady();
 			}
@@ -1794,7 +1797,7 @@ static int MenuGameSelection()
 		{
 			readyBtn->ResetState();
 			playerList->ToggleReady();  // here temporarily.  TODO:  remove call once networked
-			FCEUI_NetplayToggleReady(/* name of whoever clicked me */);
+			FCEUI_NetplayToggleReady();
 		}
 	}
 

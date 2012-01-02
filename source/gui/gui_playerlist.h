@@ -47,9 +47,10 @@ class GuiPlayerList : public GuiWindow
 		int BuildPlayerList(const char *playerInfo);
 		int AddPlayer(Player player);
 		void Clear();
-		int  GetPlayerNumber(char *name);
+		int  GetPlayerNumber(char *playerName);
 		bool ToggleReady();
 		bool IsPlayerReady(int playerNum);
+		bool IsPlayerReady(char *playerName);
 		bool IsEveryoneReady();
 
 	private:
