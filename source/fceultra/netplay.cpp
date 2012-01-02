@@ -51,9 +51,24 @@ static int netdcount;
 
 static void NetError(void)
 {
-	FCEU_DispMessage("Network error/connection lost!",0);
-	FCEUD_NetworkClose();
+	NetError("Network error/connection lost!");
 }
+
+void NetError(const char *error, ...)
+{
+	va_list arg;
+
+	va_start(arg, error);
+		int length = vsnprintf(0, 0, error, arg);
+		char str[length + 1];
+		vsprintf(str, error, arg);
+	va_end(arg);
+
+	FCEU_DispMessage(str, 0);
+	FCEUD_NetworkClose();
+	FCEUD_PrintError(str);
+}
+
 
 void FCEUI_NetplayStop(void)
 {
