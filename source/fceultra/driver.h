@@ -52,14 +52,15 @@ void FCEUD_NetplayText(uint8 *text);
 //Handle new client announcements
 void FCEUD_NetplayClient(uint8 id, uint8 *name);
 
-//Handle client ready state change
-void FCEUD_NetplayReady(uint8 id, uint8 ready);
+//Handle controller state change
+void FCEUD_NetplayPickupController(uint8 id, uint8 controller);
+void FCEUD_NetplayDropController(uint8 controller);
+
+//Handle client disconnects
+void FCEUD_NetplayClientDisconnect(uint8 id);
 
 //Encode and send text over the network.
 void FCEUI_NetplayText(uint8 *text);
-
-//Ask server to toggle the client's netplay ready state
-void FCEUI_NetplayToggleReady();
 
 //Called when a fatal error occurred and network play can't continue.  This function
 //should call FCEUI_NetplayStop() after it has deinitialized the network on the driver

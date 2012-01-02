@@ -34,4 +34,7 @@ int FCEUD_NetworkConnect();
  */
 bool FCEUD_SendPlayerListToClients();
 
+
+void FCEUGX_NetplayToggleReady();
+
 #endif

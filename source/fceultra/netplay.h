@@ -18,10 +18,18 @@
 #ifndef _NETPLAY_H_
 #define _NETPLAY_H_
 
+#define NETPLAY_MAX_NAME_LEN  21
+
+struct NetplayClient {
+	char name[NETPLAY_MAX_NAME_LEN];
+	bool connected;
+}  extern NetplayClients[4],
+          *NetplayControllers[4],
+          *NetplayThisClient;
+
 enum ExecutionMode { OFFLINE, NETPLAY_HOST, NETPLAY_CLIENT };
 extern ExecutionMode executionMode;
 
-#define NETPLAY_MAX_NAME_LEN  21
 
 #define FCEUNPCMD_RESET   0x01
 #define FCEUNPCMD_POWER   0x02
@@ -39,11 +47,12 @@ extern ExecutionMode executionMode;
 #define FCEUNPCMD_LOADCHEATS	0x82
 #define FCEUNPCMD_TEXT		0x90
 
-#define FCEUNPCMD_NEWCLIENT       0xA0
-#define FCEUNPCMD_READY           0xA1
-#define FCEUNPCMD_ASSIGNPLAYER    0xA2
-#define FCEUNPCMD_HALTEMULATION   0xA3
-#define FCEUNPCMD_RESUMEEMULATION 0xA4
+#define FCEUNPCMD_NEWCLIENT        0xA0
+#define FCEUNPCMD_PICKUPCONTROLLER 0xA1
+#define FCEUNPCMD_DROPCONTROLLER   0xA2
+#define FCEUNPCMD_CLIENTDISCONNECT 0xA3
+#define FCEUNPCMD_HALTEMULATION    0xA4
+#define FCEUNPCMD_RESUMEEMULATION  0xA5
 
 int InitNetplay(void);
 void NetplayUpdate(uint8 *joyp);

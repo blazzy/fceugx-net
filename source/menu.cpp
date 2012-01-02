@@ -1595,7 +1595,7 @@ static int MenuGameSelection()
 		{
 			if(playerList != NULL)
 			{
-				FCEUI_NetplayToggleReady();
+				FCEUGX_NetplayToggleReady();
 			}
 
 			menu = MENU_SETTINGS;
@@ -1794,7 +1794,7 @@ static int MenuGameSelection()
 		{
 			readyBtn->ResetState();
 			playerList->ToggleReady();  // here temporarily.  TODO:  remove call once networked
-			FCEUI_NetplayToggleReady(/* name of whoever clicked me */);
+			FCEUGX_NetplayToggleReady(/* name of whoever clicked me */);
 		}
 	}
 

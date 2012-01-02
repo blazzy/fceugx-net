@@ -41,6 +41,8 @@
 
 ExecutionMode executionMode = OFFLINE;
 
+NetplayClient *NetplayControllers[4], NetplayClients[4], *NetplayThisClient;
+
 static uint8 netjoy[4]; // Controller cache.
 static int numlocal;
 static int netdivisor;
@@ -100,6 +102,13 @@ int FCEUI_NetplayStart(int nlocal, int divisor)
 	numlocal = nlocal;
 	netdivisor = divisor;
 	netdcount = 0;
+
+	for (int i = 0; i < 4; ++i) {
+		NetplayControllers[i] = 0;
+		NetplayClients[i].connected = 0;
+	}
+	NetplayThisClient = 0;
+
 	return(1);
 }
 
@@ -131,11 +140,6 @@ void FCEUI_NetplayText(uint8 *text)
 
 	if(!FCEUD_SendData(text,len))
 		NetError();
-}
-
-void FCEUI_NetplayToggleReady()
-{
-	FCEUNET_SendCommand(FCEUNPCMD_READY, 0);
 }
 
 int FCEUNET_SendFile(uint8 cmd, char *fn)
@@ -276,6 +280,70 @@ void NetplayUpdate(uint8 *joyp)
 					free(tbuf);
 				}
 				break;
+			case FCEUNPCMD_NEWCLIENT:
+				{
+					uint8 client_buf[1 + NETPLAY_MAX_NAME_LEN];
+					if(!FCEUD_RecvData(client_buf, 1 + NETPLAY_MAX_NAME_LEN) || client_buf[0] > 3)
+					{
+						NetError("Connection lost. New client error %i", client_buf[0]);
+						return;
+					}
+
+					client_buf[1 + NETPLAY_MAX_NAME_LEN - 1] = '\0';
+					strncpy(NetplayClients[client_buf[0]].name, (char*)&client_buf[1], NETPLAY_MAX_NAME_LEN);
+					NetplayClients[client_buf[0]].connected = true;
+
+					if (!NetplayThisClient)
+						NetplayThisClient = &NetplayClients[client_buf[0]];
+
+					FCEUD_NetplayClient(client_buf[0], &client_buf[1]);
+				}
+				break;
+			case FCEUNPCMD_PICKUPCONTROLLER:
+				{
+					uint8 buf[2];
+					if(!FCEUD_RecvData(buf, 2) || buf[0] > 3 || buf[1] > 3)
+					{
+						NetError("Connection lost. Pick up controller error %i %i", buf[0], buf[1]);
+						return;
+					}
+					NetplayControllers[buf[1]] = &NetplayClients[buf[0]];
+					FCEUD_NetplayPickupController(buf[0], buf[1]);
+				}
+				break;
+
+			case FCEUNPCMD_DROPCONTROLLER:
+				{
+					uint8 buf[1];
+					if(!FCEUD_RecvData(buf, 1) || buf[0] > 3)
+					{
+						NetError("Connection lost. Drop controller error %i %i", buf[0], buf[1]);
+						return;
+					}
+					NetplayControllers[buf[0]] = 0;
+					FCEUD_NetplayDropController(buf[0]);
+				}
+				break;
+
+			case FCEUNPCMD_CLIENTDISCONNECT: 
+				{
+					uint8 buf[1];
+					if(!FCEUD_RecvData(buf, 1) || buf[0] > 3)
+					{
+						NetError("Connection lost. Drop controller error %i", buf[0]);
+						return;
+					}
+
+					for (int i = 0; i < 4; ++i) {
+						if (NetplayControllers[i] == &NetplayClients[buf[0]]) {
+							NetplayControllers[i] = 0;
+						}
+					}
+
+					NetplayClients[buf[0]].connected = false;
+					FCEUD_NetplayClientDisconnect(buf[0]);
+				}
+				break;
 			case FCEUNPCMD_SAVESTATE:	
 				{
 					//mbg todo netplay
@@ -322,30 +390,6 @@ void NetplayUpdate(uint8 *joyp)
 					//	return;
 					//}
 
-				}
-				break;
-			case FCEUNPCMD_NEWCLIENT:
-				{
-					uint8 client_buf[2 + NETPLAY_MAX_NAME_LEN];
-					if(!FCEUD_RecvData(client_buf, 2 + NETPLAY_MAX_NAME_LEN) || client_buf[0] > 3)
-					{
-						NetError();
-						return;
-					}
-					client_buf[NETPLAY_MAX_NAME_LEN] = '\0';
-					FCEUD_NetplayClient(client_buf[0], &client_buf[2]);
-					FCEUD_NetplayReady(client_buf[0], client_buf[1]);
-				}
-				break;
-			case FCEUNPCMD_READY:
-				{
-					uint8 ready_buf[2];
-					if(!FCEUD_RecvData(ready_buf, 2) || ready_buf[0] > 3)
-					{
-						NetError();
-						return;
-					}
-					FCEUD_NetplayReady(ready_buf[0], ready_buf[1]);
 				}
 				break;
 			case FCEUNPCMD_LOADCHEATS:

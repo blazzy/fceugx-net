@@ -29,8 +29,9 @@
 
 #include "fceugx.h"
 #include "fceultra/utils/endian.h"
+#include "gui/gui_playerlist.h"
 
-extern FCEUGI *GameInfo;
+extern GuiPlayerList *playerList;
 
 static int Socket = -1;
 
@@ -180,6 +181,9 @@ int FCEUD_RecvData(void *data, uint32 len) {
 	return 0;
 }
 
+static void UpdatePlayerList();
+
+
 void FCEUD_NetworkClose(void) {
 	if (Socket != -1) {
 		net_close(Socket);
@@ -189,27 +193,34 @@ void FCEUD_NetworkClose(void) {
 	FCEUI_NetplayStop();
 }
 
+
 void FCEUD_NetplayClient(uint8 id, uint8 *name) {
+	UpdatePlayerList();
 }
 
-void FCEUD_NetplayReady(uint8 id, uint8 ready) {
+
+void FCEUD_NetplayClientDisconnect(uint8 id) {
+	UpdatePlayerList();
 }
+
+
+void FCEUD_NetplayPickupController(uint8 id, uint8 controller) {
+	UpdatePlayerList();
+}
+
+
+void FCEUD_NetplayDropController(uint8 controller) {
+		UpdatePlayerList();
+}
+
 
 void FCEUD_NetplayText(uint8 *text) {
 }
 
-// This function sends a list of all connected players to each client for
-// update in their GUIs.  Players are marked 0-3 (indicating zero-indexed
-// Player 1, Player 2, etc.) if they have clicked READY.  If they haven't
-// clicked READY, they aren't marked with anything.
-bool FCEUD_SendPlayerListToClients() {
-	char *list = "PLAYER_LIST:gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:1";
 
-	// foreach socket in clientSockets[]
-	// do
-	//		FCEUD_SendData(socket, list, (uint32) sizeof(list) );
-	// done
-
-	return true;
+void FCEUGX_NetplayToggleReady() {
 }
 
+
+static void UpdatePlayerList() {
+}
