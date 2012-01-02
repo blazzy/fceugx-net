@@ -39,7 +39,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	currIdx = -1;
 	selectedItem = 0;
 	selectable = true;
-	listChanged = true; // trigger an initial list update
+	listChanged = false; // Don't trigger a list update unless something changes (add/delete/ready/unready).  Setting this to true will prevent conrollers from ever being registered.
 	focus = 0; // allow focus
 
 	trigA = new GuiTrigger;
