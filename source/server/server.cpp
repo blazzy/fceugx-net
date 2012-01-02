@@ -93,9 +93,14 @@ struct Client {
 	int  socket;
 
 	//to store incoming data over the socket
-	const static int buffer_max = 10240;
-	uint8_t          buffer[buffer_max];
-	int              buffer_used;
+	const static int in_buffer_max = 1024 * 10;
+	uint8_t          in_buffer[in_buffer_max];
+	int              in_buffer_used;
+
+	//to store incoming data over the socket
+	const static int out_buffer_max = 1024 * 16;
+	uint8_t          out_buffer[out_buffer_max];
+	int              out_buffer_used;
 
 	//next expected command
 	int  command_length;
@@ -106,7 +111,7 @@ struct Client {
 		id(-1),
 		socket(-1),
 		disconnecting(false),
-		buffer_used(0),
+		in_buffer_used(0),
 		command_length(0),
 		command_type(0) {
 	}
@@ -133,9 +138,25 @@ struct Client {
 	}
 
 	int send(uint8_t *data, uint32_t length) {
-		if (::send(socket, data, length, MSG_NOSIGNAL) == length) {
+		if (out_buffer_used + length < out_buffer_max) {
+			memcpy(&out_buffer[out_buffer_used], data, length);
+			out_buffer_used += length;
 			return 1;
 		}
+
+		fprintf(stderr, "send failed: send buffer full\n");
+		disconnect();
+		return 0;
+	}
+
+	int send() {
+		int sent = ::send(socket, out_buffer, out_buffer_used, MSG_NOSIGNAL);
+		if (sent == out_buffer_used || errno == EAGAIN || errno == EWOULDBLOCK) {
+			memmove(out_buffer, &out_buffer[sent], out_buffer_used - sent);
+      out_buffer_used -= sent;
+			return 1;
+		}
+
 		fprintf(stderr, "send failed: %s (%i)\n", strerror(errno), errno);
 		disconnect();
 		return 0;
@@ -152,14 +173,14 @@ struct Client {
 	}
 
 	void reset_buffer(int type, int length) {
-		if (length > buffer_max) {
+		if (length > in_buffer_max) {
 			fprintf(stderr, "Invalid buffer length\n", id, name);
 			disconnect();
 			return;
 		}
 
 		command_type  = type;
-		buffer_used   = 0;
+		in_buffer_used = 0;
 		command_length = length;
 	}
 
@@ -234,8 +255,8 @@ struct Game {
 
 			int length = recv(
 					client.socket,
-					&client.buffer[client.buffer_used],
-					client.command_length - client.buffer_used,
+					&client.in_buffer[client.in_buffer_used],
+					client.command_length - client.in_buffer_used,
 					MSG_NOSIGNAL);
 
 			if (length == 0 && client.command_length) {
@@ -251,9 +272,9 @@ struct Game {
 				return;
 			}
 
-			client.buffer_used += length;
+			client.in_buffer_used += length;
 
-			if (client.buffer_used == client.command_length) {
+			if (client.in_buffer_used == client.command_length) {
 				process_command(client);
 			}
 		}
@@ -262,7 +283,7 @@ struct Game {
 	void process_command(Client &client) {
 		switch (client.command_type) {
 			case N_LOGINLEN: {
-				int length = de32(client.buffer);
+				int length = de32(client.in_buffer);
 				client.reset_buffer(N_LOGIN, length);
 				return;
 			}
@@ -271,7 +292,7 @@ struct Game {
 				const int pass_len = 16;
 
 				if (password) {
-					if (memcmp(password, client.buffer, pass_len)) {
+					if (memcmp(password, client.in_buffer, pass_len)) {
 						client.disconnect();
 						//TODO: send bad pass
 						return;
@@ -283,7 +304,7 @@ struct Game {
 
 				if (nick_len) {
 					int len = MIN(nick_len, NETPLAY_MAX_NAME_LEN - 1);
-					memcpy(client.name, &client.buffer[ignored_bytes], len);
+					memcpy(client.name, &client.in_buffer[ignored_bytes], len);
 					client.name[len] = 0;
 
 					if (!unique_name(client)) {
@@ -324,7 +345,7 @@ struct Game {
 			}
 
 			case N_UPDATEDATA: {
-				if (client.buffer[0] == 0xFF) {
+				if (client.in_buffer[0] == 0xFF) {
 					client.reset_buffer(N_COMMAND, 5);
 					return;
 				}
@@ -333,7 +354,7 @@ struct Game {
 				int i = 0;
 				for (int j = 0; j < 4; ++j) {
 					if (nes_controllers[j] == &client) {
-						joybuf[j] = client.buffer[i++];
+						joybuf[j] = client.in_buffer[i++];
 					}
 				}
 
@@ -342,23 +363,23 @@ struct Game {
 			}
 
 			case N_COMMAND: {
-				int length  = de32(client.buffer);
-				uint8_t cmd = client.buffer[4];
+				int length  = de32(client.in_buffer);
+				uint8_t cmd = client.in_buffer[4];
 				client.reset_buffer(cmd, length);
 				fprintf(stderr, "Command 0x%X received\n", cmd);
 				return;
 			}
 
 			case FCEUNPCMD_TEXT: {
-				send_all(client.command_type, client.buffer, client.buffer_used);
-				client.buffer[MIN(client.buffer_used, client.buffer_max - 1)] = '\0';
-				fprintf(stderr, "%i %s: %s\n", client.id, client.name, client.buffer);
+				send_all(client.command_type, client.in_buffer, client.in_buffer_used);
+				client.in_buffer[MIN(client.in_buffer_used, client.in_buffer_max - 1)] = '\0';
+				fprintf(stderr, "%i %s: %s\n", client.id, client.name, client.in_buffer);
 				client.reset_buffer(N_UPDATEDATA, 1);
 				return;
 			}
 
 			case FCEUNPCMD_PICKUPCONTROLLER: {
-				int controller = client.buffer[0];
+				int controller = client.in_buffer[0];
 
 				if (controller > 3) {
 					fprintf(stderr, "Invalid controller id\n");
@@ -382,7 +403,7 @@ struct Game {
 			}
 
 			case FCEUNPCMD_DROPCONTROLLER: {
-				int controller = client.buffer[0];
+				int controller = client.in_buffer[0];
 
 				if (controller > 3) {
 					fprintf(stderr, "Invalid controller id\n");
@@ -415,7 +436,7 @@ struct Game {
 			case FCEUNPCMD_VSUNIDIP0 + 6:
 			case FCEUNPCMD_VSUNIDIP0 + 7:
 			case FCEUNPCMD_RESET: {
-				send_all(client.command_type, client.buffer, client.buffer_used);
+				send_all(client.command_type, client.in_buffer, client.in_buffer_used);
 				client.reset_buffer(N_UPDATEDATA, 1);
 				return;
 			}
@@ -428,10 +449,11 @@ struct Game {
 		}
 	}
 
-	void send_next_frame() {
+	void send() {
 		for (int i = 0; i < 4; ++i) {
 			if (clients[i].connected())  {
 				clients[i].send(joybuf, 5);
+				clients[i].send();
 			}
 		}
 	}
@@ -636,7 +658,7 @@ int main(int argc, char *argv[]) {
 		check_for_connections(listen_socket, game);
 
 		game.receive();
-		game.send_next_frame();
+		game.send();
 		game.handle_disconnects();
 
 		game.delay();
