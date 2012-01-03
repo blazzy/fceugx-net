@@ -134,7 +134,7 @@ static int progressDone = 0;
 static int progressTotal = 0;
 
 static void playerListEventHandler(void *ptr);
-static void updatePlayerPointerMap(uint from, uint to);
+static void updatePlayerPointerMap(uint from, int to);
 
 static void playerListEventHandler(void *ptr)
 {
@@ -157,19 +157,43 @@ static void playerListEventHandler(void *ptr)
 	// Assign cursors to ready players in the order they appear in the player list
 
 	int idx = list->GetPlayerNumber(GCSettings.netplayNameX);
-	updatePlayerPointerMap(0, idx >= 0 && list->IsPlayerReady(idx) ? idx : 4);
+
+	if(idx >= 0)
+	{
+		updatePlayerPointerMap(0, list->IsPlayerReady(idx) ? idx : 4);
+	}
+	else
+	{
+		updatePlayerPointerMap(0, -1);
+	}
 
 	idx = list->GetPlayerNumber(GCSettings.netplayNameY);
-	updatePlayerPointerMap(1, idx >= 0 && list->IsPlayerReady(idx) ? idx : 4);
+
+	if(idx >= 0)
+	{
+		updatePlayerPointerMap(1, list->IsPlayerReady(idx) ? idx : 4);
+	}
+	else
+	{
+		updatePlayerPointerMap(1, -1);
+	}
 
 	idx = list->GetPlayerNumber(GCSettings.netplayNameZ);
-	updatePlayerPointerMap(2, idx >= 0 && list->IsPlayerReady(idx) ? idx : 4);
+
+	if(idx >= 0)
+	{
+		updatePlayerPointerMap(2, list->IsPlayerReady(idx) ? idx : 4);
+	}
+	else
+	{
+		updatePlayerPointerMap(2, -1);
+	}
 
 	// In netplay, the max number of players on one console is 3, so player 4 is never active.
-	updatePlayerPointerMap(3, 4);
+	updatePlayerPointerMap(3, -1);
 }
 
-static void updatePlayerPointerMap(uint from, uint to)
+static void updatePlayerPointerMap(uint from, int to)
 {
 	if(from >= 0 && from < 4 && to <= 4)
 	{
@@ -387,10 +411,13 @@ UpdateGUI (void *arg)
 		{
 			if(userInput[i].wpad->ir.valid)
 			{
-				int cursorId = playerPointerMap[i] >= 0 ? playerPointerMap[i] : 4;
+				int cursorId = playerPointerMap[i];
 
-				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-					96, 96, pointer[cursorId]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+				if(cursorId >= 0)
+				{
+					Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
+							96, 96, pointer[cursorId]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+				}
 			}
 			DoRumble(i);
 			--i;
@@ -399,11 +426,11 @@ UpdateGUI (void *arg)
 
 		Menu_Render();
 
-		// Only process of the input of controllers linked to a player number
-		if(playerPointerMap[3] < 4) { mainWindow->Update(&userInput[3]); }
-		if(playerPointerMap[2] < 4) { mainWindow->Update(&userInput[2]); }
-		if(playerPointerMap[1] < 4) { mainWindow->Update(&userInput[1]); }
-		if(playerPointerMap[0] < 4) { mainWindow->Update(&userInput[0]); }
+		// Only process the input of controllers linked to players
+		if(playerPointerMap[3] >= 0) { mainWindow->Update(&userInput[3]); }
+		if(playerPointerMap[2] >= 0) { mainWindow->Update(&userInput[2]); }
+		if(playerPointerMap[1] >= 0) { mainWindow->Update(&userInput[1]); }
+		if(playerPointerMap[0] >= 0) { mainWindow->Update(&userInput[0]); }
 
 		#ifdef HW_RVL
 		if(updateFound)
@@ -1032,10 +1059,13 @@ static void WindowCredits(void * ptr)
 		do {
 			if(userInput[i].wpad->ir.valid)
 			{
-				int cursorId = playerPointerMap[i] >= 0 ? playerPointerMap[i] : 4;
+				int cursorId = playerPointerMap[i];
 
-				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-					96, 96, pointer[cursorId]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+				if(cursorId >= 0)
+				{
+					Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
+							96, 96, pointer[cursorId]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+				}
 			}
 		DoRumble(i);
 			--i;
@@ -1046,10 +1076,10 @@ static void WindowCredits(void * ptr)
 
 		// Only process the input of controllers linked to a player number
 
-		if( (playerPointerMap[0] > 4 && (userInput[0].wpad->btns_d || userInput[0].pad.btns_d))
-		||  (playerPointerMap[1] > 4 && (userInput[1].wpad->btns_d || userInput[1].pad.btns_d))
-		||  (playerPointerMap[2] > 4 && (userInput[2].wpad->btns_d || userInput[2].pad.btns_d))
-		||  (playerPointerMap[3] > 4 && (userInput[3].wpad->btns_d || userInput[3].pad.btns_d)) )
+		if( (playerPointerMap[0] >= 0 && (userInput[0].wpad->btns_d || userInput[0].pad.btns_d))
+		||  (playerPointerMap[1] >= 0 && (userInput[1].wpad->btns_d || userInput[1].pad.btns_d))
+		||  (playerPointerMap[2] >= 0 && (userInput[2].wpad->btns_d || userInput[2].pad.btns_d))
+		||  (playerPointerMap[3] >= 0 && (userInput[3].wpad->btns_d || userInput[3].pad.btns_d)) )
 		{
 			exit = true;
 		}
