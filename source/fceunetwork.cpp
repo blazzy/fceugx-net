@@ -183,6 +183,26 @@ int FCEUD_RecvData(void *data, uint32 len) {
 
 static void UpdatePlayerList();
 
+static int gx_controller = -1;
+
+void FCEUGX_NetplayToggleReady() {
+	if (gx_controller == -1) {
+		FCEUNET_SendCommand(FCEUNPCMD_ANYCONTROLLER, 0);
+	} else {
+		for (int i = 0; i < 4; ++i) {
+			if (NetplayThisClient == NetplayControllers[i]) {
+				char buf[1];
+				buf[0] = i;
+
+				FCEUNET_SendCommand(FCEUNPCMD_DROPCONTROLLER, 1);
+				if (!FCEUD_SendData(buf, 1)) {
+					NetError("Network Error: Ready send failed");
+				}
+			}
+		}
+	}
+}
+
 
 void FCEUD_NetworkClose(void) {
 	if (Socket != -1) {
@@ -191,6 +211,7 @@ void FCEUD_NetworkClose(void) {
 	Socket = -1;
 
 	FCEUI_NetplayStop();
+	gx_controller = -1;
 }
 
 
@@ -205,20 +226,22 @@ void FCEUD_NetplayClientDisconnect(uint8 id) {
 
 
 void FCEUD_NetplayPickupController(uint8 id, uint8 controller) {
+	if (&NetplayClients[id] == NetplayThisClient) {
+		gx_controller = controller;
+	}
 	UpdatePlayerList();
 }
 
 
 void FCEUD_NetplayDropController(uint8 controller) {
-		UpdatePlayerList();
+	if (controller == gx_controller) {
+		gx_controller = -1;
+	}
+	UpdatePlayerList();
 }
 
 
 void FCEUD_NetplayText(uint8 *text) {
-}
-
-
-void FCEUGX_NetplayToggleReady() {
 }
 
 
