@@ -31,7 +31,7 @@
 struct Player
 {
 	char *name;
-	bool ready;
+	int controller;
 };
 
 class GuiPlayerList : public GuiWindow

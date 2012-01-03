@@ -223,4 +223,48 @@ void FCEUGX_NetplayToggleReady() {
 
 
 static void UpdatePlayerList() {
+	struct {
+		const char *name;
+		int controller;
+	} players[4] = {{0,0},{0,0},{0,0},{0,0}};
+
+	bool listed[4]   = {0,0,0,0};
+
+	for (int c = 0; c < 4; ++c) {
+		if (NetplayClients[c].connected) {
+			for (int n = 0; n < 4; ++n) {
+				if (&NetplayClients[c] == NetplayControllers[n]) {
+					players[n].name       = NetplayClients[c].name;
+					players[n].controller = n + 1;
+					listed[c] = true;
+				}
+			}
+		}
+	}
+
+	for (int c = 0; c < 4; ++c) {
+		if (NetplayClients[c].connected) {
+			if (!listed[c]) {
+				for (int p = 0; p < 4; ++p) {
+					if (!players[p].name) {
+						players[p].name       = NetplayClients[c].name;
+						players[p].controller = 0;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	char list[(NETPLAY_MAX_NAME_LEN + 3) * 4 + 1];
+	int offset = 0;
+
+	for (int i = 0; i < 4; ++i) {
+		if (players[i].name) {
+			sprintf(&list[offset], "%-*s:%i|", NETPLAY_MAX_NAME_LEN -1, players[i].name, players[i].controller);
+			offset += NETPLAY_MAX_NAME_LEN + 2;
+		}
+	}
+
+	playerList->BuildPlayerList(list);
 }

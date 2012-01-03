@@ -179,7 +179,7 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 
 	int len = 0;
 	char name[NETPLAY_MAX_NAME_LEN];
-	bool ready = false;
+	int controller = 0;
 
 	int status = PLAYER_LIST_SUCCESS,
 		trailingStatus = PLAYER_LIST_SUCCESS;
@@ -211,23 +211,16 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 
 			//printf("\n\ntoken to parse:  (%s)\n", token);
 
-			if(len == NETPLAY_MAX_NAME_LEN + 1)  // 21st space + 1 = colon plus ready indicator
+			if(len == NETPLAY_MAX_NAME_LEN + 1)  // 21st space + 1 = colon plus controller indicator
 			{
 				if(token[NETPLAY_MAX_NAME_LEN - 1] == ':')
 				{
-					if(token[NETPLAY_MAX_NAME_LEN] == 48)  // ASCII '0'
+					if(token[NETPLAY_MAX_NAME_LEN] >= '0' && token[NETPLAY_MAX_NAME_LEN] <= '4')
 					{
 						snprintf(name, NETPLAY_MAX_NAME_LEN, token);
-						ready = false;
+						controller = token[NETPLAY_MAX_NAME_LEN] - '0';
 
 						//printf("%s is not ready\n", name);
-					}
-					else if(token[NETPLAY_MAX_NAME_LEN] == 49)  // ASCII '1'
-					{
-						snprintf(name, NETPLAY_MAX_NAME_LEN, token);
-						ready = true;
-
-						//printf("%s is ready\n", name);
 					}
 					else
 					{
@@ -252,7 +245,7 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 				}
 				else
 				{
-					const int addPlayerStatus = AddPlayer(Player{name, ready});
+					const int addPlayerStatus = AddPlayer(Player{name, controller});
 
 					if(addPlayerStatus != PLAYER_LIST_SUCCESS)
 					{
@@ -289,7 +282,7 @@ int GuiPlayerList::AddPlayer(Player player)
 		char truncName[MAX_PLAYER_NAME_LEN+1];
 		snprintf(truncName, MAX_PLAYER_NAME_LEN+1, "%s", player.name);
 
-		bool alloc = (rowText[newIdx] = new GuiText(truncName, 25, player.ready ? colorReady[newIdx] : *colorNotReady)) &&
+		bool alloc = (rowText[newIdx] = new GuiText(truncName, 25, player.controller ? colorReady[player.controller-1] : *colorNotReady)) &&
 					 (imgRowSelected[newIdx] = new GuiImage(imgDataSelectionEntry)) &&
 					 (rowButton[newIdx] = new GuiButton(this->GetWidth(), imgDataSelectionEntry->GetHeight()));
 
@@ -316,9 +309,9 @@ int GuiPlayerList::AddPlayer(Player player)
 		rowButton[newIdx]->SetTrigger(trig2);
 		rowButton[newIdx]->SetSoundClick(btnSoundClick);
 
-		if(player.ready)
+		if(player.controller)
 		{
-			rowButton[newIdx]->SetIcon(imgPlayerReady[newIdx]);
+			rowButton[newIdx]->SetIcon(imgPlayerReady[player.controller - 1]);
 		}
 
 		Append(rowButton[newIdx]);
@@ -431,8 +424,6 @@ bool GuiPlayerList::ToggleReady()
 			// the new list over a socket, which would set listChanged.
 
 			listChanged = true;
-
-			FCEUD_SendPlayerListToClients();
 		}
 		else if(executionMode == NETPLAY_CLIENT)
 		{

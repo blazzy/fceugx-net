@@ -1647,7 +1647,7 @@ static int MenuGameSelection()
 
 				// This fakes a response coming from the server.  The string will come from a method that receives
 				// the data over a socket.  That method will make the call to BuildPlayerList().
-				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :1|pippin              :1|1234567890ABCDEFGHIJ:1");
+				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :2|pippin              :3|1234567890ABCDEFGHIJ:4");
 
 				switch(listStatus)
 				{
