@@ -156,44 +156,22 @@ static void playerListEventHandler(void *ptr)
 
 	// Assign cursors to ready players in the order they appear in the player list
 
-	int listIdxX = -1,
-		listIdxY = -1,
-		listIdxZ = -1;
+	int idx = list->GetPlayerNumber(GCSettings.netplayNameX);
+	updatePlayerPointerMap(0, idx >= 0 && list->IsPlayerReady(idx) ? idx : 4);
 
-	if(strlen(GCSettings.netplayNameX) > 0)
-	{
-		listIdxX = list->GetPlayerNumber(GCSettings.netplayNameX);
+	idx = list->GetPlayerNumber(GCSettings.netplayNameY);
+	updatePlayerPointerMap(1, idx >= 0 && list->IsPlayerReady(idx) ? idx : 4);
 
-		if(listIdxX >= 0)
-		{
-			updatePlayerPointerMap(0, list->IsPlayerReady(listIdxX) ? listIdxX : 4);
-		}
-	}
+	idx = list->GetPlayerNumber(GCSettings.netplayNameZ);
+	updatePlayerPointerMap(2, idx >= 0 && list->IsPlayerReady(idx) ? idx : 4);
 
-	if(strlen(GCSettings.netplayNameY) > 0)
-	{
-		listIdxY = list->GetPlayerNumber(GCSettings.netplayNameY);
-
-		if(listIdxY >= 0)
-		{
-			updatePlayerPointerMap(1, list->IsPlayerReady(listIdxY) ? listIdxY : 4);
-		}
-	}
-
-	if(strlen(GCSettings.netplayNameZ) > 0)
-	{
-		listIdxZ = list->GetPlayerNumber(GCSettings.netplayNameZ);
-
-		if(listIdxZ >= 0)
-		{
-			updatePlayerPointerMap(2, list->IsPlayerReady(listIdxZ) ? listIdxZ : 4);
-		}
-	}
+	// In netplay, the max number of players on one console is 3, so player 4 is never active.
+	updatePlayerPointerMap(3, 4);
 }
 
 static void updatePlayerPointerMap(uint from, uint to)
 {
-	if(from < 4 && to <= 4)
+	if(from >= 0 && from < 4 && to <= 4)
 	{
 		playerPointerMap[from] = to;
 	}
@@ -409,8 +387,10 @@ UpdateGUI (void *arg)
 		{
 			if(userInput[i].wpad->ir.valid)
 			{
+				int cursorId = playerPointerMap[i] >= 0 ? playerPointerMap[i] : 4;
+
 				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-					96, 96, pointer[playerPointerMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+					96, 96, pointer[cursorId]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
 			}
 			DoRumble(i);
 			--i;
@@ -419,10 +399,11 @@ UpdateGUI (void *arg)
 
 		Menu_Render();
 
-		mainWindow->Update(&userInput[3]);
-		mainWindow->Update(&userInput[2]);
-		mainWindow->Update(&userInput[1]);
-		mainWindow->Update(&userInput[0]);
+		// Only process of the input of controllers linked to a player number
+		if(playerPointerMap[3] < 4) { mainWindow->Update(&userInput[3]); }
+		if(playerPointerMap[2] < 4) { mainWindow->Update(&userInput[2]); }
+		if(playerPointerMap[1] < 4) { mainWindow->Update(&userInput[1]); }
+		if(playerPointerMap[0] < 4) { mainWindow->Update(&userInput[0]); }
 
 		#ifdef HW_RVL
 		if(updateFound)
@@ -1048,11 +1029,13 @@ static void WindowCredits(void * ptr)
 
 		#ifdef HW_RVL
 		i = 3;
-		do {	
+		do {
 			if(userInput[i].wpad->ir.valid)
 			{
+				int cursorId = playerPointerMap[i] >= 0 ? playerPointerMap[i] : 4;
+
 				Menu_DrawImg(userInput[i].wpad->ir.x-48, userInput[i].wpad->ir.y-48,
-					96, 96, pointer[playerPointerMap[i]]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
+					96, 96, pointer[cursorId]->GetImage(), userInput[i].wpad->ir.angle, 1, 1, 255);
 			}
 		DoRumble(i);
 			--i;
@@ -1061,10 +1044,12 @@ static void WindowCredits(void * ptr)
 
 		Menu_Render();
 
-		if((userInput[0].wpad->btns_d || userInput[0].pad.btns_d) ||
-		   (userInput[1].wpad->btns_d || userInput[1].pad.btns_d) ||
-		   (userInput[2].wpad->btns_d || userInput[2].pad.btns_d) ||
-		   (userInput[3].wpad->btns_d || userInput[3].pad.btns_d))
+		// Only process the input of controllers linked to a player number
+
+		if( (playerPointerMap[0] > 4 && (userInput[0].wpad->btns_d || userInput[0].pad.btns_d))
+		||  (playerPointerMap[1] > 4 && (userInput[1].wpad->btns_d || userInput[1].pad.btns_d))
+		||  (playerPointerMap[2] > 4 && (userInput[2].wpad->btns_d || userInput[2].pad.btns_d))
+		||  (playerPointerMap[3] > 4 && (userInput[3].wpad->btns_d || userInput[3].pad.btns_d)) )
 		{
 			exit = true;
 		}
@@ -1104,7 +1089,7 @@ static void enableButton(GuiButton *button, bool visible = true)
 	button->SetState(STATE_DEFAULT);
 }
 
-void newNetplayWindows()
+static void newNetplayWindows()
 {
 	bool alloc = (chatWindow = chatWindow == NULL ? new GuiChatWindow(424, 268) : chatWindow)
 				&& (playerList = playerList == NULL ? new GuiPlayerList(152, 265) : playerList);
@@ -1593,7 +1578,10 @@ static int MenuGameSelection()
 
 		if(settingsBtn.GetState() == STATE_CLICKED)
 		{
-			if(playerList != NULL)
+			// Leaving the main screen when marked ready has the effect of marking you not ready
+
+			if(executionMode != OFFLINE && playerList != NULL
+			&& (playerList->IsPlayerReady(GCSettings.netplayNameX) || playerList->IsPlayerReady(GCSettings.netplayNameY) || playerList->IsPlayerReady(GCSettings.netplayNameZ)))
 			{
 				FCEUGX_NetplayToggleReady();
 			}
@@ -1794,7 +1782,7 @@ static int MenuGameSelection()
 		{
 			readyBtn->ResetState();
 			playerList->ToggleReady();  // here temporarily.  TODO:  remove call once networked
-			FCEUGX_NetplayToggleReady(/* name of whoever clicked me */);
+			FCEUGX_NetplayToggleReady();
 		}
 	}
 
