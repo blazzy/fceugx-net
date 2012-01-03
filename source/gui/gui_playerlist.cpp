@@ -393,58 +393,6 @@ int GuiPlayerList::GetPlayerNumber(char *playerName)
 	return idx;
 }
 
-// This function requests the server mark the player as ready/not ready.
-// No action is taken in the GUI until the server sends back the new
-// player list containing everyone's status.  The list is rebuilt when
-// this message is received, though not by this method (keep in mind
-// that the server may also send such updates unsolicited).
-bool GuiPlayerList::ToggleReady()
-{
-	if(rowButton[0] == NULL)
-	{
-		return false;
-	}
-	else
-	{
-		if(executionMode == NETPLAY_HOST)
-		{
-			if(IsPlayerReady(0))
-			{
-				rowButton[0]->SetIcon(NULL);
-				rowText[0]->SetColor(*colorNotReady);
-			}
-			else
-			{
-				rowButton[0]->SetIcon(imgPlayerReady[0]);
-				rowText[0]->SetColor(colorReady[0]);
-			}
-
-			// We might not need to set this here for the server, depending on how
-			// we update the list.  If the host connects to itself, it would receive
-			// the new list over a socket, which would set listChanged.
-
-			listChanged = true;
-		}
-		else if(executionMode == NETPLAY_CLIENT)
-		{
-			if(false/*!FCEUI_NetplayToggleReady()*/)
-			{
-				ErrorPrompt("Could not send 'ready' message to server");
-				return false;
-			}
-			else
-			{
-				// Don't set listChanged here.  It will be changed when the client
-				// receives a response from the server containing the new player list.
-
-				//listChanged = true;
-			}
-		}
-	}
-
-	return true;
-}
-
 // Note:  playerNum is 0-indexed
 bool GuiPlayerList::IsPlayerReady(int playerNum)
 {

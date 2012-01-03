@@ -1811,7 +1811,6 @@ static int MenuGameSelection()
 		else if(readyBtn->GetState() == STATE_CLICKED)
 		{
 			readyBtn->ResetState();
-			playerList->ToggleReady();  // here temporarily.  TODO:  remove call once networked
 			FCEUGX_NetplayToggleReady();
 		}
 	}
