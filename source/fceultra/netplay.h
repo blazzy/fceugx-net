@@ -53,6 +53,7 @@ extern ExecutionMode executionMode;
 #define FCEUNPCMD_CLIENTDISCONNECT 0xA3
 #define FCEUNPCMD_HALTEMULATION    0xA4
 #define FCEUNPCMD_RESUMEEMULATION  0xA5
+#define FCEUNPCMD_ANYCONTROLLER    0xA6
 
 int InitNetplay(void);
 void NetplayUpdate(uint8 *joyp);

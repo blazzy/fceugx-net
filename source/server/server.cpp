@@ -153,7 +153,7 @@ struct Client {
 		int sent = ::send(socket, out_buffer, out_buffer_used, MSG_NOSIGNAL);
 		if (sent == out_buffer_used || errno == EAGAIN || errno == EWOULDBLOCK) {
 			memmove(out_buffer, &out_buffer[sent], out_buffer_used - sent);
-      out_buffer_used -= sent;
+			out_buffer_used -= sent;
 			return 1;
 		}
 
@@ -374,6 +374,24 @@ struct Game {
 				send_all(client.command_type, client.in_buffer, client.in_buffer_used);
 				client.in_buffer[MIN(client.in_buffer_used, client.in_buffer_max - 1)] = '\0';
 				fprintf(stderr, "%i %s: %s\n", client.id, client.name, client.in_buffer);
+				client.reset_buffer(N_UPDATEDATA, 1);
+				return;
+			}
+
+			case FCEUNPCMD_ANYCONTROLLER: {
+				for (int i = 0; i < 4; ++i) {
+					if (!nes_controllers[i]) {
+						nes_controllers[i] = &client;
+
+						uint8 buffer[2];
+						buffer[0] = client.id;
+						buffer[1] = i;
+						send_all(FCEUNPCMD_PICKUPCONTROLLER, buffer, 2);
+
+						fprintf(stderr, "Client %d %s taking controller %i \n", client.id, client.name, i);
+						break;
+					}
+				}
 				client.reset_buffer(N_UPDATEDATA, 1);
 				return;
 			}
