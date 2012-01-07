@@ -31,8 +31,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	bgFileSelectionImg->SetParent(this);
 	bgFileSelectionImg->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 
-	bgFileSelectionEntry = new GuiImageData(bg_game_selection_entry_png);
-
 	scrollbar = new GuiImageData(scrollbar_png);
 	scrollbarImg = new GuiImage(scrollbar);
 	scrollbarImg->SetParent(this);
@@ -109,8 +107,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		fileListText[i]->SetParent(this);
 		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 		fileListText[i]->SetPosition(7, (26 * i) + 8);
-
-		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
 	}
 }
 
@@ -133,7 +129,6 @@ GuiChatWindow::~GuiChatWindow()
 	delete scrollbarBoxOverImg;
 
 	delete bgFileSelection;
-	delete bgFileSelectionEntry;
 
 	delete scrollbar;
 	delete arrowDown;
@@ -152,7 +147,6 @@ GuiChatWindow::~GuiChatWindow()
 	for(int i=0; i<FILE_PAGESIZE; i++)
 	{
 		delete fileListText[i];
-		delete fileListBg[i];
 	}
 }
 

@@ -36,8 +36,6 @@ class GuiChatWindow : public GuiElement
 		bool Add(const char *msg);
 	private:
 		GuiText * fileListText[FILE_PAGESIZE];
-		GuiImage * fileListBg[FILE_PAGESIZE];
-		GuiImage * fileListIcon[FILE_PAGESIZE];
 
 		GuiButton * arrowUpBtn;
 		GuiButton * arrowDownBtn;
@@ -53,12 +51,6 @@ class GuiChatWindow : public GuiElement
 		GuiImage * scrollbarBoxOverImg;
 
 		GuiImageData * bgFileSelection;
-		GuiImageData * bgFileSelectionEntry;
-		GuiImageData * iconFolder;
-		GuiImageData * iconSD;
-		GuiImageData * iconUSB;
-		GuiImageData * iconDVD;
-		GuiImageData * iconSMB;
 		GuiImageData * scrollbar;
 		GuiImageData * arrowDown;
 		GuiImageData * arrowDownOver;
@@ -69,6 +61,7 @@ class GuiChatWindow : public GuiElement
 
 		GuiSound * btnSoundOver;
 		GuiSound * btnSoundClick;
+
 		GuiTrigger * trigA;
 		GuiTrigger * trig2;
 		GuiTrigger * trigHeldA;
