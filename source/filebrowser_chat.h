@@ -14,12 +14,8 @@
 
 #include <unistd.h>
 
-#define MAX_CHAT_MSG_LEN 255
-#ifdef HW_DOL
-#define MAX_BROWSER_SIZE	1000
-#else
-#define MAX_BROWSER_SIZE	3000
-#endif
+#define MAX_CHAT_MSG_LEN		255
+#define CHAT_SCROLLBACK_SIZE	1000
 
 typedef struct
 {
@@ -40,6 +36,6 @@ extern BROWSERENTRY_chat * browserList_chat;
 
 int OpenGameList_chat();
 void ResetBrowser_chat();
-bool AddBrowserEntry_chat();
+bool AddBrowserEntry_chat(char *name);
 
 #endif

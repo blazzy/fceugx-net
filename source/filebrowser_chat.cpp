@@ -39,7 +39,7 @@ void ResetBrowser_chat()
 
 bool AddBrowserEntry_chat(char *msg)
 {
-	if(browser_chat.size >= MAX_BROWSER_SIZE)
+	if(browser_chat.size >= CHAT_SCROLLBACK_SIZE)
 	{
 		ErrorPrompt("Out of memory: too many files!");
 		return false; // out of space
