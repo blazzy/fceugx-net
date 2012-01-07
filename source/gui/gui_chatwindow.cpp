@@ -88,14 +88,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	scrollbarBoxBtn->SetHoldable(true);
 	scrollbarBoxBtn->SetTrigger(trigHeldA);
 
-	// As can be seen with the sample data, text wrapping doesn't work when storing overflowing text in one GuiText object.
-	// Because GuiText->GetHeight() always returns zero (?!?!), we can't calculate where to place the next GuiText object.
-	// We're probably going to have to:
-	// 1.  Duplicate the wrapping logic in GuiText and construct individual GuiText objects to hold overflowing text
-	// or
-	// 2.  Expose dynText in GuiText and copy each element into a new GuiText
-	// or
-	// 3.  Create a sublcass of GuiText through which dynText is exposed, and copy each element into a new GuiText
 	Reset();
 	Add("What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
 	Add("Arise, fair sun, and kill the envious FCEUX,");
@@ -108,7 +100,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	Add("Four and twenty blackbirds");
 	Add("Baked in a pie");
 	Add("When the pie was opened,");
-	Add("The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with *this* nonsense.\"");
+	Add("The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
 	Add("Wasn't that a stupid thing to set before the king?");
 
 	for(int i=0; i<FILE_PAGESIZE; ++i)
@@ -117,17 +109,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		fileListText[i]->SetParent(this);
 		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 
-		if(i == 0)
-		{
-			fileListText[i]->SetPosition(7, 20 * i + 20);
-		}
-		else
-		{
-			//fileListText[i]->SetPosition(7, 20 * fileListText[i-1]->GetHeight() + 20);  // getHeight() always return zero, so good luck with that
-			fileListText[i]->SetPosition(7, 20 * i + 20);
-		}
-
-		//fileListText[i]->SetWrap(true, bgFileSelection->GetWidth() - 35);
+		fileListText[i]->SetPosition(7, (25 * i) + 10);
 
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
 	}
@@ -495,24 +477,15 @@ bool GuiChatWindow::Add(const char *msg)
 	textDynNum = linenum;
 	// End of wrapping logic
 
-	// TODO:  For messages exceeding the max length, implement word wrapping by creating additional entries
-	//snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", msg);
-
 	for(uint i = 0; i < textDynNum; i++)
 	{
-		//UtfConverter::ToUtf8((std::wstring) textDyn[i]);
-		//char *c = str.c_str();
-
 		size_t count;
 		char *pmBuffer = browserList_chat[browser_chat.size].displayname;
 		wchar_t *cBuffer = textDyn[i];
 
-		 count = wcstombs(pmBuffer, cBuffer, 100 ); // C4996
+		count = wcstombs(pmBuffer, cBuffer, 100 );
+		snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", pmBuffer);
 
-		 snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", pmBuffer);
-
-		//snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", textDyn[i]);
-//InfoPrompt(c);
 		browser_chat.size++;
 		browser_chat.numEntries++;
 	}
