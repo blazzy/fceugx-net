@@ -1,5 +1,8 @@
 #include "gui_chatwindow.h"
 #include "menu.h"
+#include "../utils/FreeTypeGX.h"   // charToWideChar()
+#include "wchar.h"        // wcslen()
+#include <cstdlib>   // wcstombs()
 
 GuiChatWindow::GuiChatWindow(int w, int h)
 {
@@ -124,7 +127,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 			fileListText[i]->SetPosition(7, 20 * i + 20);
 		}
 
-		fileListText[i]->SetWrap(true, bgFileSelection->GetWidth() - 35);
+		//fileListText[i]->SetWrap(true, bgFileSelection->GetWidth() - 35);
 
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
 	}
@@ -428,7 +431,7 @@ void GuiChatWindow::Reset()
 	browser_chat.size = 0;
 }
 
-bool GuiChatWindow::Add(char *msg)
+bool GuiChatWindow::Add(const char *msg)
 {
 	if(browser_chat.size >= CHAT_SCROLLBACK_SIZE)
 	{
@@ -436,11 +439,83 @@ bool GuiChatWindow::Add(char *msg)
 		return false; // out of space
 	}
 
-	// TODO:  For messages exceeding the max length, implement word wrapping by creating additional entries
-	snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", msg);
+	// Wrapping logic adapted from GuiText::Draw().  Didn't want to modify GuiText to get to textDyn.
+	const int maxWidth = bgFileSelectionImg->GetWidth() - 35;
+	const wchar_t *msgWide = charToWideChar(msg);
 
-	browser_chat.size++;
-	browser_chat.numEntries++;
+	u32 n = 0,
+		ch = 0,
+		textDynNum = 0;
+
+	int linenum = 0,
+		lastSpace = -1,
+		lastSpaceIndex = -1;
+
+	const int currentSize = 20;
+
+	wchar_t *textDyn[20];
+	const u32 textlen = wcslen(msgWide);
+
+	while(ch < textlen && linenum < 20)
+	{
+		if(n == 0)
+			textDyn[linenum] = new wchar_t[textlen + 1];
+
+		textDyn[linenum][n] = msgWide[ch];
+		textDyn[linenum][n+1] = 0;
+
+		if(msgWide[ch] == ' ' || ch == textlen-1)
+		{
+			// TODO:  currentSize should be shared with the value passed to the GuiText constructor
+			if(fontSystem[currentSize]->getWidth(textDyn[linenum]) > maxWidth)
+			{
+				if(lastSpace >= 0)
+				{
+					textDyn[linenum][lastSpaceIndex] = 0; // discard space, and everything after
+					ch = lastSpace; // go backwards to the last space
+					lastSpace = -1; // we have used this space
+					lastSpaceIndex = -1;
+				}
+				++linenum;
+				n = -1;
+			}
+			else if(ch == textlen-1)
+			{
+				++linenum;
+			}
+		}
+		if(msgWide[ch] == ' ' && n >= 0)
+		{
+			lastSpace = ch;
+			lastSpaceIndex = n;
+		}
+		++ch;
+		++n;
+	}
+	textDynNum = linenum;
+	// End of wrapping logic
+
+	// TODO:  For messages exceeding the max length, implement word wrapping by creating additional entries
+	//snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", msg);
+
+	for(uint i = 0; i < textDynNum; i++)
+	{
+		//UtfConverter::ToUtf8((std::wstring) textDyn[i]);
+		//char *c = str.c_str();
+
+		size_t count;
+		char *pmBuffer = browserList_chat[browser_chat.size].displayname;
+		wchar_t *cBuffer = textDyn[i];
+
+		 count = wcstombs(pmBuffer, cBuffer, 100 ); // C4996
+
+		 snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", pmBuffer);
+
+		//snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", textDyn[i]);
+//InfoPrompt(c);
+		browser_chat.size++;
+		browser_chat.numEntries++;
+	}
 
 	return true;
 }

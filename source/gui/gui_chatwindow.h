@@ -33,7 +33,7 @@ class GuiChatWindow : public GuiElement
 		void TriggerUpdate();
 		void Update(GuiTrigger * t);
 		void Reset();
-		bool Add(char *msg);
+		bool Add(const char *msg);
 	private:
 		GuiText * fileListText[FILE_PAGESIZE];
 		GuiImage * fileListBg[FILE_PAGESIZE];
