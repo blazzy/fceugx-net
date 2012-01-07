@@ -477,104 +477,6 @@ done:
 }
 
 /****************************************************************************
- * BrowserChangeFolder
- *
- * Update current directory and set new entry list if directory has changed
- ***************************************************************************/
-/*int BrowserChangeFolder_chat()
-{
-	int device = 0;
-	FindDevice(browser_chat.dir, &device);
-	
-	if(inSz_chat && browser_chat.selIndex == 0) // inside a 7z, requesting to leave
-	{
-		inSz_chat = false;
-		SzClose();
-	}
-
-	if(!UpdateDirName_chat())
-		return -1;
-
-	HaltParseThread(); // halt parsing
-	ResetBrowser_chat(); // reset browser
-
-	if(browser_chat.dir[0] != 0)
-		ParseDirectory();
-
-	if(browser_chat.numEntries == 0)
-	{
-		browser_chat.dir[0] = 0;
-		int i=0;
-
-#ifdef HW_RVL
-		AddBrowserEntry_chat();
-		sprintf(browserList_chat[i].filename, "sd:/");
-		sprintf(browserList_chat[i].displayname, "SD Card");
-		browserList_chat[i].length = 0;
-		browserList_chat[i].isdir = 1;
-		browserList_chat[i].icon = ICON_SD_chat;
-		i++;
-
-		AddBrowserEntry_chat();
-		sprintf(browserList_chat[i].filename, "usb:/");
-		sprintf(browserList_chat[i].displayname, "USB Mass Storage");
-		browserList_chat[i].length = 0;
-		browserList_chat[i].isdir = 1;
-		browserList_chat[i].icon = ICON_USB_chat;
-		i++;
-#else
-		AddBrowserEntry_chat();
-		sprintf(browserList_chat[i].filename, "carda:/");
-		sprintf(browserList_chat[i].displayname, "SD Gecko Slot A");
-		browserList_chat[i].length = 0;
-		browserList_chat[i].isdir = 1;
-		browserList_chat[i].icon = ICON_SD_chat;
-		i++;
-		
-		AddBrowserEntry_chat();
-		sprintf(browserList_chat[i].filename, "cardb:/");
-		sprintf(browserList_chat[i].displayname, "SD Gecko Slot B");
-		browserList_chat[i].length = 0;
-		browserList_chat[i].isdir = 1;
-		browserList_chat[i].icon = ICON_SD_chat;
-		i++;
-#endif
-		AddBrowserEntry_chat();
-		sprintf(browserList_chat[i].filename, "smb:/");
-		sprintf(browserList_chat[i].displayname, "Network Share");
-		browserList_chat[i].length = 0;
-		browserList_chat[i].isdir = 1;
-		browserList_chat[i].icon = ICON_SMB_chat;
-		i++;
-		
-		AddBrowserEntry_chat();
-		sprintf(browserList_chat[i].filename, "dvd:/");
-		sprintf(browserList_chat[i].displayname, "Data DVD");
-		browserList_chat[i].length = 0;
-		browserList_chat[i].isdir = 1;
-		browserList_chat[i].icon = ICON_DVD_chat;
-		i++;
-		
-		browser_chat.numEntries += i;
-	}
-	
-	if(browser_chat.dir[0] == 0)
-	{
-		GCSettings.LoadFolder[0] = 0;
-		GCSettings.LoadMethod = 0;
-	}
-	else
-	{
-		char * path = StripDevice(browser_chat.dir);
-		if(path != NULL)
-			strcpy(GCSettings.LoadFolder, path);
-		FindDevice(browser_chat.dir, &GCSettings.LoadMethod);
-	}
-
-	return browser_chat.numEntries;
-}
-*/
-/****************************************************************************
  * OpenROM
  * Displays a list of ROMS on load device
  ***************************************************************************/
@@ -582,29 +484,16 @@ int
 OpenGameList_chat()
 {
 
+	for( int i = 0; i < 200; i++ )
+	{
 		AddBrowserEntry_chat();
-		sprintf(browserList_chat[0].filename, "smb:/");
-		sprintf(browserList_chat[0].displayname, "What packets through yonder socket breaks?");
-		browserList_chat[0].length = 0;
-		browserList_chat[0].isdir = 0;
 
-		browser_chat.numEntries = 1;
+		sprintf(browserList_chat[i].displayname, "%d", i);
+		browserList_chat[i].length = 0;
+		browserList_chat[i].isdir = 0;
 
-
-	/*
-	int device = GCSettings.LoadMethod;
-
-	if(device == DEVICE_AUTO && strlen(GCSettings.LoadFolder) > 0)
-		device = autoLoadMethod_chat();
-
-	// change current dir to roms directory
-	if(device > 0)
-		sprintf(browser_chat.dir, "%s%s/", pathPrefix[device], GCSettings.LoadFolder);
-	else
-		browser_chat.dir[0] = 0;
-	
-	//BrowserChangeFolder_chat();
-	*/
+		browser_chat.numEntries = i;
+	}
 
 	return browser_chat.numEntries;
 }
