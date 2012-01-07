@@ -108,8 +108,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		fileListText[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
 		fileListText[i]->SetParent(this);
 		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
-
-		fileListText[i]->SetPosition(7, (25 * i) + 10);
+		fileListText[i]->SetPosition(7, (26 * i) + 8);
 
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
 	}
@@ -479,13 +478,7 @@ bool GuiChatWindow::Add(const char *msg)
 
 	for(uint i = 0; i < textDynNum; i++)
 	{
-		size_t count;
-		char *pmBuffer = browserList_chat[browser_chat.size].displayname;
-		wchar_t *cBuffer = textDyn[i];
-
-		count = wcstombs(pmBuffer, cBuffer, 100 );
-		snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", pmBuffer);
-
+		wcstombs(browserList_chat[browser_chat.size].displayname, textDyn[i], 200 );  // 200 is safely larger than textDyn[i]'s length
 		browser_chat.size++;
 		browser_chat.numEntries++;
 	}
