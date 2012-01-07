@@ -6,9 +6,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	width = w;
 	height = h;
 
-	Reset();
-	OpenGameList();
-
 	numEntries = 0;
 	selectedItem = 0;
 	selectable = true;
@@ -88,23 +85,48 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	scrollbarBoxBtn->SetHoldable(true);
 	scrollbarBoxBtn->SetTrigger(trigHeldA);
 
+	// As can be seen with the sample data, text wrapping doesn't work when storing overflowing text in one GuiText object.
+	// Because GuiText->GetHeight() always returns zero (?!?!), we can't calculate where to place the next GuiText object.
+	// We're probably going to have to:
+	// 1.  Duplicate the wrapping logic in GuiText and construct individual GuiText objects to hold overflowing text
+	// or
+	// 2.  Expose dynText in GuiText and copy each element into a new GuiText
+	// or
+	// 3.  Create a sublcass of GuiText through which dynText is exposed, and copy each element into a new GuiText
+	Reset();
+	Add("What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
+	Add("Arise, fair sun, and kill the envious FCEUX,");
+	Add("Who is already sick and pale with grief,");
+	Add("That thou her netplay art far more fair than she:");
+	Add("Be not her netplay, since she is envious,");
+	Add("Okay, you know what?  I have no idea what the hell I'm saying.");
+	Add("Sing a song of sixpence");
+	Add("A pocket full of rye");
+	Add("Four and twenty blackbirds");
+	Add("Baked in a pie");
+	Add("When the pie was opened,");
+	Add("The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with *this* nonsense.\"");
+	Add("Wasn't that a stupid thing to set before the king?");
+
 	for(int i=0; i<FILE_PAGESIZE; ++i)
 	{
 		fileListText[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
-		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
-		fileListText[i]->SetPosition(5,0);
-		fileListText[i]->SetMaxWidth(380);
+		fileListText[i]->SetParent(this);
+		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
+
+		if(i == 0)
+		{
+			fileListText[i]->SetPosition(7, 20 * i + 20);
+		}
+		else
+		{
+			//fileListText[i]->SetPosition(7, 20 * fileListText[i-1]->GetHeight() + 20);  // getHeight() always return zero, so good luck with that
+			fileListText[i]->SetPosition(7, 20 * i + 20);
+		}
+
+		fileListText[i]->SetWrap(true, bgFileSelection->GetWidth() - 35);
 
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
-
-		fileList[i] = new GuiButton(380, 26);
-		fileList[i]->SetParent(this);
-		fileList[i]->SetLabel(fileListText[i]);
-		fileList[i]->SetImageOver(fileListBg[i]);
-		fileList[i]->SetPosition(2, (fileList[i]->GetHeight() * i) + 3);
-		fileList[i]->SetTrigger(trigA);
-		fileList[i]->SetTrigger(trig2);
-		fileList[i]->SetSoundClick(btnSoundClick);
 	}
 }
 
@@ -146,7 +168,6 @@ GuiChatWindow::~GuiChatWindow()
 	for(int i=0; i<FILE_PAGESIZE; i++)
 	{
 		delete fileListText[i];
-		delete fileList[i];
 		delete fileListBg[i];
 	}
 }
@@ -156,10 +177,10 @@ void GuiChatWindow::SetFocus(int f)
 	focus = f;
 
 	for(int i=0; i<FILE_PAGESIZE; i++)
-		fileList[i]->ResetState();
+		fileListText[i]->ResetState();
 
 	if(f == 1)
-		fileList[selectedItem]->SetState(STATE_SELECTED);
+		fileListText[selectedItem]->SetState(STATE_SELECTED);
 }
 
 void GuiChatWindow::ResetState()
@@ -170,7 +191,7 @@ void GuiChatWindow::ResetState()
 
 	for(int i=0; i<FILE_PAGESIZE; i++)
 	{
-		fileList[i]->ResetState();
+		fileListText[i]->ResetState();
 	}
 }
 
@@ -199,7 +220,7 @@ void GuiChatWindow::Draw()
 
 	for(u32 i=0; i<FILE_PAGESIZE; ++i)
 	{
-		fileList[i]->Draw();
+		fileListText[i]->Draw();
 	}
 
 	scrollbarImg->Draw();
@@ -305,10 +326,10 @@ void GuiChatWindow::Update(GuiTrigger * t)
 				++browser_chat.pageIndex;
 				listChanged = true;
 			}
-			else if(fileList[selectedItem+1]->IsVisible())
+			else if(fileListText[selectedItem+1]->IsVisible())
 			{
-				fileList[selectedItem]->ResetState();
-				fileList[++selectedItem]->SetState(STATE_SELECTED, t->chan);
+				fileListText[selectedItem]->ResetState();
+				fileListText[++selectedItem]->SetState(STATE_SELECTED, t->chan);
 			}
 		}
 	}
@@ -322,8 +343,8 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		}
 		else if(selectedItem > 0)
 		{
-			fileList[selectedItem]->ResetState();
-			fileList[--selectedItem]->SetState(STATE_SELECTED, t->chan);
+			fileListText[selectedItem]->ResetState();
+			fileListText[--selectedItem]->SetState(STATE_SELECTED, t->chan);
 		}
 	}
 
@@ -335,43 +356,38 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		{
 			if(browser_chat.pageIndex+i < browser_chat.numEntries)
 			{
-				if(fileList[i]->GetState() == STATE_DISABLED)
-					fileList[i]->SetState(STATE_DEFAULT);
+				if(fileListText[i]->GetState() == STATE_DISABLED)
+					fileListText[i]->SetState(STATE_DEFAULT);
 
-				fileList[i]->SetVisible(true);
+				fileListText[i]->SetVisible(true);
 
 				fileListText[i]->SetText(browserList_chat[browser_chat.pageIndex+i].displayname);
 			}
 			else
 			{
-				fileList[i]->SetVisible(false);
-				fileList[i]->SetState(STATE_DISABLED);
+				fileListText[i]->SetVisible(false);
+				fileListText[i]->SetState(STATE_DISABLED);
 			}
 		}
 
-		if(i != selectedItem && fileList[i]->GetState() == STATE_SELECTED)
-			fileList[i]->ResetState();
-		else if(focus && i == selectedItem && fileList[i]->GetState() == STATE_DEFAULT)
-			fileList[selectedItem]->SetState(STATE_SELECTED, t->chan);
+		if(i != selectedItem && fileListText[i]->GetState() == STATE_SELECTED)
+			fileListText[i]->ResetState();
+		else if(focus && i == selectedItem && fileListText[i]->GetState() == STATE_DEFAULT)
+			fileListText[selectedItem]->SetState(STATE_SELECTED, t->chan);
 
 		int currChan = t->chan;
 
-		if(t->wpad->ir.valid && !fileList[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
+		if(t->wpad->ir.valid && !fileListText[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
 			t->chan = -1;
 
-		fileList[i]->Update(t);
+		fileListText[i]->Update(t);
 		t->chan = currChan;
 
-		if(fileList[i]->GetState() == STATE_SELECTED)
+		if(fileListText[i]->GetState() == STATE_SELECTED)
 		{
 			selectedItem = i;
 			browser_chat.selIndex = browser_chat.pageIndex + i;
 		}
-
-		if(selectedItem == i)
-			fileListText[i]->SetScroll(SCROLL_HORIZONTAL);
-		else
-			fileListText[i]->SetScroll(SCROLL_NONE);
 	}
 
 	// update the location of the scroll box based on the position in the file list
@@ -424,23 +440,7 @@ bool GuiChatWindow::Add(char *msg)
 	snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", msg);
 
 	browser_chat.size++;
+	browser_chat.numEntries++;
+
 	return true;
-}
-
-// TODO:  delete
-int GuiChatWindow::OpenGameList()
-{
-	int entries = 200;
-
-	for( int i = 1; i <= entries; i++ )
-	{
-		char c[4];
-		sprintf(c, "%d", i);
-
-		Add(c);
-	}
-
-	browser_chat.numEntries = entries;
-
-	return browser_chat.numEntries;
 }

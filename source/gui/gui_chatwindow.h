@@ -32,12 +32,8 @@ class GuiChatWindow : public GuiElement
 		void DrawTooltip();
 		void TriggerUpdate();
 		void Update(GuiTrigger * t);
-		GuiButton * fileList[FILE_PAGESIZE];
-
 		void Reset();
 		bool Add(char *msg);
-		int OpenGameList();  // TODO:  delete
-
 	private:
 		GuiText * fileListText[FILE_PAGESIZE];
 		GuiImage * fileListBg[FILE_PAGESIZE];
