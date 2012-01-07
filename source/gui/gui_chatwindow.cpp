@@ -89,19 +89,19 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	scrollbarBoxBtn->SetTrigger(trigHeldA);
 
 	Reset();
-	Add("What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
-	Add("Arise, fair sun, and kill the envious FCEUX,");
-	Add("Who is already sick and pale with grief,");
-	Add("That thou her netplay art far more fair than she:");
-	Add("Be not her netplay, since she is envious,");
-	Add("Okay, you know what?  I have no idea what the hell I'm saying.");
-	Add("Sing a song of sixpence");
-	Add("A pocket full of rye");
-	Add("Four and twenty blackbirds");
-	Add("Baked in a pie");
-	Add("When the pie was opened,");
-	Add("The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
-	Add("Wasn't that a stupid thing to set before the king?");
+	Add("[Player1] What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
+	Add("[Player3] Arise, fair sun, and kill the envious FCEUX,");
+	Add("[Player1] Who is already sick and pale with grief,");
+	Add("[Player1] That thou her netplay art far more fair than she:");
+	Add("[Player4] Be not her netplay, since she is envious");
+	Add("[Player4] Okay, you know what?  I have no idea what the hell I'm saying.");
+	Add("[Player2] Sing a song of sixpence");
+	Add("[Player1] A pocket full of rye");
+	Add("[Player3] Four and twenty blackbirds");
+	Add("[Player4] Baked in a pie");
+	Add("[Player1] When the pie was opened,");
+	Add("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
+	Add("[Player4] Wasn't that a stupid thing to set before the king?");
 
 	for(int i=0; i<FILE_PAGESIZE; ++i)
 	{
@@ -414,6 +414,11 @@ void GuiChatWindow::Reset()
 
 bool GuiChatWindow::Add(const char *msg)
 {
+	if(msg == NULL || strlen(msg) <= 0)
+	{
+		return false;
+	}
+
 	if(browser_chat.size >= CHAT_SCROLLBACK_SIZE)
 	{
 		ErrorPrompt("Out of memory: too many files!");
@@ -432,6 +437,7 @@ bool GuiChatWindow::Add(const char *msg)
 		lastSpace = -1,
 		lastSpaceIndex = -1;
 
+	// TODO:  currentSize should be shared with the value passed to the GuiText constructor
 	const int currentSize = 20;
 
 	wchar_t *textDyn[20];
@@ -447,7 +453,6 @@ bool GuiChatWindow::Add(const char *msg)
 
 		if(msgWide[ch] == ' ' || ch == textlen-1)
 		{
-			// TODO:  currentSize should be shared with the value passed to the GuiText constructor
 			if(fontSystem[currentSize]->getWidth(textDyn[linenum]) > maxWidth)
 			{
 				if(lastSpace >= 0)
@@ -482,6 +487,11 @@ bool GuiChatWindow::Add(const char *msg)
 		browser_chat.size++;
 		browser_chat.numEntries++;
 	}
+
+	// Add a blank line between messages
+	strcpy(browserList_chat[browser_chat.size].displayname, "");
+	browser_chat.size++;
+	browser_chat.numEntries++;
 
 	return true;
 }
