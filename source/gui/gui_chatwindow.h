@@ -1,7 +1,25 @@
+#include "gui.h"
+
 #ifndef _GUI_CHATWINDOW_
 #define _GUI_CHATWINDOW_
 
-#include "gui.h"
+#define MAX_CHAT_MSG_LEN		255
+#define CHAT_SCROLLBACK_SIZE	1000
+
+typedef struct
+{
+	char dir[MAXPATHLEN + 1]; // directory path of browserList
+	int numEntries; // # of entries in browserList
+	int selIndex; // currently selected index of browserList
+	int pageIndex; // starting index of browserList page display
+	int size; // # of entries browerList has space allocated to store
+} BROWSERINFO_chat;
+
+typedef struct
+{
+	char displayname[MAX_CHAT_MSG_LEN + 1];
+} BROWSERENTRY_chat;
+
 
 class GuiChatWindow : public GuiElement
 {
@@ -15,7 +33,12 @@ class GuiChatWindow : public GuiElement
 		void TriggerUpdate();
 		void Update(GuiTrigger * t);
 		GuiButton * fileList[FILE_PAGESIZE];
-	protected:
+
+		void Reset();
+		bool Add(char *msg);
+		int OpenGameList();  // TODO:  delete
+
+	private:
 		GuiText * fileListText[FILE_PAGESIZE];
 		GuiImage * fileListBg[FILE_PAGESIZE];
 		GuiImage * fileListIcon[FILE_PAGESIZE];
@@ -57,6 +80,9 @@ class GuiChatWindow : public GuiElement
 		int selectedItem;
 		int numEntries;
 		bool listChanged;
+
+		BROWSERINFO_chat browser_chat;
+		BROWSERENTRY_chat browserList_chat[CHAT_SCROLLBACK_SIZE];
 };
 
 #endif

@@ -1,10 +1,14 @@
 #include "gui_chatwindow.h"
-#include "filebrowser_chat.h"
+#include "menu.h"
 
 GuiChatWindow::GuiChatWindow(int w, int h)
 {
 	width = w;
 	height = h;
+
+	Reset();
+	OpenGameList();
+
 	numEntries = 0;
 	selectedItem = 0;
 	selectable = true;
@@ -398,4 +402,45 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	if(updateCB)
 		updateCB(this);
+}
+
+void GuiChatWindow::Reset()
+{
+	browser_chat.numEntries = 0;
+	browser_chat.selIndex = 0;
+	browser_chat.pageIndex = 0;
+	browser_chat.size = 0;
+}
+
+bool GuiChatWindow::Add(char *msg)
+{
+	if(browser_chat.size >= CHAT_SCROLLBACK_SIZE)
+	{
+		ErrorPrompt("Out of memory: too many files!");
+		return false; // out of space
+	}
+
+	// TODO:  For messages exceeding the max length, implement word wrapping by creating additional entries
+	snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", msg);
+
+	browser_chat.size++;
+	return true;
+}
+
+// TODO:  delete
+int GuiChatWindow::OpenGameList()
+{
+	int entries = 200;
+
+	for( int i = 1; i <= entries; i++ )
+	{
+		char c[4];
+		sprintf(c, "%d", i);
+
+		Add(c);
+	}
+
+	browser_chat.numEntries = entries;
+
+	return browser_chat.numEntries;
 }
