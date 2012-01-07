@@ -1,5 +1,5 @@
 #include "gui_chatwindow.h"
-#include "filebrowser.h"
+#include "filebrowser_chat.h"
 
 GuiChatWindow::GuiChatWindow(int w, int h)
 {
@@ -103,6 +103,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		fileList[i] = new GuiButton(380, 26);
 		fileList[i]->SetParent(this);
 		fileList[i]->SetLabel(fileListText[i]);
+		//fileList[i]->SetLabel(new GuiText("arr", 18, GXColor{0,0,0,255})/*fileListText[i]*/);
 		fileList[i]->SetImageOver(fileListBg[i]);
 		fileList[i]->SetPosition(2,26*i+3);
 		fileList[i]->SetTrigger(trigA);
@@ -186,7 +187,7 @@ void GuiChatWindow::ResetState()
 
 void GuiChatWindow::TriggerUpdate()
 {
-	int newIndex = browser.selIndex-browser.pageIndex;
+	int newIndex = browser_chat.selIndex-browser_chat.pageIndex;
 
 	if(newIndex >= FILE_PAGESIZE)
 		newIndex = FILE_PAGESIZE-1;
@@ -207,10 +208,10 @@ void GuiChatWindow::Draw()
 
 	bgFileSelectionImg->Draw();
 
-	/*for(u32 i=0; i<FILE_PAGESIZE; ++i)
+	for(u32 i=0; i<FILE_PAGESIZE; ++i)
 	{
 		fileList[i]->Draw();
-	}*/
+	}
 
 	scrollbarImg->Draw();
 	arrowUpBtn->Draw();
@@ -240,7 +241,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	if(scrollbarBoxBtn->GetState() == STATE_HELD &&
 		scrollbarBoxBtn->GetStateChan() == t->chan &&
 		t->wpad->ir.valid &&
-		browser.numEntries > FILE_PAGESIZE
+		browser_chat.numEntries > FILE_PAGESIZE
 		)
 	{
 		scrollbarBoxBtn->SetPosition(0,0);
@@ -251,15 +252,15 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		else if(positionWiimote > scrollbarBoxBtn->GetMaxY())
 			positionWiimote = scrollbarBoxBtn->GetMaxY();
 
-		browser.pageIndex = (positionWiimote * browser.numEntries)/156.0f - selectedItem;
+		browser_chat.pageIndex = (positionWiimote * browser_chat.numEntries)/156.0f - selectedItem;
 
-		if(browser.pageIndex <= 0)
+		if(browser_chat.pageIndex <= 0)
 		{
-			browser.pageIndex = 0;
+			browser_chat.pageIndex = 0;
 		}
-		else if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
+		else if(browser_chat.pageIndex+FILE_PAGESIZE >= browser_chat.numEntries)
 		{
-			browser.pageIndex = browser.numEntries-FILE_PAGESIZE;
+			browser_chat.pageIndex = browser_chat.numEntries-FILE_PAGESIZE;
 		}
 		listChanged = true;
 		focus = false;
@@ -287,32 +288,32 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	if(t->Right())
 	{
-		if(browser.pageIndex < browser.numEntries && browser.numEntries > FILE_PAGESIZE)
+		if(browser_chat.pageIndex < browser_chat.numEntries && browser_chat.numEntries > FILE_PAGESIZE)
 		{
-			browser.pageIndex += FILE_PAGESIZE;
-			if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
-				browser.pageIndex = browser.numEntries-FILE_PAGESIZE;
+			browser_chat.pageIndex += FILE_PAGESIZE;
+			if(browser_chat.pageIndex+FILE_PAGESIZE >= browser_chat.numEntries)
+				browser_chat.pageIndex = browser_chat.numEntries-FILE_PAGESIZE;
 			listChanged = true;
 		}
 	}
 	else if(t->Left())
 	{
-		if(browser.pageIndex > 0)
+		if(browser_chat.pageIndex > 0)
 		{
-			browser.pageIndex -= FILE_PAGESIZE;
-			if(browser.pageIndex < 0)
-				browser.pageIndex = 0;
+			browser_chat.pageIndex -= FILE_PAGESIZE;
+			if(browser_chat.pageIndex < 0)
+				browser_chat.pageIndex = 0;
 			listChanged = true;
 		}
 	}
 	else if(t->Down())
 	{
-		if(browser.pageIndex + selectedItem + 1 < browser.numEntries)
+		if(browser_chat.pageIndex + selectedItem + 1 < browser_chat.numEntries)
 		{
 			if(selectedItem == FILE_PAGESIZE-1)
 			{
 				// move list down by 1
-				++browser.pageIndex;
+				++browser_chat.pageIndex;
 				listChanged = true;
 			}
 			else if(fileList[selectedItem+1]->IsVisible())
@@ -324,10 +325,10 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	}
 	else if(t->Up())
 	{
-		if(selectedItem == 0 &&	browser.pageIndex + selectedItem > 0)
+		if(selectedItem == 0 &&	browser_chat.pageIndex + selectedItem > 0)
 		{
 			// move list up by 1
-			--browser.pageIndex;
+			--browser_chat.pageIndex;
 			listChanged = true;
 		}
 		else if(selectedItem > 0)
@@ -341,16 +342,16 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	for(int i=0; i<FILE_PAGESIZE; ++i)
 	{
-		if(listChanged || numEntries != browser.numEntries)
+		if(listChanged || numEntries != browser_chat.numEntries)
 		{
-			if(browser.pageIndex+i < browser.numEntries)
+			if(browser_chat.pageIndex+i < browser_chat.numEntries)
 			{
 				if(fileList[i]->GetState() == STATE_DISABLED)
 					fileList[i]->SetState(STATE_DEFAULT);
 
 				fileList[i]->SetVisible(true);
 
-				fileListText[i]->SetText(browserList[browser.pageIndex+i].displayname);
+				fileListText[i]->SetText(browserList_chat[browser_chat.pageIndex+i].displayname);
 
 				if(fileListIcon[i])
 				{
@@ -359,21 +360,21 @@ void GuiChatWindow::Update(GuiTrigger * t)
 					fileListText[i]->SetPosition(5,0);
 				}
 
-				switch(browserList[browser.pageIndex+i].icon)
+				switch(browserList_chat[browser_chat.pageIndex+i].icon)
 				{
-					case ICON_FOLDER:
+					case ICON_FOLDER_chat:
 						fileListIcon[i] = new GuiImage(iconFolder);
 						break;
-					case ICON_SD:
+					case ICON_SD_chat:
 						fileListIcon[i] = new GuiImage(iconSD);
 						break;
-					case ICON_USB:
+					case ICON_USB_chat:
 						fileListIcon[i] = new GuiImage(iconUSB);
 						break;
-					case ICON_DVD:
+					case ICON_DVD_chat:
 						fileListIcon[i] = new GuiImage(iconDVD);
 						break;
-					case ICON_SMB:
+					case ICON_SMB_chat:
 						fileListIcon[i] = new GuiImage(iconSMB);
 						break;
 				}
@@ -404,7 +405,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		if(fileList[i]->GetState() == STATE_SELECTED)
 		{
 			selectedItem = i;
-			browser.selIndex = browser.pageIndex + i;
+			browser_chat.selIndex = browser_chat.pageIndex + i;
 		}
 
 		if(selectedItem == i)
@@ -419,25 +420,25 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		position = positionWiimote; // follow wiimote cursor
 		scrollbarBoxBtn->SetPosition(0,position+36);
 	}
-	else if(listChanged || numEntries != browser.numEntries)
+	else if(listChanged || numEntries != browser_chat.numEntries)
 	{
-		if(float((browser.pageIndex<<1))/(float(FILE_PAGESIZE)) < 1.0)
+		if(float((browser_chat.pageIndex<<1))/(float(FILE_PAGESIZE)) < 1.0)
 		{
 			position = 0;
 		}
-		else if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
+		else if(browser_chat.pageIndex+FILE_PAGESIZE >= browser_chat.numEntries)
 		{
 			position = 156;
 		}
 		else
 		{
-			position = 156 * (browser.pageIndex + FILE_PAGESIZE/2) / (float)browser.numEntries;
+			position = 156 * (browser_chat.pageIndex + FILE_PAGESIZE/2) / (float)browser_chat.numEntries;
 		}
 		scrollbarBoxBtn->SetPosition(0,position+36);
 	}
 
 	listChanged = false;
-	numEntries = browser.numEntries;
+	numEntries = browser_chat.numEntries;
 
 	if(updateCB)
 		updateCB(this);

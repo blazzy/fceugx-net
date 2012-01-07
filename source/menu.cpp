@@ -51,6 +51,7 @@
 #include "pad.h"
 #include "gcvideo.h"
 #include "filebrowser.h"
+#include "filebrowser_chat.h"
 #include "gcunzip.h"
 #include "networkop.h"
 #include "fileop.h"
@@ -1532,6 +1533,9 @@ static int MenuGameSelection()
 	// populate initial directory listing
 	selectLoadedFile = 1;
 	OpenGameList();
+
+	browserList_chat = (BROWSERENTRY_chat *)malloc(sizeof(BROWSERENTRY_chat)*MAX_BROWSER_SIZE);
+	OpenGameList_chat();
 
 	gameBrowser->ResetState();
 	gameBrowser->fileList[0]->SetState(STATE_SELECTED);
