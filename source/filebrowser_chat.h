@@ -14,7 +14,7 @@
 
 #include <unistd.h>
 
-#define MAXJOLIET 255
+#define MAX_CHAT_MSG_LEN 255
 #ifdef HW_DOL
 #define MAX_BROWSER_SIZE	1000
 #else
@@ -32,19 +32,11 @@ typedef struct
 
 typedef struct
 {
-	size_t length; // file length
-	int isdir; // 0 - file, 1 - directory
-	char filename[MAXJOLIET + 1]; // full filename
-	char displayname[MAXJOLIET + 1]; // name for browser display
-	int filenum; // file # (for 7z support)
-	int icon; // icon to display
+	char displayname[MAX_CHAT_MSG_LEN + 1];
 } BROWSERENTRY_chat;
 
 extern BROWSERINFO_chat browser_chat;
 extern BROWSERENTRY_chat * browserList_chat;
-
-extern char romFilename_chat[];
-extern bool loadingFile_chat;
 
 int OpenGameList_chat();
 void ResetBrowser_chat();

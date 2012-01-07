@@ -19,24 +19,11 @@
 #include <di/di.h>
 #endif
 
-#include "fceugx.h"
-#include "fceusupport.h"
-#include "menu.h"
 #include "filebrowser_chat.h"
-#include "networkop.h"
-#include "fileop.h"
-#include "pad.h"
-#include "fceuload.h"
-#include "gcunzip.h"
-#include "fceuram.h"
-#include "fceustate.h"
-#include "patch.h"
+#include "menu.h"
 
 BROWSERINFO_chat browser_chat;
 BROWSERENTRY_chat * browserList_chat = NULL; // list of files/folders in browser
-
-char romFilename_chat[256];
-bool loadingFile_chat = false;
 
 /****************************************************************************
  * ResetBrowser()
@@ -50,7 +37,7 @@ void ResetBrowser_chat()
 	browser_chat.size = 0;
 }
 
-bool AddBrowserEntry_chat()
+bool AddBrowserEntry_chat(char *msg)
 {
 	if(browser_chat.size >= MAX_BROWSER_SIZE)
 	{
@@ -58,7 +45,9 @@ bool AddBrowserEntry_chat()
 		return false; // out of space
 	}
 
-	memset(&(browserList_chat[browser_chat.size]), 0, sizeof(BROWSERENTRY_chat)); // clear the new entry
+	// TODO:  For messages exceeding the max length, implement word wrapping by creating additional entries
+	snprintf(browserList_chat[browser_chat.size].displayname, MAX_CHAT_MSG_LEN + 1, "%s", msg);
+
 	browser_chat.size++;
 	return true;
 }
@@ -70,17 +59,17 @@ bool AddBrowserEntry_chat()
 int
 OpenGameList_chat()
 {
+	int numEntries = 200;
 
-	for( int i = 0; i < 200; i++ )
+	for( int i = 1; i <= numEntries; i++ )
 	{
-		AddBrowserEntry_chat();
+		char c[4];
+		sprintf(c, "%d", i);
 
-		sprintf(browserList_chat[i].displayname, "%d", i);
-		browserList_chat[i].length = 0;
-		browserList_chat[i].isdir = 0;
-
-		browser_chat.numEntries = i;
+		AddBrowserEntry_chat(c);
 	}
+
+	browser_chat.numEntries = numEntries;
 
 	return browser_chat.numEntries;
 }

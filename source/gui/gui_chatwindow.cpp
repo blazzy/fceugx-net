@@ -96,9 +96,8 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		fileList[i] = new GuiButton(380, 26);
 		fileList[i]->SetParent(this);
 		fileList[i]->SetLabel(fileListText[i]);
-		//fileList[i]->SetLabel(new GuiText("arr", 18, GXColor{0,0,0,255})/*fileListText[i]*/);
 		fileList[i]->SetImageOver(fileListBg[i]);
-		fileList[i]->SetPosition(2,26*i+3);
+		fileList[i]->SetPosition(2, (fileList[i]->GetHeight() * i) + 3);
 		fileList[i]->SetTrigger(trigA);
 		fileList[i]->SetTrigger(trig2);
 		fileList[i]->SetSoundClick(btnSoundClick);
