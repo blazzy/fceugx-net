@@ -29,12 +29,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 
 	bgFileSelectionEntry = new GuiImageData(bg_game_selection_entry_png);
 
-	iconFolder = new GuiImageData(icon_folder_png);
-	iconSD = new GuiImageData(icon_sd_png);
-	iconUSB = new GuiImageData(icon_usb_png);
-	iconDVD = new GuiImageData(icon_dvd_png);
-	iconSMB = new GuiImageData(icon_smb_png);
-
 	scrollbar = new GuiImageData(scrollbar_png);
 	scrollbarImg = new GuiImage(scrollbar);
 	scrollbarImg->SetParent(this);
@@ -98,7 +92,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		fileListText[i]->SetMaxWidth(380);
 
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
-		fileListIcon[i] = NULL;
 
 		fileList[i] = new GuiButton(380, 26);
 		fileList[i]->SetParent(this);
@@ -132,11 +125,7 @@ GuiChatWindow::~GuiChatWindow()
 
 	delete bgFileSelection;
 	delete bgFileSelectionEntry;
-	delete iconFolder;
-	delete iconSD;
-	delete iconUSB;
-	delete iconDVD;
-	delete iconSMB;
+
 	delete scrollbar;
 	delete arrowDown;
 	delete arrowDownOver;
@@ -156,9 +145,6 @@ GuiChatWindow::~GuiChatWindow()
 		delete fileListText[i];
 		delete fileList[i];
 		delete fileListBg[i];
-
-		if(fileListIcon[i])
-			delete fileListIcon[i];
 	}
 }
 
@@ -352,35 +338,6 @@ void GuiChatWindow::Update(GuiTrigger * t)
 				fileList[i]->SetVisible(true);
 
 				fileListText[i]->SetText(browserList_chat[browser_chat.pageIndex+i].displayname);
-
-				if(fileListIcon[i])
-				{
-					delete fileListIcon[i];
-					fileListIcon[i] = NULL;
-					fileListText[i]->SetPosition(5,0);
-				}
-
-				switch(browserList_chat[browser_chat.pageIndex+i].icon)
-				{
-					case ICON_FOLDER_chat:
-						fileListIcon[i] = new GuiImage(iconFolder);
-						break;
-					case ICON_SD_chat:
-						fileListIcon[i] = new GuiImage(iconSD);
-						break;
-					case ICON_USB_chat:
-						fileListIcon[i] = new GuiImage(iconUSB);
-						break;
-					case ICON_DVD_chat:
-						fileListIcon[i] = new GuiImage(iconDVD);
-						break;
-					case ICON_SMB_chat:
-						fileListIcon[i] = new GuiImage(iconSMB);
-						break;
-				}
-				fileList[i]->SetIcon(fileListIcon[i]);
-				if(fileListIcon[i] != NULL)
-					fileListText[i]->SetPosition(30,0);
 			}
 			else
 			{

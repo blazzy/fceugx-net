@@ -43,31 +43,11 @@ typedef struct
 extern BROWSERINFO_chat browser_chat;
 extern BROWSERENTRY_chat * browserList_chat;
 
-enum
-{
-	ICON_NONE_chat,
-	ICON_FOLDER_chat,
-	ICON_SD_chat,
-	ICON_USB_chat,
-	ICON_DVD_chat,
-	ICON_SMB_chat
-};
-
 extern char romFilename_chat[];
 extern bool loadingFile_chat;
 
-bool MakeFilePath_chat(char filepath[], int type, char * filename = NULL, int filenum = -2);
-int UpdateDirName_chat();
 int OpenGameList_chat();
-int autoLoadMethod_chat();
-int autoSaveMethod_chat(bool silent);
-int FileSortCallback_chat(const void *f1, const void *f2);
-void StripExt_chat(char* returnstring, char * inputstring);
-bool IsSz_chat();
 void ResetBrowser_chat();
 bool AddBrowserEntry_chat();
-bool IsDeviceRoot_chat(char * path);
-//int BrowserChangeFolder_chat();
-int BrowserLoadFile_chat();
 
 #endif
