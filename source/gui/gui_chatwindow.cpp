@@ -87,26 +87,26 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	scrollbarBoxBtn->SetTrigger(trigHeldA);
 
 	Reset();
-	Add("[Player1] What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
-	Add("[Player3] Arise, fair sun, and kill the envious FCEUX,");
-	Add("[Player1] Who is already sick and pale with grief,");
-	Add("[Player1] That thou her netplay art far more fair than she:");
-	Add("[Player4] Be not her netplay, since she is envious");
-	Add("[Player4] Okay, you know what?  I have no idea what the hell I'm saying.");
-	Add("[Player2] Sing a song of sixpence");
-	Add("[Player1] A pocket full of rye");
-	Add("[Player3] Four and twenty blackbirds");
-	Add("[Player4] Baked in a pie");
-	Add("[Player1] When the pie was opened,");
-	Add("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
-	Add("[Player4] Wasn't that a stupid thing to set before the king?");
+	WriteLn("[Player1] What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
+	WriteLn("[Player3] Arise, fair sun, and kill the envious FCEUX,");
+	WriteLn("[Player1] Who is already sick and pale with grief,");
+	WriteLn("[Player1] That thou her netplay art far more fair than she:");
+	WriteLn("[Player4] Be not her netplay, since she is envious");
+	WriteLn("[Player4] Okay, you know what?  I have no idea what the hell I'm saying.");
+	WriteLn("[Player2] Sing a song of sixpence");
+	WriteLn("[Player1] A pocket full of rye");
+	WriteLn("[Player3] Four and twenty blackbirds");
+	WriteLn("[Player4] Baked in a pie");
+	WriteLn("[Player1] When the pie was opened,");
+	WriteLn("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
+	WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
 
 	for(int i=0; i<FILE_PAGESIZE; ++i)
 	{
-		fileListText[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
-		fileListText[i]->SetParent(this);
-		fileListText[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
-		fileListText[i]->SetPosition(7, (26 * i) + 8);
+		viewport[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
+		viewport[i]->SetParent(this);
+		viewport[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
+		viewport[i]->SetPosition(7, (26 * i) + 8);
 	}
 }
 
@@ -146,7 +146,7 @@ GuiChatWindow::~GuiChatWindow()
 
 	for(int i=0; i<FILE_PAGESIZE; i++)
 	{
-		delete fileListText[i];
+		delete viewport[i];
 	}
 }
 
@@ -155,10 +155,14 @@ void GuiChatWindow::SetFocus(int f)
 	focus = f;
 
 	for(int i=0; i<FILE_PAGESIZE; i++)
-		fileListText[i]->ResetState();
+	{
+		viewport[i]->ResetState();
+	}
 
 	if(f == 1)
-		fileListText[selectedItem]->SetState(STATE_SELECTED);
+	{
+		viewport[selectedItem]->SetState(STATE_SELECTED);
+	}
 }
 
 void GuiChatWindow::ResetState()
@@ -169,18 +173,22 @@ void GuiChatWindow::ResetState()
 
 	for(int i=0; i<FILE_PAGESIZE; i++)
 	{
-		fileListText[i]->ResetState();
+		viewport[i]->ResetState();
 	}
 }
 
 void GuiChatWindow::TriggerUpdate()
 {
-	int newIndex = browser_chat.selIndex-browser_chat.pageIndex;
+	int newIndex = windowInfo.selIndex-windowInfo.pageIndex;
 
 	if(newIndex >= FILE_PAGESIZE)
+	{
 		newIndex = FILE_PAGESIZE-1;
+	}
 	else if(newIndex < 0)
+	{
 		newIndex = 0;
+	}
 
 	selectedItem = newIndex;
 	listChanged = true;
@@ -198,7 +206,7 @@ void GuiChatWindow::Draw()
 
 	for(u32 i=0; i<FILE_PAGESIZE; ++i)
 	{
-		fileListText[i]->Draw();
+		viewport[i]->Draw();
 	}
 
 	scrollbarImg->Draw();
@@ -226,30 +234,34 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	scrollbarBoxBtn->Update(t);
 
 	// move the file listing to respond to wiimote cursor movement
-	if(scrollbarBoxBtn->GetState() == STATE_HELD &&
-		scrollbarBoxBtn->GetStateChan() == t->chan &&
-		t->wpad->ir.valid &&
-		browser_chat.numEntries > FILE_PAGESIZE
-		)
+	if(scrollbarBoxBtn->GetState() == STATE_HELD
+	&& scrollbarBoxBtn->GetStateChan() == t->chan
+	&& t->wpad->ir.valid
+	&& windowInfo.numEntries > FILE_PAGESIZE )
 	{
 		scrollbarBoxBtn->SetPosition(0,0);
 		positionWiimote = t->wpad->ir.y - 60 - scrollbarBoxBtn->GetTop();
 
 		if(positionWiimote < scrollbarBoxBtn->GetMinY())
+		{
 			positionWiimote = scrollbarBoxBtn->GetMinY();
+		}
 		else if(positionWiimote > scrollbarBoxBtn->GetMaxY())
+		{
 			positionWiimote = scrollbarBoxBtn->GetMaxY();
-
-		browser_chat.pageIndex = (positionWiimote * browser_chat.numEntries)/156.0f - selectedItem;
-
-		if(browser_chat.pageIndex <= 0)
-		{
-			browser_chat.pageIndex = 0;
 		}
-		else if(browser_chat.pageIndex+FILE_PAGESIZE >= browser_chat.numEntries)
+
+		windowInfo.pageIndex = (positionWiimote * windowInfo.numEntries)/156.0f - selectedItem;
+
+		if(windowInfo.pageIndex <= 0)
 		{
-			browser_chat.pageIndex = browser_chat.numEntries-FILE_PAGESIZE;
+			windowInfo.pageIndex = 0;
 		}
+		else if(windowInfo.pageIndex+FILE_PAGESIZE >= windowInfo.numEntries)
+		{
+			windowInfo.pageIndex = windowInfo.numEntries-FILE_PAGESIZE;
+		}
+
 		listChanged = true;
 		focus = false;
 	}
@@ -257,114 +269,136 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	if(arrowDownBtn->GetState() == STATE_HELD && arrowDownBtn->GetStateChan() == t->chan)
 	{
 		t->wpad->btns_d |= WPAD_BUTTON_DOWN;
+
 		if(!this->IsFocused())
+		{
 			((GuiWindow *)this->GetParent())->ChangeFocus(this);
+		}
 	}
 	else if(arrowUpBtn->GetState() == STATE_HELD && arrowUpBtn->GetStateChan() == t->chan)
 	{
 		t->wpad->btns_d |= WPAD_BUTTON_UP;
+
 		if(!this->IsFocused())
+		{
 			((GuiWindow *)this->GetParent())->ChangeFocus(this);
+		}
 	}
 
 	// pad/joystick navigation
 	if(!focus)
 	{
+		// goto?!
 		goto endNavigation; // skip navigation
 		listChanged = false;
 	}
 
 	if(t->Right())
 	{
-		if(browser_chat.pageIndex < browser_chat.numEntries && browser_chat.numEntries > FILE_PAGESIZE)
+		if(windowInfo.pageIndex < windowInfo.numEntries && windowInfo.numEntries > FILE_PAGESIZE)
 		{
-			browser_chat.pageIndex += FILE_PAGESIZE;
-			if(browser_chat.pageIndex+FILE_PAGESIZE >= browser_chat.numEntries)
-				browser_chat.pageIndex = browser_chat.numEntries-FILE_PAGESIZE;
+			windowInfo.pageIndex += FILE_PAGESIZE;
+
+			if(windowInfo.pageIndex+FILE_PAGESIZE >= windowInfo.numEntries)
+			{
+				windowInfo.pageIndex = windowInfo.numEntries-FILE_PAGESIZE;
+			}
+
 			listChanged = true;
 		}
 	}
 	else if(t->Left())
 	{
-		if(browser_chat.pageIndex > 0)
+		if(windowInfo.pageIndex > 0)
 		{
-			browser_chat.pageIndex -= FILE_PAGESIZE;
-			if(browser_chat.pageIndex < 0)
-				browser_chat.pageIndex = 0;
+			windowInfo.pageIndex -= FILE_PAGESIZE;
+
+			if(windowInfo.pageIndex < 0)
+			{
+				windowInfo.pageIndex = 0;
+			}
+
 			listChanged = true;
 		}
 	}
 	else if(t->Down())
 	{
-		if(browser_chat.pageIndex + selectedItem + 1 < browser_chat.numEntries)
+		if(windowInfo.pageIndex + selectedItem + 1 < windowInfo.numEntries)
 		{
 			if(selectedItem == FILE_PAGESIZE-1)
 			{
 				// move list down by 1
-				++browser_chat.pageIndex;
+				++windowInfo.pageIndex;
 				listChanged = true;
 			}
-			else if(fileListText[selectedItem+1]->IsVisible())
+			else if(viewport[selectedItem+1]->IsVisible())
 			{
-				fileListText[selectedItem]->ResetState();
-				fileListText[++selectedItem]->SetState(STATE_SELECTED, t->chan);
+				viewport[selectedItem]->ResetState();
+				viewport[++selectedItem]->SetState(STATE_SELECTED, t->chan);
 			}
 		}
 	}
 	else if(t->Up())
 	{
-		if(selectedItem == 0 &&	browser_chat.pageIndex + selectedItem > 0)
+		if(selectedItem == 0 &&	windowInfo.pageIndex + selectedItem > 0)
 		{
 			// move list up by 1
-			--browser_chat.pageIndex;
+			--windowInfo.pageIndex;
 			listChanged = true;
 		}
 		else if(selectedItem > 0)
 		{
-			fileListText[selectedItem]->ResetState();
-			fileListText[--selectedItem]->SetState(STATE_SELECTED, t->chan);
+			viewport[selectedItem]->ResetState();
+			viewport[--selectedItem]->SetState(STATE_SELECTED, t->chan);
 		}
 	}
 
 	endNavigation:
 
-	for(int i=0; i<FILE_PAGESIZE; ++i)
+	for(int i = 0; i < FILE_PAGESIZE; ++i)
 	{
-		if(listChanged || numEntries != browser_chat.numEntries)
+		if(listChanged || numEntries != windowInfo.numEntries)
 		{
-			if(browser_chat.pageIndex+i < browser_chat.numEntries)
+			if(windowInfo.pageIndex+i < windowInfo.numEntries)
 			{
-				if(fileListText[i]->GetState() == STATE_DISABLED)
-					fileListText[i]->SetState(STATE_DEFAULT);
+				if(viewport[i]->GetState() == STATE_DISABLED)
+				{
+					viewport[i]->SetState(STATE_DEFAULT);
+				}
 
-				fileListText[i]->SetVisible(true);
-
-				fileListText[i]->SetText(browserList_chat[browser_chat.pageIndex+i].displayname);
+				viewport[i]->SetVisible(true);
+				viewport[i]->SetText(scrollbackBuffer[windowInfo.pageIndex+i].value);
 			}
 			else
 			{
-				fileListText[i]->SetVisible(false);
-				fileListText[i]->SetState(STATE_DISABLED);
+				viewport[i]->SetVisible(false);
+				viewport[i]->SetState(STATE_DISABLED);
 			}
 		}
 
-		if(i != selectedItem && fileListText[i]->GetState() == STATE_SELECTED)
-			fileListText[i]->ResetState();
-		else if(focus && i == selectedItem && fileListText[i]->GetState() == STATE_DEFAULT)
-			fileListText[selectedItem]->SetState(STATE_SELECTED, t->chan);
+		if(i != selectedItem && viewport[i]->GetState() == STATE_SELECTED)
+		{
+			viewport[i]->ResetState();
+		}
+		else if(focus && i == selectedItem && viewport[i]->GetState() == STATE_DEFAULT)
+		{
+			viewport[selectedItem]->SetState(STATE_SELECTED, t->chan);
+		}
 
 		int currChan = t->chan;
 
-		if(t->wpad->ir.valid && !fileListText[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
+		if(t->wpad->ir.valid && !viewport[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
+		{
 			t->chan = -1;
+		}
 
-		fileListText[i]->Update(t);
+		viewport[i]->Update(t);
 		t->chan = currChan;
 
-		if(fileListText[i]->GetState() == STATE_SELECTED)
+		if(viewport[i]->GetState() == STATE_SELECTED)
 		{
 			selectedItem = i;
-			browser_chat.selIndex = browser_chat.pageIndex + i;
+			windowInfo.selIndex = windowInfo.pageIndex + i;
 		}
 	}
 
@@ -374,46 +408,49 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		position = positionWiimote; // follow wiimote cursor
 		scrollbarBoxBtn->SetPosition(0,position+36);
 	}
-	else if(listChanged || numEntries != browser_chat.numEntries)
+	else if(listChanged || numEntries != windowInfo.numEntries)
 	{
-		if(float((browser_chat.pageIndex<<1))/(float(FILE_PAGESIZE)) < 1.0)
+		if(float((windowInfo.pageIndex<<1))/(float(FILE_PAGESIZE)) < 1.0)
 		{
 			position = 0;
 		}
-		else if(browser_chat.pageIndex+FILE_PAGESIZE >= browser_chat.numEntries)
+		else if(windowInfo.pageIndex+FILE_PAGESIZE >= windowInfo.numEntries)
 		{
 			position = 156;
 		}
 		else
 		{
-			position = 156 * (browser_chat.pageIndex + FILE_PAGESIZE/2) / (float)browser_chat.numEntries;
+			position = 156 * (windowInfo.pageIndex + FILE_PAGESIZE/2) / (float)windowInfo.numEntries;
 		}
+
 		scrollbarBoxBtn->SetPosition(0,position+36);
 	}
 
 	listChanged = false;
-	numEntries = browser_chat.numEntries;
+	numEntries = windowInfo.numEntries;
 
 	if(updateCB)
+	{
 		updateCB(this);
+	}
 }
 
 void GuiChatWindow::Reset()
 {
-	browser_chat.numEntries = 0;
-	browser_chat.selIndex = 0;
-	browser_chat.pageIndex = 0;
-	browser_chat.size = 0;
+	windowInfo.numEntries = 0;
+	windowInfo.selIndex = 0;
+	windowInfo.pageIndex = 0;
+	windowInfo.size = 0;
 }
 
-bool GuiChatWindow::Add(const char *msg)
+bool GuiChatWindow::WriteLn(const char *msg)
 {
 	if(msg == NULL || strlen(msg) <= 0)
 	{
 		return false;
 	}
 
-	if(browser_chat.size >= CHAT_SCROLLBACK_SIZE)
+	if(windowInfo.size >= CHAT_SCROLLBACK_SIZE)
 	{
 		ErrorPrompt("Out of memory: too many files!");
 		return false; // out of space
@@ -440,7 +477,9 @@ bool GuiChatWindow::Add(const char *msg)
 	while(ch < textlen && linenum < 20)
 	{
 		if(n == 0)
+		{
 			textDyn[linenum] = new wchar_t[textlen + 1];
+		}
 
 		textDyn[linenum][n] = msgWide[ch];
 		textDyn[linenum][n+1] = 0;
@@ -469,23 +508,25 @@ bool GuiChatWindow::Add(const char *msg)
 			lastSpace = ch;
 			lastSpaceIndex = n;
 		}
+
 		++ch;
 		++n;
 	}
+
 	textDynNum = linenum;
 	// End of wrapping logic
 
 	for(uint i = 0; i < textDynNum; i++)
 	{
-		wcstombs(browserList_chat[browser_chat.size].displayname, textDyn[i], 200 );  // 200 is safely larger than textDyn[i]'s length
-		browser_chat.size++;
-		browser_chat.numEntries++;
+		wcstombs(scrollbackBuffer[windowInfo.size].value, textDyn[i], 200 );  // 200 is safely larger than textDyn[i]'s length
+		windowInfo.size++;
+		windowInfo.numEntries++;
 	}
 
 	// Add a blank line between messages
-	strcpy(browserList_chat[browser_chat.size].displayname, "");
-	browser_chat.size++;
-	browser_chat.numEntries++;
+	strcpy(scrollbackBuffer[windowInfo.size].value, "");
+	windowInfo.size++;
+	windowInfo.numEntries++;
 
 	return true;
 }
