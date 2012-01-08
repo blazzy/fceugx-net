@@ -56,7 +56,7 @@ struct Client {
 	}
 
 	int connected() const {
-		return socket->connected();
+		return socket != 0;
 	}
 
 	int send_cmd(int cmd, const uint8_t *data, uint32_t length) {
@@ -100,6 +100,8 @@ struct Client {
 	void disconnect() {
 		fprintf(stderr, "Client %d %s disconnecting\n", id, name);
 		socket->close();
+		delete socket;
+		socket = 0;
 		disconnecting = true;
 	}
 
@@ -185,24 +187,22 @@ struct Server {
 	}
 
 	void receive(Client &client) {
-		while (1) {
-			if (!client.connected())
-				return;
+		if (!client.connected())
+			return;
 
-			int length = client.socket->recv(
-					&client.in_buffer[client.in_buffer_used],
-					client.command_length - client.in_buffer_used);
+		int length = client.socket->recv(
+				&client.in_buffer[client.in_buffer_used],
+				client.command_length - client.in_buffer_used);
 
-			if (length == -1) {
-				client.disconnect();
-				return;
-			}
+		if (length == -1) {
+			client.disconnect();
+			return;
+		}
 
-			client.in_buffer_used += length;
+		client.in_buffer_used += length;
 
-			if (client.in_buffer_used == client.command_length) {
-				process_command(client);
-			}
+		if (client.in_buffer_used == client.command_length) {
+			process_command(client);
 		}
 	}
 
@@ -219,11 +219,13 @@ struct Server {
 					return;
 				}
 			}
+
+			//server full
+			//TODO announce
+			client_socket->close();
+			delete client_socket;
 		}
 
-		//server full
-		//TODO announce
-		client_socket->close();
 	}
 
 	void process_command(Client &client) {
@@ -468,6 +470,8 @@ struct Server {
 
 void ServerStart(const ServerConfig &config) {
 	server.config = config;
+	server.set_frame_delay(config.frame_divisor);
+	FCEUD_ServerStart(config);
 }
 
 

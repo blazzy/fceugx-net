@@ -337,7 +337,11 @@ bool FCEUD_PauseAfterPlayback();
 ///called when fceu changes something in the video system you might be interested in
 void FCEUD_VideoChanged();
 
-//return a microsecond tick count
+struct ServerConfig;
+//Initialize the server. Return 0 on failure.
+int FCEUD_ServerStart(const ServerConfig &config);
+
+//Return a microsecond tick count
 uint64 FCEUD_ServerGetTicks();
 
 struct FCEUD_ServerSocket
@@ -351,7 +355,9 @@ struct FCEUD_ServerSocket
 	virtual void close() = 0;
 };
 
+//Check for a new client connection. Return 0 if there are none.
 FCEUD_ServerSocket *FCEUD_ServerNewConnections();
+
 
 enum EFCEUI
 {
