@@ -216,7 +216,9 @@ struct Server {
 				if (!clients[i].connected()) {
 					clients[i].socket = client_socket;
 					clients[i].reset_buffer(N_LOGINLEN, 4);
-					clients[i].send(&config.frame_divisor, 1);
+					uint8 buf[1];
+					buf[0] = config.frame_divisor;
+					clients[i].send(buf, 1);
 					return;
 				}
 			}
