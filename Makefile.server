@@ -1,18 +1,20 @@
 CXX := g++
-CXXFLAGS := -ggdb -Isource
+CXXFLAGS := -ggdb -Isource -Isource/fceultra -DPSS_STYLE=1
+
 LDFLAGS  := -lrt
 
 BUILDDIR  := build_server
 TARGETDIR := executables
 SOURCEDIR := source/server
 
-OBJECTS     := md5.o server.o
+vpath %.cpp source/fceultra source/fceultra/utils source/dedicated_server
+
+OBJECTS     := md5.o dedicated_server.o server.o endian.o
 
 OBJECTS_OUT := $(addprefix $(BUILDDIR)/, $(OBJECTS))
-DEPENDS	    := $(OBJECTS_OUT:.o=.o.d)
+DEPENDS     := $(OBJECTS_OUT:.o=.o.d)
 
 .PHONY: default clean
-
 
 default: $(BUILDDIR) $(TARGETDIR)/fceux-server
 
@@ -20,7 +22,7 @@ $(TARGETDIR)/fceux-server: $(OBJECTS_OUT)
 	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
-$(BUILDDIR)/%.o : $(SOURCEDIR)/%.cpp
+$(BUILDDIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $<  -MMD -MF $@.d
 
 $(BUILDDIR):
