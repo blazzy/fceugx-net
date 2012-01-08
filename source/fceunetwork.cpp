@@ -30,6 +30,7 @@
 #include "fceugx.h"
 #include "fceultra/utils/endian.h"
 #include "gui/gui_playerlist.h"
+#include "fceultra/server.h"
 
 extern GuiPlayerList *playerList;
 
@@ -37,7 +38,7 @@ static int Socket = -1;
 
 static int poll_one(int socket, int timeout, int event);
 
-#define IOS_O_NONBLOCK			0x04
+#define IOS_O_NONBLOCK  0x04
 
 #define CONNECT_TIMEOUT 4000//ms
 #define RECV_TIMEOUT    4000//ms
@@ -290,4 +291,19 @@ static void UpdatePlayerList() {
 	}
 
 	playerList->BuildPlayerList(list);
+}
+
+
+uint64 FCEUD_ServerGetTicks() {
+	return ticks_to_microsecs(gettime());
+}
+
+
+int FCEUD_ServerStart(const ServerConfig &config) {
+	return 0;
+}
+
+
+FCEUD_ServerSocket* FCEUD_ServerNewConnections() {
+	return 0;
 }
