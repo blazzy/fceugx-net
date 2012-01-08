@@ -103,6 +103,7 @@ struct Client {
 		delete socket;
 		socket = 0;
 		disconnecting = true;
+		out_buffer_used = 0;
 	}
 
 	void reset_buffer(int type, int length) {
