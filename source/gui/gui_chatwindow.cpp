@@ -171,7 +171,7 @@ GuiChatWindow::~GuiChatWindow()
 	delete trigA;
 	delete trig2;
 
-	for(int i=0; i<FILE_PAGESIZE; i++)
+	for(int i = 0; i < FILE_PAGESIZE; i++)
 	{
 		delete viewportText[i];
 		delete viewportButton[i];
@@ -182,7 +182,7 @@ void GuiChatWindow::SetFocus(int f)
 {
 	focus = f;
 
-	for(int i=0; i<FILE_PAGESIZE; i++)
+	for(int i = 0; i < FILE_PAGESIZE; i++)
 	{
 		viewportButton[i]->ResetState();
 	}
@@ -195,7 +195,7 @@ void GuiChatWindow::SetFocus(int f)
 
 int GuiChatWindow::GetState()
 {
-	for(int i=0; i<FILE_PAGESIZE; i++)
+	for(int i = 0; i < FILE_PAGESIZE; i++)
 	{
 		if(viewportButton[i]->GetState() == STATE_CLICKED)
 		{
@@ -272,25 +272,36 @@ void GuiChatWindow::DrawTooltip()
 void GuiChatWindow::Update(GuiTrigger * t)
 {
 	if(state == STATE_DISABLED || !t)
+	{
 		return;
+	}
 
 	int position = 0;
 	int positionWiimote = 0;
 
-	arrowUpBtn->Update(t);
-	arrowDownBtn->Update(t);
-	scrollbarBoxBtn->Update(t);
+	//if(!dirty)
+	//{
+		arrowUpBtn->Update(t);
+		arrowDownBtn->Update(t);
+		scrollbarBoxBtn->Update(t);
+	//}
 
 	// move the file listing to respond to wiimote cursor movement
-	if(scrollbarBoxBtn->GetState() == STATE_HELD
-	&& scrollbarBoxBtn->GetStateChan() == t->chan
-	&& t->wpad->ir.valid
+	if( (dirty || (scrollbarBoxBtn->GetState() == STATE_HELD
+		&& scrollbarBoxBtn->GetStateChan() == t->chan
+		&& t->wpad->ir.valid))
 	&& windowInfo.numEntries > FILE_PAGESIZE)
 	{
 		scrollbarBoxBtn->SetPosition(0,0);
 		positionWiimote = t->wpad->ir.y - 60 - scrollbarBoxBtn->GetTop();
 
-		if(positionWiimote < scrollbarBoxBtn->GetMinY())
+		if(dirty)
+		{
+			// If WriteLn() was called - either by the local user or because of an incoming message,
+			// we trick Update() into thinking that the user has scrolled to the botton of the window.
+			positionWiimote = scrollbarBoxBtn->GetMaxY();
+		}
+		else if(positionWiimote < scrollbarBoxBtn->GetMinY())
 		{
 			positionWiimote = scrollbarBoxBtn->GetMinY();
 		}
@@ -433,6 +444,8 @@ void GuiChatWindow::Update(GuiTrigger * t)
 			viewportButton[selectedItem]->SetState(STATE_SELECTED, t->chan);
 		}
 
+		//if(!dirty)
+		//{
 		int currChan = t->chan;
 
 		if(t->wpad->ir.valid && !viewportButton[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
@@ -442,6 +455,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 		viewportButton[i]->Update(t);
 		t->chan = currChan;
+		//}
 
 		if(viewportButton[i]->GetState() == STATE_SELECTED)
 		{
@@ -476,11 +490,13 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	listChanged = false;
 	numEntries = windowInfo.numEntries;
-
+	
 	if(updateCB)
 	{
 		updateCB(this);
 	}
+
+	dirty = false;
 }
 
 void GuiChatWindow::Reset()
@@ -494,6 +510,10 @@ void GuiChatWindow::Reset()
 
 bool GuiChatWindow::WriteLn(const char *msg)
 {
+	/*char c[30];
+	sprintf(c, "selIndex (%d) pageIndex (%d)", windowInfo.selIndex, windowInfo.pageIndex);
+	InfoPrompt(c);*/
+
 	if(msg == NULL || strlen(msg) <= 0)
 	{
 		return false;
@@ -577,12 +597,22 @@ bool GuiChatWindow::WriteLn(const char *msg)
 		windowInfo.numEntries++;
 	}
 
-	// A message was written to the window while it was hidden.  The dirty status can be examined by menu.cpp to visually alert the user.
-	// TODO:  Change the appearance of the Chat button in menu.cpp.
-	if(!IsVisible())
+	//if(!IsVisible())
 	{
-		dirty = true;
+
 	}
+
+	//// begin /////
+
+	// Adjust the window appearance:
+	// 0.  Scroll down the bottom of the window (the last elements of the backing array are displayed)
+	// 1.  Select the last line in the viewport
+	// 2.  Position the scrollbar box button at the bottom of the window
+	// 3.  Hope and pray that the up/down buttons on the remote and scrollbar work
+
+
+
+	///// end /////
 
 	//ResetState();
 	//viewportButton[FILE_PAGESIZE - 1]->SetState(STATE_SELECTED);
@@ -610,6 +640,8 @@ bool GuiChatWindow::WriteLn(const char *msg)
 		}
 	}
 	*/
+
+	dirty = true;
 
 	return true;
 }

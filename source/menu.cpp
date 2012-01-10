@@ -15,6 +15,8 @@
  *          enforced on the server side.
  *      3.  To support more than one player per physical machine, we'll
  *          need to batch client connections from the Join button.
+ *      4.  When a chat message comes in and the chat window is not
+ *          visible, change the appearance of the ROMs button.
  *
  * History:
  *
@@ -1556,7 +1558,13 @@ static int MenuGameSelection()
 			buf[0] = '\0';
 
 			OnScreenKeyboard(buf, MAX_CHAT_MSG_LEN);
-			chatWindow->WriteLn(buf);
+
+			if(strlen(buf))
+			{
+				chatWindow->WriteLn(buf);
+			}
+
+			mainWindow->ChangeFocus(chatWindow);
 		}
 
 		// update gameWindow based on arrow buttons

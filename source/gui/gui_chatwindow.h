@@ -76,7 +76,6 @@ class GuiChatWindow : public GuiElement
 		GuiText *viewportText[FILE_PAGESIZE];
 		GuiButton *viewportButton[FILE_PAGESIZE];
 
-		// TODO:  Instead of having this, could we check listChanged plus visibility?
 		bool dirty;
 };
 
