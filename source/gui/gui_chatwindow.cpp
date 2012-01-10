@@ -1,3 +1,18 @@
+/****************************************************************************
+ * FCE Ultra GX
+ * Nintendo Wii/Gamecube Port
+ *
+ * gui_playerlist.cpp
+ *
+ * Description:  A chat window
+ *
+ * History:
+ *
+ * Name               Date     Description
+ * --------------  mm/dd/yyyy  --------------------------------------------------
+ * Kurtis LoVerde   Jan 2012   New file (based on Tantric's GuiFileBrowser)
+ ****************************************************************************/
+
 #include "gui_chatwindow.h"
 #include "menu.h"
 #include "../utils/FreeTypeGX.h"   // charToWideChar()
@@ -86,6 +101,26 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	scrollbarBoxBtn->SetHoldable(true);
 	scrollbarBoxBtn->SetTrigger(trigHeldA);
 
+	bgFileSelectionEntry = new GuiImageData(bg_game_selection_entry_png);
+	for(int i=0; i<FILE_PAGESIZE; ++i)
+	{
+		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
+
+		viewportText[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
+		viewportText[i]->SetParent(this);
+		viewportText[i]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+		viewportText[i]->SetPosition(5, 0);
+		viewportText[i]->SetMaxWidth(380);
+
+		viewportButton[i] = new GuiButton(380, 26);
+		viewportButton[i]->SetParent(this);
+		viewportButton[i]->SetLabel(viewportText[i]);
+		viewportButton[i]->SetImageOver(fileListBg[i]);
+		viewportButton[i]->SetPosition(2, 26 * i + 3);
+		viewportButton[i]->SetTrigger(trigA);
+		viewportButton[i]->SetTrigger(trig2);
+	}
+
 	Reset();
 	WriteLn("[Player1] What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
 	WriteLn("[Player3] Arise, fair sun, and kill the envious FCEUX,");
@@ -100,14 +135,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	WriteLn("[Player1] When the pie was opened,");
 	WriteLn("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
 	WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
-
-	for(int i=0; i<FILE_PAGESIZE; ++i)
-	{
-		viewport[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
-		viewport[i]->SetParent(this);
-		viewport[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
-		viewport[i]->SetPosition(7, (26 * i) + 8);
-	}
 }
 
 /**
@@ -146,7 +173,8 @@ GuiChatWindow::~GuiChatWindow()
 
 	for(int i=0; i<FILE_PAGESIZE; i++)
 	{
-		delete viewport[i];
+		delete viewportText[i];
+		delete viewportButton[i];
 	}
 }
 
@@ -156,30 +184,48 @@ void GuiChatWindow::SetFocus(int f)
 
 	for(int i=0; i<FILE_PAGESIZE; i++)
 	{
-		viewport[i]->ResetState();
+		viewportButton[i]->ResetState();
 	}
 
 	if(f == 1)
 	{
-		viewport[selectedItem]->SetState(STATE_SELECTED);
+		viewportButton[selectedItem]->SetState(STATE_SELECTED);
 	}
+}
+
+int GuiChatWindow::GetState()
+{
+	for(int i=0; i<FILE_PAGESIZE; i++)
+	{
+		if(viewportButton[i]->GetState() == STATE_CLICKED)
+		{
+			// Please hold the particle physics jokes.
+			state = STATE_CLICKED;
+		}
+	}
+
+	return state;
 }
 
 void GuiChatWindow::ResetState()
 {
 	state = STATE_DEFAULT;
 	stateChan = -1;
-	selectedItem = 0;
+	selectedItem = FILE_PAGESIZE - 1;
 
-	for(int i=0; i<FILE_PAGESIZE; i++)
+	for(int i = 0; i < FILE_PAGESIZE; i++)
 	{
-		viewport[i]->ResetState();
+		viewportButton[i]->ResetState();
 	}
 }
 
 void GuiChatWindow::TriggerUpdate()
 {
-	int newIndex = windowInfo.selIndex-windowInfo.pageIndex;
+	int newIndex = windowInfo.selIndex - windowInfo.pageIndex;
+
+	/*char c[30];
+	sprintf(c, "%d", newIndex);
+	InfoPrompt(c);*/
 
 	if(newIndex >= FILE_PAGESIZE)
 	{
@@ -200,13 +246,15 @@ void GuiChatWindow::TriggerUpdate()
 void GuiChatWindow::Draw()
 {
 	if(!this->IsVisible())
+	{
 		return;
+	}
 
 	bgFileSelectionImg->Draw();
 
-	for(u32 i=0; i<FILE_PAGESIZE; ++i)
+	for(u32 i = 0; i < FILE_PAGESIZE; ++i)
 	{
-		viewport[i]->Draw();
+		viewportButton[i]->Draw();
 	}
 
 	scrollbarImg->Draw();
@@ -237,7 +285,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	if(scrollbarBoxBtn->GetState() == STATE_HELD
 	&& scrollbarBoxBtn->GetStateChan() == t->chan
 	&& t->wpad->ir.valid
-	&& windowInfo.numEntries > FILE_PAGESIZE )
+	&& windowInfo.numEntries > FILE_PAGESIZE)
 	{
 		scrollbarBoxBtn->SetPosition(0,0);
 		positionWiimote = t->wpad->ir.y - 60 - scrollbarBoxBtn->GetTop();
@@ -331,10 +379,10 @@ void GuiChatWindow::Update(GuiTrigger * t)
 				++windowInfo.pageIndex;
 				listChanged = true;
 			}
-			else if(viewport[selectedItem+1]->IsVisible())
+			else if(viewportButton[selectedItem+1]->IsVisible())
 			{
-				viewport[selectedItem]->ResetState();
-				viewport[++selectedItem]->SetState(STATE_SELECTED, t->chan);
+				viewportButton[selectedItem]->ResetState();
+				viewportButton[++selectedItem]->SetState(STATE_SELECTED, t->chan);
 			}
 		}
 	}
@@ -348,8 +396,8 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		}
 		else if(selectedItem > 0)
 		{
-			viewport[selectedItem]->ResetState();
-			viewport[--selectedItem]->SetState(STATE_SELECTED, t->chan);
+			viewportButton[selectedItem]->ResetState();
+			viewportButton[--selectedItem]->SetState(STATE_SELECTED, t->chan);
 		}
 	}
 
@@ -361,41 +409,41 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		{
 			if(windowInfo.pageIndex+i < windowInfo.numEntries)
 			{
-				if(viewport[i]->GetState() == STATE_DISABLED)
+				if(viewportButton[i]->GetState() == STATE_DISABLED)
 				{
-					viewport[i]->SetState(STATE_DEFAULT);
+					viewportButton[i]->SetState(STATE_DEFAULT);
 				}
 
-				viewport[i]->SetVisible(true);
-				viewport[i]->SetText(scrollbackBuffer[windowInfo.pageIndex+i].value);
+				viewportButton[i]->SetVisible(true);
+				viewportText[i]->SetText(scrollbackBuffer[windowInfo.pageIndex+i].value);
 			}
 			else
 			{
-				viewport[i]->SetVisible(false);
-				viewport[i]->SetState(STATE_DISABLED);
+				viewportButton[i]->SetVisible(false);
+				viewportButton[i]->SetState(STATE_DISABLED);
 			}
 		}
 
-		if(i != selectedItem && viewport[i]->GetState() == STATE_SELECTED)
+		if(i != selectedItem && viewportButton[i]->GetState() == STATE_SELECTED)
 		{
-			viewport[i]->ResetState();
+			viewportButton[i]->ResetState();
 		}
-		else if(focus && i == selectedItem && viewport[i]->GetState() == STATE_DEFAULT)
+		else if(focus && i == selectedItem && viewportButton[i]->GetState() == STATE_DEFAULT)
 		{
-			viewport[selectedItem]->SetState(STATE_SELECTED, t->chan);
+			viewportButton[selectedItem]->SetState(STATE_SELECTED, t->chan);
 		}
 
 		int currChan = t->chan;
 
-		if(t->wpad->ir.valid && !viewport[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
+		if(t->wpad->ir.valid && !viewportButton[i]->IsInside(t->wpad->ir.x, t->wpad->ir.y))
 		{
 			t->chan = -1;
 		}
 
-		viewport[i]->Update(t);
+		viewportButton[i]->Update(t);
 		t->chan = currChan;
 
-		if(viewport[i]->GetState() == STATE_SELECTED)
+		if(viewportButton[i]->GetState() == STATE_SELECTED)
 		{
 			selectedItem = i;
 			windowInfo.selIndex = windowInfo.pageIndex + i;
@@ -441,6 +489,7 @@ void GuiChatWindow::Reset()
 	windowInfo.selIndex = 0;
 	windowInfo.pageIndex = 0;
 	windowInfo.size = 0;
+	dirty = false;
 }
 
 bool GuiChatWindow::WriteLn(const char *msg)
@@ -479,6 +528,11 @@ bool GuiChatWindow::WriteLn(const char *msg)
 		if(n == 0)
 		{
 			textDyn[linenum] = new wchar_t[textlen + 1];
+
+			if( textDyn[linenum] == NULL)
+			{
+				return false; // TODO:  Rename and reuse player list's OUT_OF_MEMORY
+			}
 		}
 
 		textDyn[linenum][n] = msgWide[ch];
@@ -518,15 +572,54 @@ bool GuiChatWindow::WriteLn(const char *msg)
 
 	for(uint i = 0; i < textDynNum; i++)
 	{
-		wcstombs(scrollbackBuffer[windowInfo.size].value, textDyn[i], 200 );  // 200 is safely larger than textDyn[i]'s length
+		wcstombs(scrollbackBuffer[windowInfo.size].value, textDyn[i], 200);  // 200 is safely larger than textDyn[i]'s length
 		windowInfo.size++;
 		windowInfo.numEntries++;
 	}
 
-	// Add a blank line between messages
-	strcpy(scrollbackBuffer[windowInfo.size].value, "");
-	windowInfo.size++;
-	windowInfo.numEntries++;
+	// A message was written to the window while it was hidden.  The dirty status can be examined by menu.cpp to visually alert the user.
+	// TODO:  Change the appearance of the Chat button in menu.cpp.
+	if(!IsVisible())
+	{
+		dirty = true;
+	}
+
+	//ResetState();
+	//viewportButton[FILE_PAGESIZE - 1]->SetState(STATE_SELECTED);
+	//TriggerUpdate();   // doesn't seem to do anything
+
+
+	/*windowInfo.pageIndex = 9;
+	selectedItem = 9;
+	listChanged = true;*/
+
+
+	/*
+	if(windowInfo.pageIndex + selectedItem + 1 < windowInfo.numEntries)
+	{
+		if(selectedItem == FILE_PAGESIZE-1)
+		{
+			// move list down by 1
+			++windowInfo.pageIndex;
+			listChanged = true;
+		}
+		else if(viewportButton[selectedItem+1]->IsVisible())
+		{
+			viewportButton[selectedItem]->ResetState();
+			viewportButton[++selectedItem]->SetState(STATE_SELECTED);
+		}
+	}
+	*/
 
 	return true;
+}
+
+void GuiChatWindow::SetVisible(bool vis)
+{
+	visible = vis;
+
+	if(vis)
+	{
+		dirty = false;
+	}
 }

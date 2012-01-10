@@ -1548,6 +1548,17 @@ static int MenuGameSelection()
 			gameBrowser->TriggerUpdate();
 		}
 
+		if(chatWindow != NULL && chatWindow->IsVisible() && chatWindow->GetState() == STATE_CLICKED)
+		{
+			chatWindow->ResetState();
+
+			char buf[MAX_CHAT_MSG_LEN + 1];
+			buf[0] = '\0';
+
+			OnScreenKeyboard(buf, MAX_CHAT_MSG_LEN);
+			chatWindow->WriteLn(buf);
+		}
+
 		// update gameWindow based on arrow buttons
 		// set MENU_EXIT if A button pressed on a game
 		if(gameBrowser->IsVisible())

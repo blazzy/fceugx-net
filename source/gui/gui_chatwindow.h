@@ -8,10 +8,10 @@
 
 struct WindowInfo
 {
-	int numEntries;  // # of entries in window
-	int selIndex;    // currently selected index
-	int pageIndex;   // starting index of page display
-	int size;        // # of entries browerList has space allocated to store
+	int  numEntries;  // # of entries in window
+	int  selIndex;    // currently selected index
+	int  pageIndex;   // starting index of page display
+	int  size;        // # of entries browerList has space allocated to store
 };
 
 struct Message
@@ -24,14 +24,19 @@ class GuiChatWindow : public GuiElement
 	public:
 		GuiChatWindow(int w, int h);
 		~GuiChatWindow();
+		int  GetState();
 		void ResetState();
 		void SetFocus(int f);
 		void Draw();
 		void DrawTooltip();
 		void TriggerUpdate();
-		void Update(GuiTrigger * t);
+		void Update(GuiTrigger *t);
 		void Reset();
 		bool WriteLn(const char *msg);
+		void SetVisible(bool vis);
+
+		GuiImage *fileListBg[FILE_PAGESIZE];
+		GuiImageData *bgFileSelectionEntry;
 	private:
 		GuiButton *arrowUpBtn;
 		GuiButton *arrowDownBtn;
@@ -67,8 +72,12 @@ class GuiChatWindow : public GuiElement
 		bool listChanged;
 
 		WindowInfo windowInfo;
-		GuiText *viewport[FILE_PAGESIZE];
 		Message scrollbackBuffer[CHAT_SCROLLBACK_SIZE];
+		GuiText *viewportText[FILE_PAGESIZE];
+		GuiButton *viewportButton[FILE_PAGESIZE];
+
+		// TODO:  Instead of having this, could we check listChanged plus visibility?
+		bool dirty;
 };
 
 #endif
