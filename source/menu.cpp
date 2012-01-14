@@ -1135,7 +1135,25 @@ static void newNetplayWindows()
 	}
 
 	chatWindow->SetPosition(50, 98);
+	chatWindow->Reset();
 	chatWindow->SetVisible(false);
+
+	chatWindow->WriteLn("[Player1] What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
+	chatWindow->WriteLn("[Player3] Arise, fair sun, and kill the envious FCEUX,");
+	chatWindow->WriteLn("[Player1] Who is already sick and pale with grief,");
+	chatWindow->WriteLn("[Player1] That thou her netplay art far more fair than she:");
+	chatWindow->WriteLn("[Player4] Be not her netplay, since she is envious");
+	chatWindow->WriteLn("[Player4] Okay, you know what?  I have no idea what the hell I'm saying.");
+	chatWindow->WriteLn("[Player2] Sing a song of sixpence");
+	chatWindow->WriteLn("[Player1] A pocket full of rye");
+	chatWindow->WriteLn("[Player3] Four and twenty blackbirds");
+	chatWindow->WriteLn("[Player4] Baked in a pie");
+	chatWindow->WriteLn("[Player1] When the pie was opened,");
+	chatWindow->WriteLn("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
+	chatWindow->WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
+	mainWindow->ChangeFocus(chatWindow);
+	//chatWindow->SetSelectedItem(0);
+	//chatWindow->TriggerUpdate();
 
 	playerList->SetUpdateCallback(playerListEventHandler);
 	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);

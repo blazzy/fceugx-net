@@ -8,10 +8,10 @@
 
 struct WindowInfo
 {
-	int  numEntries;  // # of entries in window
+	int  numEntries;  // # of entries in viewport
 	int  selIndex;    // currently selected index
-	int  pageIndex;   // starting index of page display
-	int  size;        // # of entries browerList has space allocated to store
+	int  pageIndex;   // starting index of page display (scrollbackBuffer[x] currently displayed in viewport[0])
+	int  size;        // # of messages in scrollbackBuffer
 };
 
 struct Message

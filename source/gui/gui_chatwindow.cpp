@@ -120,21 +120,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		viewportButton[i]->SetTrigger(trigA);
 		viewportButton[i]->SetTrigger(trig2);
 	}
-
-	Reset();
-	WriteLn("[Player1] What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
-	WriteLn("[Player3] Arise, fair sun, and kill the envious FCEUX,");
-	WriteLn("[Player1] Who is already sick and pale with grief,");
-	WriteLn("[Player1] That thou her netplay art far more fair than she:");
-	WriteLn("[Player4] Be not her netplay, since she is envious");
-	WriteLn("[Player4] Okay, you know what?  I have no idea what the hell I'm saying.");
-	WriteLn("[Player2] Sing a song of sixpence");
-	WriteLn("[Player1] A pocket full of rye");
-	WriteLn("[Player3] Four and twenty blackbirds");
-	WriteLn("[Player4] Baked in a pie");
-	WriteLn("[Player1] When the pie was opened,");
-	WriteLn("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
-	WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
 }
 
 /**
