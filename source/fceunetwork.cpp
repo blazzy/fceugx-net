@@ -34,7 +34,8 @@
 
 extern GuiPlayerList *playerList;
 
-static int Socket = -1;
+static int client_socket = -1;
+static int server_socket = -1;
 
 static int poll_one(int socket, int timeout, int event);
 
@@ -145,13 +146,13 @@ int FCEUD_NetworkConnect() {
 	FCEU_DispMessage("Connection established.", 0);
 	FCEUI_NetplayStart(local_players, recvbuf[0]);
 
-	Socket = tcp_socket;
+	client_socket = tcp_socket;
 
 	return 1;
 }
 
 int FCEUD_SendData(void *data, uint32 len) {
-	net_send(Socket, data, len , 0);
+	net_send(client_socket, data, len , 0);
 	return 1;
 }
 
@@ -166,14 +167,14 @@ static int poll_one(int socket, int timeout, int event) {
 
 int FCEUD_RecvData(void *data, uint32 len) {
 	skipgfx = 0;
-	if (1 != poll_one(Socket, RECV_TIMEOUT, POLLIN)) {
+	if (1 != poll_one(client_socket, RECV_TIMEOUT, POLLIN)) {
 		return 0;
 	}
 
-	int size = net_recv(Socket, data, len, 0);
+	int size = net_recv(client_socket, data, len, 0);
 
 	if (size == int(len)) {
-		if (poll_one(Socket, 0, POLLIN)) {
+		if (poll_one(client_socket, 0, POLLIN)) {
 			skipgfx = 1;
 		}
 		return 1;
@@ -206,10 +207,10 @@ void FCEUGX_NetplayToggleReady() {
 
 
 void FCEUD_NetworkClose(void) {
-	if (Socket != -1) {
-		net_close(Socket);
+	if (client_socket != -1) {
+		net_close(client_socket);
 	}
-	Socket = -1;
+	client_socket = -1;
 
 	FCEUI_NetplayStop();
 	gx_controller = -1;
@@ -300,10 +301,112 @@ uint64 FCEUD_ServerGetTicks() {
 
 
 int FCEUD_ServerStart(const ServerConfig &config) {
-	return 0;
+	server_socket = net_socket(AF_INET, SOCK_STREAM, 0);
+
+	int sockopt = 1;
+	//Allow socket address to be reused in case it wasn't cleaned up correctly
+	if (net_setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(int)))
+		fprintf(stderr, "SO_REUSEADDR failed: %s\n", strerror(errno));
+
+	//Disable nagle algorithm
+	if (net_setsockopt(server_socket, IPPROTO_TCP, TCP_NODELAY, &sockopt, sizeof(int)))
+		fprintf(stderr, "TCP_NODELAY failed: %s\n", strerror(errno));
+
+	//The socket should not block
+	int flags = net_fcntl(server_socket, F_GETFL, 0);
+	net_fcntl(server_socket, F_SETFL, flags | O_NONBLOCK);
+
+	sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family      = AF_INET;
+	addr.sin_addr.s_addr = INADDR_ANY;
+	addr.sin_port        = htons(config.port);
+
+	fprintf(stderr, "Binding to port %d...\n", config.port);
+
+	if (net_bind(server_socket, (struct sockaddr *)&addr, sizeof(addr))) {
+		fprintf(stderr, "bind failed: %s\n", strerror(errno));
+		return 0;
+	}
+
+	fprintf(stderr, "Listening on socket...\n");
+
+	if (net_listen(server_socket, 4)) {
+		fprintf(stderr, "listen failed: %s\n", strerror(errno));
+		return 0;
+	}
+
+	return 1;
 }
 
 
+struct Socket: FCEUD_ServerSocket {
+	int socket;
+
+	Socket(): socket(-1) {}
+	Socket(int socket_): socket(socket_) {}
+
+	int send(const uint8 *buffer, int length) {
+		int sent = net_send(socket, buffer, length, 0);
+		if (sent == length || errno == EAGAIN || errno == EWOULDBLOCK) {
+			return sent;
+		}
+
+		fprintf(stderr, "send failed: %s (%i)\n", strerror(errno), errno);
+		close();
+		return -1;
+	}
+
+	int recv(uint8 *buffer, int expected_length) {
+		int length = net_recv(socket, buffer, expected_length, 0);
+
+		if (length == 0 && expected_length) {
+			close();
+			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			return -1;
+		}
+
+		if (length == -1) {
+			if (errno == EAGAIN && errno == EWOULDBLOCK) {
+				return 0;
+			}
+
+			close();
+			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			return -1;
+		}
+
+		return length;
+	}
+
+	bool connected() {
+		return socket != -1;
+	}
+
+	void close() {
+		if (socket != -1) {
+			net_close(socket);
+			socket  = -1;
+		}
+	}
+};
+
+
 FCEUD_ServerSocket* FCEUD_ServerNewConnections() {
-	return 0;
+	sockaddr_in addr;
+	socklen_t len = sizeof(addr);
+
+	int client_socket = net_accept(server_socket, (struct sockaddr *)&addr, &len);
+	if (client_socket == -1) {
+		if (errno != EAGAIN && errno != EWOULDBLOCK)
+			fprintf(stderr, "accept failed: %s\n", strerror(errno));
+		return 0;
+	}
+
+	int flags = net_fcntl(client_socket, F_GETFL, 0);
+	net_fcntl(client_socket, F_SETFL, flags | O_NONBLOCK);
+
+	fprintf(stderr, "Connection from %s\n", inet_ntoa(addr.sin_addr));
+
+	return new Socket(client_socket);
 }

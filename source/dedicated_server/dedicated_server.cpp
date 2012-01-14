@@ -102,7 +102,7 @@ struct Socket: FCEUD_ServerSocket {
 	}
 
 	bool connected() {
-		socket != -1;
+		return socket != -1;
 	}
 
 	void close() {
