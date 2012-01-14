@@ -317,7 +317,7 @@ void NetplayUpdate(uint8 *joyp)
 					uint8 buf[1];
 					if(!FCEUD_RecvData(buf, 1) || buf[0] > 3)
 					{
-						NetError("Connection lost. Drop controller error %i %i", buf[0], buf[1]);
+						NetError("Connection lost. Drop controller error %i", buf[0]);
 						return;
 					}
 					NetplayControllers[buf[0]] = 0;
@@ -325,7 +325,7 @@ void NetplayUpdate(uint8 *joyp)
 				}
 				break;
 
-			case FCEUNPCMD_CLIENTDISCONNECT: 
+			case FCEUNPCMD_CLIENTDISCONNECT:
 				{
 					uint8 buf[1];
 					if(!FCEUD_RecvData(buf, 1) || buf[0] > 3)

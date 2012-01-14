@@ -9,7 +9,7 @@ default: wii server
 
 all: wii gc server
 
-clean: wii-clean gc-clean server
+clean: wii-clean gc-clean server-clean
 
 wii:
 	@echo $@

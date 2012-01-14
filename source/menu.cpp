@@ -1798,6 +1798,7 @@ static int MenuGameSelection()
 			disconnectBtn->ResetState();
 
 			executionMode = OFFLINE;
+			HaltNetplay();
 			FCEUD_NetworkClose();
 
 			hideNetplayGuiComponents();

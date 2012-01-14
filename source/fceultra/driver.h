@@ -337,6 +337,28 @@ bool FCEUD_PauseAfterPlayback();
 ///called when fceu changes something in the video system you might be interested in
 void FCEUD_VideoChanged();
 
+struct ServerConfig;
+//Initialize the server. Return 0 on failure.
+int FCEUD_ServerStart(const ServerConfig &config);
+
+//Return a microsecond tick count
+uint64 FCEUD_ServerGetTicks();
+
+struct FCEUD_ServerSocket
+{
+	//Returns number of bytes sent or -1 on error
+	virtual int send(const uint8 *buffer, int length) = 0;
+	//Returns number of bytes received or -1 on error
+	virtual int recv(uint8 *buffer, int length) = 0;
+
+	virtual bool connected() = 0;
+	virtual void close() = 0;
+};
+
+//Check for a new client connection. Return 0 if there are none.
+FCEUD_ServerSocket *FCEUD_ServerNewConnections();
+
+
 enum EFCEUI
 {
 	FCEUI_STOPAVI, FCEUI_QUICKSAVE, FCEUI_QUICKLOAD, FCEUI_SAVESTATE, FCEUI_LOADSTATE,
