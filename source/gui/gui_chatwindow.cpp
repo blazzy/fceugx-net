@@ -254,12 +254,42 @@ void GuiChatWindow::DrawTooltip()
 {
 }
 
+extern GuiButton *readyBtn;
+
+void writeReadyBtn(char *c)
+{
+	if(readyBtn != NULL)
+	{
+		readyBtn->SetLabel(new GuiText(c, 15, GXColor{0,0,0,255}));
+	}
+}
+
+int i = 1,
+		j = 1;
+
 void GuiChatWindow::Update(GuiTrigger * t)
 {
+	char c[30];
+	sprintf(c, "chan %d", t->chan);
+	writeReadyBtn(c);
+
+	/*
+	if(i != -1)
+	{
+		char c[20];
+		sprintf(c, "READY %d", i++);
+		writeReadyBtn(c);
+	}
+
 	if(state == STATE_DISABLED || !t)
 	{
+		char c[20];
+		sprintf(c, "return %d", j++);
+		writeReadyBtn(c);
+		i = -1;
+
 		return;
-	}
+	}*/
 
 	int position = 0;
 	int positionWiimote = 0;
@@ -272,7 +302,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	//}
 
 	// move the file listing to respond to wiimote cursor movement
-	if( (dirty || (scrollbarBoxBtn->GetState() == STATE_HELD
+	if( (listChanged || (scrollbarBoxBtn->GetState() == STATE_HELD
 		&& scrollbarBoxBtn->GetStateChan() == t->chan
 		&& t->wpad->ir.valid))
 	&& windowInfo.numEntries > FILE_PAGESIZE)
@@ -280,7 +310,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		scrollbarBoxBtn->SetPosition(0,0);
 		positionWiimote = t->wpad->ir.y - 60 - scrollbarBoxBtn->GetTop();
 
-		if(dirty)
+		if(listChanged)
 		{
 			// If WriteLn() was called - either by the local user or because of an incoming message,
 			// we trick Update() into thinking that the user has scrolled to the botton of the window.
@@ -312,6 +342,8 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	if(arrowDownBtn->GetState() == STATE_HELD && arrowDownBtn->GetStateChan() == t->chan)
 	{
+		//writeReadyBtn("down");
+
 		t->wpad->btns_d |= WPAD_BUTTON_DOWN;
 
 		if(!this->IsFocused())
@@ -321,6 +353,8 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	}
 	else if(arrowUpBtn->GetState() == STATE_HELD && arrowUpBtn->GetStateChan() == t->chan)
 	{
+		//writeReadyBtn("up");
+
 		t->wpad->btns_d |= WPAD_BUTTON_UP;
 
 		if(!this->IsFocused())
@@ -332,10 +366,13 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	// pad/joystick navigation
 	if(!focus)
 	{
+		//writeReadyBtn("notFocus");
 		// goto?!
 		goto endNavigation; // skip navigation
 		listChanged = false;
 	}
+
+	//writeReadyBtn("here1");
 
 	if(t->Right())
 	{
@@ -579,7 +616,11 @@ bool GuiChatWindow::WriteLn(const char *msg)
 	{
 		wcstombs(scrollbackBuffer[windowInfo.size].value, textDyn[i], 200);  // 200 is safely larger than textDyn[i]'s length
 		windowInfo.size++;
-		windowInfo.numEntries++;
+
+		//if(windowInfo.numEntries < FILE_PAGESIZE)
+		{
+			windowInfo.numEntries++;
+		}
 	}
 
 	//if(!IsVisible())
@@ -626,7 +667,14 @@ bool GuiChatWindow::WriteLn(const char *msg)
 	}
 	*/
 
-	dirty = true;
+	//dirty = true;		// hmm, isn't this what listChanged is for?
+
+	//TriggerUpdate();
+
+	/*arrowUpBtn->SetClickable(true);
+	arrowDownBtn->SetClickable(true);
+	arrowUpBtn->SetTrigger(trigHeldA);
+	arrowDownBtn->SetTrigger(trigHeldA);*/
 
 	return true;
 }

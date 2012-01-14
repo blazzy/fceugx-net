@@ -19,7 +19,7 @@ struct Message
 	char value[MAX_CHAT_MSG_LEN + 1];
 };
 
-class GuiChatWindow : public GuiElement
+class GuiChatWindow : public GuiWindow
 {
 	public:
 		GuiChatWindow(int w, int h);
@@ -74,7 +74,7 @@ class GuiChatWindow : public GuiElement
 		WindowInfo windowInfo;
 		Message scrollbackBuffer[CHAT_SCROLLBACK_SIZE];
 		GuiText *viewportText[FILE_PAGESIZE];
-		GuiButton *viewportButton[FILE_PAGESIZE];
+	public: GuiButton *viewportButton[FILE_PAGESIZE];
 
 		bool dirty;
 };

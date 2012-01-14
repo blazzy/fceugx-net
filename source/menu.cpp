@@ -1183,6 +1183,7 @@ static void showNetplayGuiComponents()
 		if(chatWindow != NULL)
 		{
 			mainWindow->Append(chatWindow);
+			//mainWindow->ChangeFocus(chatWindow);
 		}
 	}
 
@@ -1541,6 +1542,11 @@ static int MenuGameSelection()
 	{
 		gameBrowser->SetVisible(false);
 		gameBrowser->SetState(STATE_DISABLED);
+
+		/*chatWindow->ResetState();
+		chatWindow->viewportButton[0]->SetState(STATE_SELECTED);
+		chatWindow->TriggerUpdate();
+		mainWindow->ChangeFocus(chatWindow);*/
 	}
 
 	ResumeGui();
@@ -1583,6 +1589,7 @@ static int MenuGameSelection()
 			}
 
 			mainWindow->ChangeFocus(chatWindow);
+			//chatWindow->TriggerUpdate();
 		}
 
 		// update gameWindow based on arrow buttons
