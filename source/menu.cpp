@@ -1153,7 +1153,7 @@ static void newNetplayWindows()
 	chatWindow->WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
 	mainWindow->ChangeFocus(chatWindow);
 	//chatWindow->SetSelectedItem(0);
-	//chatWindow->TriggerUpdate();
+	chatWindow->TriggerUpdate();
 
 	playerList->SetUpdateCallback(playerListEventHandler);
 	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -1589,7 +1589,7 @@ static int MenuGameSelection()
 			}
 
 			mainWindow->ChangeFocus(chatWindow);
-			//chatWindow->TriggerUpdate();
+			chatWindow->TriggerUpdate();
 		}
 
 		// update gameWindow based on arrow buttons
