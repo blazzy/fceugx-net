@@ -316,7 +316,13 @@ decodePrefsData ()
 			// Network Settings
 
 			loadXMLSetting(GCSettings.netplayIp, "netplayIp", sizeof(GCSettings.netplayIp));
+
 			loadXMLSetting(GCSettings.netplayPort, "netplayPort", sizeof(GCSettings.netplayPort));
+			if(strcmp(GCSettings.netplayPort, "") == 0)
+			{
+				strcpy(GCSettings.netplayPort, "4046");
+			}
+
 			loadXMLSetting(GCSettings.netplayPwd, "netplayPwd", sizeof(GCSettings.netplayPwd));
 			loadXMLSetting(GCSettings.netplayNameX, "netplayNameX", sizeof(GCSettings.netplayNameX));
 			loadXMLSetting(GCSettings.netplayNameY, "netplayNameY", sizeof(GCSettings.netplayNameY));

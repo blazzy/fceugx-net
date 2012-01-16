@@ -1670,8 +1670,7 @@ static int MenuGameSelection()
 		{
 			hostBtn->ResetState();
 
-			if(GCSettings.netplayPort == NULL || GCSettings.netplayNameX == NULL
-			  || strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayNameX) == 0)
+			if(strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayNameX) == 0)
 			{
 				ErrorPrompt("To host, you must specify the following:  Port, Player Name (first slot)");
 			}
@@ -4589,7 +4588,12 @@ static int MenuSettingsNetwork()
 				break;
 
 			case 1:
-				OnScreenKeyboard(GCSettings.netplayPort, SIZE_NETPLAY_PORT - 1);
+				char port[SIZE_NETPLAY_PORT];
+				port[0] = '\0';
+
+				OnScreenKeyboard(port, SIZE_NETPLAY_PORT - 1);
+				strcpy(GCSettings.netplayPort, strlen(port) > 0 ? port : "4046");
+
 				break;
 
 			case 2:
