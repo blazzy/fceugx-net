@@ -29,6 +29,7 @@
 #include "menu.h"
 #include "fileop.h"
 #include "pad.h"
+#include "preferences.h"
 
 struct SGCSettings GCSettings;
 
@@ -320,7 +321,7 @@ decodePrefsData ()
 			loadXMLSetting(GCSettings.netplayPort, "netplayPort", sizeof(GCSettings.netplayPort));
 			if(strcmp(GCSettings.netplayPort, "") == 0)
 			{
-				strcpy(GCSettings.netplayPort, "4046");
+				strcpy(GCSettings.netplayPort, DEFAULT_NETPLAY_PORT);
 			}
 
 			loadXMLSetting(GCSettings.netplayPwd, "netplayPwd", sizeof(GCSettings.netplayPwd));
@@ -460,6 +461,8 @@ DefaultSettings ()
 	sprintf (GCSettings.CheatFolder, "%s/cheats", APPFOLDER); // Path to cheat files
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
+
+	strcpy(GCSettings.netplayPort, DEFAULT_NETPLAY_PORT);
 }
 
 /****************************************************************************

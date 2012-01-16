@@ -9,6 +9,8 @@
  * Preferences save/load preferences utilities
  ****************************************************************************/
 
+#define DEFAULT_NETPLAY_PORT   "4046"
+
 void FixInvalidSettings();
 void DefaultSettings();
 bool SavePrefs (bool silent);
