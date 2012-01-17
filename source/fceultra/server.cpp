@@ -471,10 +471,10 @@ struct Server {
 } server;
 
 
-void ServerStart(const ServerConfig &config) {
+int ServerStart(const ServerConfig &config) {
 	server.config = config;
 	server.set_frame_delay(config.frame_divisor);
-	FCEUD_ServerStart(config);
+	return FCEUD_ServerStart(config);
 }
 
 

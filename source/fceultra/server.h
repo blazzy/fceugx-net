@@ -32,6 +32,6 @@ struct ServerConfig {
 
 void ServerUpdate();
 
-void ServerStart(const ServerConfig &config);
+int ServerStart(const ServerConfig &config);
 
 #endif
