@@ -314,7 +314,7 @@ int FCEUD_ServerStart(const ServerConfig &config) {
 
 	//The socket should not block
 	int flags = net_fcntl(server_socket, F_GETFL, 0);
-	net_fcntl(server_socket, F_SETFL, flags | O_NONBLOCK);
+	net_fcntl(server_socket, F_SETFL, flags | IOS_O_NONBLOCK);
 
 	sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
@@ -404,7 +404,7 @@ FCEUD_ServerSocket* FCEUD_ServerNewConnections() {
 	}
 
 	int flags = net_fcntl(client_socket, F_GETFL, 0);
-	net_fcntl(client_socket, F_SETFL, flags | O_NONBLOCK);
+	net_fcntl(client_socket, F_SETFL, flags | IOS_O_NONBLOCK);
 
 	fprintf(stderr, "Connection from %s\n", inet_ntoa(addr.sin_addr));
 
