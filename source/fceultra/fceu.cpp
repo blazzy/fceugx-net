@@ -52,6 +52,9 @@
 
 #ifdef WIN32
 #include "drivers/win/pref.h"
+
+#include "drivers/win/taseditor/greenzone.h"
+extern GREENZONE greenzone;
 #endif
 
 #include <fstream>
@@ -327,29 +330,14 @@ uint8 *RAM;
 
 static void AllocBuffers()
 {
-
-#ifdef _USE_SHARED_MEMORY_
-
-	void win_AllocBuffers(uint8 **GameMemBlock, uint8 **RAM);
-	win_AllocBuffers(&GameMemBlock, &RAM);
-
-#else
-
 	GameMemBlock = (uint8*)FCEU_gmalloc(GAME_MEM_BLOCK_SIZE);
 	RAM = (uint8*)FCEU_gmalloc(0x800);
-
-#endif
 }
 
 static void FreeBuffers()
 {
-#ifdef _USE_SHARED_MEMORY_
-	void win_FreeBuffers(uint8 *GameMemBlock, uint8 *RAM);
-	win_FreeBuffers(GameMemBlock, RAM);
-#else
 	FCEU_free(GameMemBlock);
 	FCEU_free(RAM);
-#endif
 }
 //------
 
@@ -423,17 +411,13 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode)
 
 	const char* romextensions[] = {"nes","fds",0};
 	fp=FCEU_fopen(name,0,"rb",0,-1,romextensions);
-	if(!fp)
-	{
-		return 0;
-	}
-
-	GetFileBase(fp->filename.c_str());
 
 	if(!fp) {
 		FCEU_PrintError("Error opening \"%s\"!",name);
 		return 0;
 	}
+
+	GetFileBase(fp->filename.c_str());
 	//---------
 
 	//file opened ok. start loading.
@@ -724,8 +708,6 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 
 	}
 
-	currMovieData.TryDumpIncremental();
-
 	if (lagFlag)
 	{
 		lagCounter++;
@@ -735,6 +717,11 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 
 	if (movieSubtitles)
 		ProcessSubtitles();
+
+#ifdef WIN32
+	if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
+		greenzone.TryDumpIncremental(lagFlag != 0);
+#endif
 }
 
 void FCEUI_CloseGame(void)
@@ -826,6 +813,10 @@ void PowerNES(void)
 	// clear back baffer
 	extern uint8 *XBackBuf;
 	memset(XBackBuf,0,256*256);
+
+#ifdef WIN32
+	Update_RAM_Search(); // Update_RAM_Watch() is also called.
+#endif
 }
 
 void FCEU_ResetVidSys(void)
@@ -992,7 +983,7 @@ void UpdateAutosave(void)
 
 void FCEUI_Autosave(void)
 {
-	if(!EnableAutosave || !AutoSS || FCEUMOV_Mode(MOVIEMODE_TASEDIT))
+	if(!EnableAutosave || !AutoSS || FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 		return;
 
 	if(AutosaveStatus[AutosaveIndex] == 1)
@@ -1028,7 +1019,7 @@ bool FCEU_IsValidUI(EFCEUI ui)
 	{
 	case FCEUI_OPENGAME:
 	case FCEUI_CLOSEGAME:
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDIT)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 	case FCEUI_RECORDMOVIE:
 	case FCEUI_PLAYMOVIE:
@@ -1040,7 +1031,7 @@ bool FCEU_IsValidUI(EFCEUI ui)
 	case FCEUI_PREVIOUSSAVESTATE:
 	case FCEUI_VIEWSLOTS:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDIT)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 
 	case FCEUI_STOPMOVIE:
@@ -1050,13 +1041,14 @@ bool FCEU_IsValidUI(EFCEUI ui)
 	case FCEUI_STOPAVI:
 		return FCEUI_AviIsRecording();
 
-	case FCEUI_TASEDIT:
+	case FCEUI_TASEDITOR:
 		if(!GameInfo) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 
 	case FCEUI_RESET:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_FINISHED|MOVIEMODE_TASEDIT|MOVIEMODE_PLAY)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_FINISHED|MOVIEMODE_TASEDITOR|MOVIEMODE_PLAY)) return false;
 		break;
 
 	case FCEUI_POWER:

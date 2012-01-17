@@ -25,7 +25,7 @@
 #include "fceultra/netplay.h"
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.2.6"
+#define APPVERSION		"3.2.7"
 #define APPFOLDER 		"fceugx"
 #define PREF_FILE_NAME	"settings.xml"
 

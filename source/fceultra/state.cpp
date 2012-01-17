@@ -375,9 +375,9 @@ bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel)
 	{
 		totalsize+=WriteStateChunk(os,6,FCEUMOV_STATEINFO);
 
-		//MBG tasedit HACK HACK HACK!
-		//do not save the movie state if we are in tasedit! that is a huge waste of time and space!
-		if(!FCEUMOV_Mode(MOVIEMODE_TASEDIT))
+		//MBG TAS Editor HACK HACK HACK!
+		//do not save the movie state if we are in Taseditor! That would be a huge waste of time and space!
+		if(!FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 		{
 			os->fseek(5,SEEK_CUR);
 			int size = FCEUMOV_WriteState(os);
@@ -617,18 +617,17 @@ int FCEUSS_LoadFP_old(EMUFILE* is, ENUM_SSLOADPARAMS params)
 
 bool FCEUSS_LoadFP(EMUFILE* is, ENUM_SSLOADPARAMS params)
 {
+	if(!is) return false;
+
 	//maybe make a backup savestate
-	EMUFILE_MEMORY msBackupSavestate;
 	bool backup = (params == SSLOADPARAM_BACKUP);
-
-	if(!is)
-		return false;
-
+	EMUFILE_MEMORY msBackupSavestate;
 	if(backup)
+	{
 		FCEUSS_SaveMS(&msBackupSavestate,Z_NO_COMPRESSION);
+	}
 
 	uint8 header[16];
-
 	//read and analyze the header
 	is->fread((char*)&header,16);
 	if(memcmp(header,"FCSX",4)) {
@@ -725,7 +724,8 @@ bool FCEUSS_Load(const char *fname)
 
 	if(st == NULL || (st->get_fp() == NULL))
 	{
-		FCEU_DispMessage("State %d load error. Filename: %s",0,CurrentState, fn);
+		FCEU_DispMessage("State %d load error.",0,CurrentState);
+		//FCEU_DispMessage("State %d load error. Filename: %s",0,CurrentState, fn);
 		SaveStateStatus[CurrentState]=0;
 		return false;
 	}
@@ -739,11 +739,13 @@ bool FCEUSS_Load(const char *fname)
 		{
 			char szFilename[260]={0};
 			splitpath(fname, 0, 0, szFilename, 0);
-			FCEU_DispMessage("State %s loaded. Filename: %s",0,szFilename, fn);
+			FCEU_DispMessage("State %s loaded.",0,szFilename);
+			//FCEU_DispMessage("State %s loaded. Filename: %s",0,szFilename, fn);
 		}
 		else
 		{
-			FCEU_DispMessage("State %d loaded. Filename: %s",0,CurrentState, fn);
+			FCEU_DispMessage("State %d loaded.",0,CurrentState);
+			//FCEU_DispMessage("State %d loaded. Filename: %s",0,CurrentState, fn);
 			SaveStateStatus[CurrentState]=1;
 		}
 		delete st;
@@ -786,7 +788,8 @@ bool FCEUSS_Load(const char *fname)
 		{
 			SaveStateStatus[CurrentState]=1;
 		}
-		FCEU_DispMessage("Error(s) reading state %d! Filename: %s",0,CurrentState, fn);
+		FCEU_DispMessage("Error(s) reading state %d!",0,CurrentState);
+		//FCEU_DispMessage("Error(s) reading state %d! Filename: %s",0,CurrentState, fn);
 		delete st;
 		return 0;
 	}
@@ -833,7 +836,7 @@ void AddExState(void *v, uint32 s, int type, char *desc)
 {
 	if(desc)
 	{
-		SFMDATA[SFEXINDEX].desc=(char *)FCEU_malloc(5);
+		SFMDATA[SFEXINDEX].desc=(char *)FCEU_malloc(strlen(desc)+1);
 		strcpy(SFMDATA[SFEXINDEX].desc,desc);
 	}
 	else
@@ -1026,7 +1029,7 @@ void SwapSaveState()
 		redoSS = true;
 
 	FCEUI_DispMessage("%s restored",0,backup.c_str());
-	FCEUI_printf("%s restored\n",0,backup.c_str());
+	FCEUI_printf("%s restored\n",backup.c_str());
 }	
 	
 //------------------------------------------------------------------------------------------------------------------------------------------------------

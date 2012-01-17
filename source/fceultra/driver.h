@@ -221,7 +221,7 @@ void FCEUI_CheatSearchSetCurrentAsOriginal(void);
 #define FCEUIOD_MOVIES  6	//.fm2 files
 #define FCEUIOD_MEMW    7	//memory watch fiels
 #define FCEUIOD_BBOT    8	//basicbot, obsolete
-#define FCEUIOD_MACRO   9	//macro files - tasedit, currently not implemented
+#define FCEUIOD_MACRO   9	//macro files - old TASEdit v0.1 paradigm, not implemented, probably obsolete
 #define FCEUIOD_INPUT   10	//input presets
 #define FCEUIOD_LUA     11	//lua scripts
 #define FCEUIOD_AVI		12	//default file for avi output
@@ -284,6 +284,8 @@ void FCEUI_AviEnd(void);
 void FCEUI_AviVideoUpdate(const unsigned char* buffer);
 void FCEUI_AviSoundUpdate(void* soundData, int soundLen);
 bool FCEUI_AviIsRecording();
+bool FCEUI_AviEnableHUDrecording();
+void FCEUI_SetAviEnableHUDrecording(bool enable);
 bool FCEUI_AviDisableMovieMessages();
 void FCEUI_SetAviDisableMovieMessages(bool disable);
 
@@ -365,7 +367,7 @@ enum EFCEUI
 	FCEUI_NEXTSAVESTATE,FCEUI_PREVIOUSSAVESTATE,FCEUI_VIEWSLOTS,
 	FCEUI_STOPMOVIE, FCEUI_RECORDMOVIE, FCEUI_PLAYMOVIE,
 	FCEUI_OPENGAME, FCEUI_CLOSEGAME,
-	FCEUI_TASEDIT,
+	FCEUI_TASEDITOR,
 	FCEUI_RESET, FCEUI_POWER,FCEUI_PLAYFROMBEGINNING
 };
 
