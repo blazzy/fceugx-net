@@ -424,7 +424,10 @@ char *GuiPlayerList::GetPlayerName(uint idx)
 {
 	if(idx < MAX_PLAYER_LIST_SIZE)
 	{
-		return rowText[idx]->ToString();
+		if(rowText[idx] != NULL)
+		{
+			return rowText[idx]->ToString();
+		}
 	}
 
 	return NULL;
