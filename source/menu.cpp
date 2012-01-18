@@ -1655,8 +1655,7 @@ static int MenuGameSelection()
 
 			playerList->ResetState();
 		}
-
-		if(settingsBtn.GetState() == STATE_CLICKED)
+		else if(settingsBtn.GetState() == STATE_CLICKED)
 		{
 			// Leaving the main screen when marked ready has the effect of marking you not ready
 
