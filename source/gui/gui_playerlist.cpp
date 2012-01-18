@@ -97,6 +97,12 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	Append(imgMainWindow);
 	Append(titleTxt);
 	Append(txtAllPlayersReady);
+
+	// Attempt to make the window itself, not just the buttons, clickable.  Doesn't seem to give a damn.
+	imgMainWindow->SetSelectable(true);
+	imgMainWindow->SetClickable(true);
+	imgMainWindow->SetTrigger(trigA);
+	imgMainWindow->SetTrigger(trig2);
 }
 
 GuiPlayerList::~GuiPlayerList()
@@ -148,6 +154,45 @@ GuiPlayerList::~GuiPlayerList()
 
 	delete colorNotReady;
 	delete colorReady;
+}
+
+int GuiPlayerList::GetState()
+{
+	// Please hold the particle physics jokes.
+
+	if(imgMainWindow->GetState() == STATE_CLICKED)    // Haven't managed to make this clickable yet, but maybe one day
+	{
+		state = STATE_CLICKED;
+	}
+	else
+	{
+		for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
+		{
+			if(rowButton[i] != NULL && rowButton[i]->GetState() == STATE_CLICKED)
+			{
+				state = STATE_CLICKED;
+			}
+		}
+	}
+
+	return state;
+}
+
+void GuiPlayerList::ResetState()
+{
+	if(state != STATE_DISABLED)
+	{
+		state = STATE_DEFAULT;
+		stateChan = -1;
+	}
+
+	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
+	{
+		if(rowButton[i] != NULL)
+		{
+			rowButton[i]->ResetState();
+		}
+	}
 }
 
 void GuiPlayerList::SetFocus(int f)
@@ -331,8 +376,6 @@ int GuiPlayerList::AddPlayer(Player player)
 
 void GuiPlayerList::Clear()
 {
-	//HaltGui();  // Yeah, well, that's not gonna make this thread-safe.
-
 	for(int i = 0; i <= currIdx; i++)
 	{
 		if(rowButton[i] != NULL)
@@ -359,8 +402,32 @@ void GuiPlayerList::Clear()
 
 	currIdx = -1;
 	listChanged = true;
+}
 
-	//ResumeGui();
+int GuiPlayerList::GetClickedIdx()
+{
+	int idx = -1;
+
+	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
+	{
+		if(rowButton[i] != NULL && rowButton[i]->GetState() == STATE_CLICKED)
+		{
+			idx = i;
+			break;
+		}
+	}
+
+	return idx;
+}
+
+char *GuiPlayerList::GetPlayerName(uint idx)
+{
+	if(idx < MAX_PLAYER_LIST_SIZE)
+	{
+		return rowText[idx]->ToString();
+	}
+
+	return NULL;
 }
 
 int GuiPlayerList::GetPlayerNumber(char *playerName)

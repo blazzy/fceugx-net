@@ -147,15 +147,6 @@ static void playerListEventHandler(void *ptr)
 
 	GuiPlayerList *list = (GuiPlayerList*)(ptr);
 
-	/*if(list->rowButton[0] != NULL)
-	{
-		if(list->rowButton[0]->GetState() == STATE_CLICKED)
-		{
-			//InfoPrompt("clicked 0");   // GUI will lock up
-			list->rowButton[0]->ResetState();
-		}
-	}*/
-
 	// Assign cursors to ready players in the order they appear in the player list
 
 	int idx = list->GetPlayerNumber(GCSettings.netplayNameX);
@@ -1644,6 +1635,25 @@ static int MenuGameSelection()
 					}
 				}
 			}
+		}
+
+		if(playerList != NULL && playerList->GetState() == STATE_CLICKED)
+		{
+			const int idx = playerList->GetClickedIdx();
+			char *name = playerList->GetPlayerName(idx);
+
+			if(name != NULL)
+			{
+				InfoPrompt(name);
+				free(name);
+			}
+			else
+			{
+				// Apparently unable to make this happen
+				InfoPrompt("List clicked, but it wasn't a name");
+			}
+
+			playerList->ResetState();
 		}
 
 		if(settingsBtn.GetState() == STATE_CLICKED)

@@ -39,14 +39,18 @@ class GuiPlayerList : public GuiWindow
 	public:
 		GuiPlayerList(int w, int h);
 		~GuiPlayerList();
+		int  GetState();
+		void ResetState();
 		void SetFocus(int f);
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);
 
-		uint8  GetPlayerCount();
-		int BuildPlayerList(const char *playerInfo);
-		int AddPlayer(Player player);
+		uint8 GetPlayerCount();
+		int  BuildPlayerList(const char *playerInfo);
+		int  AddPlayer(Player player);
 		void Clear();
+		int  GetClickedIdx();
+		char *GetPlayerName(uint idx);    // Returns a copy of the player name - you must free() this when you're done with it.
 		int  GetPlayerNumber(char *playerName);
 		bool IsPlayerReady(int playerNum);
 		bool IsPlayerReady(char *playerName);
