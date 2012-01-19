@@ -192,6 +192,20 @@ int GuiChatWindow::GetState()
 	return state;
 }
 
+void GuiChatWindow::SetState(int s, int c)
+{
+	state = s;
+	stateChan = c;
+
+	for(int i = 0; i < FILE_PAGESIZE; i++)
+	{
+		if(viewportButton[i] != NULL)
+		{
+			viewportButton[i]->SetState(STATE_DISABLED);
+		}
+	}
+}
+
 void GuiChatWindow::ResetState()
 {
 	state = STATE_DEFAULT;
@@ -200,7 +214,10 @@ void GuiChatWindow::ResetState()
 
 	for(int i = 0; i < FILE_PAGESIZE; i++)
 	{
-		viewportButton[i]->ResetState();
+		if(viewportButton[i] != NULL)
+		{
+			viewportButton[i]->ResetState();
+		}
 	}
 }
 

@@ -1823,6 +1823,8 @@ static int MenuGameSelection()
 				usleep(THREAD_SLEEP);
 			}
 
+			chatWindow->ResetState();
+
 			gameBrowser->SetVisible(false);
 			gameBrowser->SetState(STATE_DISABLED);
 
@@ -1853,6 +1855,8 @@ static int MenuGameSelection()
 			}
 
 			gameBrowser->ResetState();
+
+			chatWindow->SetState(STATE_DISABLED);
 			chatWindow->SetVisible(false);
 
 			titleTxt.SetText(txtChooseGame);

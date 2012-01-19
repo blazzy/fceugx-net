@@ -19,12 +19,13 @@ struct Message
 	char value[MAX_CHAT_MSG_LEN + 1];
 };
 
-class GuiChatWindow : public GuiWindow
+class GuiChatWindow : public GuiElement
 {
 	public:
 		GuiChatWindow(int w, int h);
 		~GuiChatWindow();
 		int  GetState();
+		void SetState(int s, int c = -1);
 		void ResetState();
 		void SetFocus(int f);
 		void Draw();
