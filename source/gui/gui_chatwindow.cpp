@@ -43,30 +43,32 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 
 	bgFileSelection = new GuiImageData(bg_game_selection_png);
 	bgFileSelectionImg = new GuiImage(bgFileSelection);
-	bgFileSelectionImg->SetParent(this);
 	bgFileSelectionImg->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 
 	scrollbar = new GuiImageData(scrollbar_png);
 	scrollbarImg = new GuiImage(scrollbar);
-	scrollbarImg->SetParent(this);
 	scrollbarImg->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 	scrollbarImg->SetPosition(0, 30);
 
 	arrowDown = new GuiImageData(scrollbar_arrowdown_png);
 	arrowDownImg = new GuiImage(arrowDown);
+
 	arrowDownOver = new GuiImageData(scrollbar_arrowdown_over_png);
 	arrowDownOverImg = new GuiImage(arrowDownOver);
+
 	arrowUp = new GuiImageData(scrollbar_arrowup_png);
 	arrowUpImg = new GuiImage(arrowUp);
+
 	arrowUpOver = new GuiImageData(scrollbar_arrowup_over_png);
 	arrowUpOverImg = new GuiImage(arrowUpOver);
+
 	scrollbarBox = new GuiImageData(scrollbar_box_png);
 	scrollbarBoxImg = new GuiImage(scrollbarBox);
+
 	scrollbarBoxOver = new GuiImageData(scrollbar_box_over_png);
 	scrollbarBoxOverImg = new GuiImage(scrollbarBoxOver);
 
 	arrowUpBtn = new GuiButton(arrowUpImg->GetWidth(), arrowUpImg->GetHeight());
-	arrowUpBtn->SetParent(this);
 	arrowUpBtn->SetImage(arrowUpImg);
 	arrowUpBtn->SetImageOver(arrowUpOverImg);
 	arrowUpBtn->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -78,7 +80,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	arrowUpBtn->SetSoundClick(btnSoundClick);
 
 	arrowDownBtn = new GuiButton(arrowDownImg->GetWidth(), arrowDownImg->GetHeight());
-	arrowDownBtn->SetParent(this);
 	arrowDownBtn->SetImage(arrowDownImg);
 	arrowDownBtn->SetImageOver(arrowDownOverImg);
 	arrowDownBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
@@ -90,7 +91,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	arrowDownBtn->SetSoundClick(btnSoundClick);
 
 	scrollbarBoxBtn = new GuiButton(scrollbarBoxImg->GetWidth(), scrollbarBoxImg->GetHeight());
-	scrollbarBoxBtn->SetParent(this);
 	scrollbarBoxBtn->SetImage(scrollbarBoxImg);
 	scrollbarBoxBtn->SetImageOver(scrollbarBoxOverImg);
 	scrollbarBoxBtn->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -102,7 +102,8 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	scrollbarBoxBtn->SetTrigger(trigHeldA);
 
 	bgFileSelectionEntry = new GuiImageData(bg_game_selection_entry_png);
-	for(int i=0; i<FILE_PAGESIZE; ++i)
+
+	for(int i = 0; i < FILE_PAGESIZE; ++i)
 	{
 		fileListBg[i] = new GuiImage(bgFileSelectionEntry);
 
@@ -113,13 +114,26 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 		viewportText[i]->SetMaxWidth(380);
 
 		viewportButton[i] = new GuiButton(380, 26);
-		viewportButton[i]->SetParent(this);
 		viewportButton[i]->SetLabel(viewportText[i]);
 		viewportButton[i]->SetImageOver(fileListBg[i]);
 		viewportButton[i]->SetPosition(2, 26 * i + 3);
 		viewportButton[i]->SetTrigger(trigA);
 		viewportButton[i]->SetTrigger(trig2);
 	}
+
+	// Add elements to the window in the proper z-indexing order
+
+	Append(bgFileSelectionImg);
+
+	for(int i = 0; i < FILE_PAGESIZE; i++)
+	{
+		Append(viewportButton[i]);
+	}
+
+	Append(scrollbarImg);
+	Append(arrowUpBtn);
+	Append(arrowDownBtn);
+	Append(scrollbarBoxBtn);
 }
 
 /**
@@ -209,7 +223,7 @@ void GuiChatWindow::SetState(int s, int c)
 void GuiChatWindow::ResetState()
 {
 	state = STATE_DEFAULT;
-	stateChan = -1;
+	//stateChan = -1;
 	selectedItem = FILE_PAGESIZE - 1;
 
 	for(int i = 0; i < FILE_PAGESIZE; i++)
@@ -219,15 +233,25 @@ void GuiChatWindow::ResetState()
 			viewportButton[i]->ResetState();
 		}
 	}
+
+	if(arrowUpBtn != NULL)
+	{
+		arrowUpBtn->ResetState();
+	}
+
+	if(arrowDownBtn != NULL)
+	{
+		arrowDownBtn->ResetState();
+	}
 }
 
 void GuiChatWindow::TriggerUpdate()
 {
 	int newIndex = windowInfo.selIndex - windowInfo.pageIndex;
 
-	/*char c[30];
-	sprintf(c, "%d", newIndex);
-	InfoPrompt(c);*/
+	char c[30];
+	sprintf(c, "newIndex before: %d", newIndex);
+	//InfoPrompt(c);
 
 	if(newIndex >= FILE_PAGESIZE)
 	{
@@ -238,33 +262,11 @@ void GuiChatWindow::TriggerUpdate()
 		newIndex = 0;
 	}
 
-	selectedItem = newIndex;
+	sprintf(c, "newIndex after: %d", newIndex);
+	//InfoPrompt(c);
+
+	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	listChanged = true;
-}
-
-/**
- * Draw the button on screen
- */
-void GuiChatWindow::Draw()
-{
-	if(!this->IsVisible())
-	{
-		return;
-	}
-
-	bgFileSelectionImg->Draw();
-
-	for(u32 i = 0; i < FILE_PAGESIZE; ++i)
-	{
-		viewportButton[i]->Draw();
-	}
-
-	scrollbarImg->Draw();
-	arrowUpBtn->Draw();
-	arrowDownBtn->Draw();
-	scrollbarBoxBtn->Draw();
-
-	this->UpdateEffects();
 }
 
 void GuiChatWindow::DrawTooltip()
@@ -640,6 +642,11 @@ bool GuiChatWindow::WriteLn(const char *msg)
 		}
 	}
 
+	//int viewportIdx = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
+	//viewportButton[viewportIdx]->SetState(STATE_SELECTED);
+	TriggerUpdate();
+
+
 	//if(!IsVisible())
 	{
 
@@ -685,8 +692,6 @@ bool GuiChatWindow::WriteLn(const char *msg)
 	*/
 
 	//dirty = true;		// hmm, isn't this what listChanged is for?
-
-	//TriggerUpdate();
 
 	/*arrowUpBtn->SetClickable(true);
 	arrowDownBtn->SetClickable(true);

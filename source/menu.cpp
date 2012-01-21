@@ -1138,9 +1138,9 @@ static void newNetplayWindows()
 	chatWindow->WriteLn("[Player1] When the pie was opened,");
 	chatWindow->WriteLn("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
 	chatWindow->WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
-	mainWindow->ChangeFocus(chatWindow);
+	//mainWindow->ChangeFocus(chatWindow);
 	//chatWindow->SetSelectedItem(0);
-	chatWindow->TriggerUpdate();
+	//chatWindow->TriggerUpdate();
 
 	playerList->SetUpdateCallback(playerListEventHandler);
 	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -1561,22 +1561,28 @@ static int MenuGameSelection()
 			gameBrowser->TriggerUpdate();
 		}
 
-		if(chatWindow != NULL && chatWindow->IsVisible() && chatWindow->GetState() == STATE_CLICKED)
+		if(chatWindow != NULL && chatWindow->IsVisible())
 		{
-			chatWindow->ResetState();
-
-			char buf[MAX_CHAT_MSG_LEN + 1];
-			buf[0] = '\0';
-
-			OnScreenKeyboard(buf, MAX_CHAT_MSG_LEN);
-
-			if(strlen(buf))
+			if(chatWindow->GetState() == STATE_CLICKED)
 			{
-				chatWindow->WriteLn(buf);
-			}
+				chatWindow->ResetState();
 
-			mainWindow->ChangeFocus(chatWindow);
-			chatWindow->TriggerUpdate();
+				char buf[MAX_CHAT_MSG_LEN + 1];
+				buf[0] = '\0';
+
+				OnScreenKeyboard(buf, MAX_CHAT_MSG_LEN);
+
+				chatWindow->ResetState();
+
+				if(strlen(buf))
+				{
+					chatWindow->WriteLn(buf);
+					//chatWindow->viewportButton[9]->SetState(STATE_SELECTED);
+					//chatWindow->TriggerUpdate();
+				}
+				
+				mainWindow->ChangeFocus(chatWindow);
+			}
 		}
 
 		// update gameWindow based on arrow buttons
@@ -1642,6 +1648,8 @@ static int MenuGameSelection()
 			const int idx = playerList->GetClickedIdx();
 			char *name = playerList->GetPlayerName(idx);
 
+			playerList->ResetState();
+
 			if(name != NULL)
 			{
 				InfoPrompt(name);
@@ -1652,8 +1660,6 @@ static int MenuGameSelection()
 				// Apparently unable to make this happen
 				InfoPrompt("List clicked, but it wasn't a name");
 			}
-
-			playerList->ResetState();
 		}
 		else if(settingsBtn.GetState() == STATE_CLICKED)
 		{
@@ -1713,7 +1719,7 @@ static int MenuGameSelection()
 
 				// This fakes a response coming from the server.  The string will come from a method that receives
 				// the data over a socket.  That method will make the call to BuildPlayerList().
-				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :2|pippin              :3|1234567890ABCDEFGHIJ:4");
+				int listStatus = playerList->BuildPlayerList("gandalf             :1|merry               :2|pippin              :3|1234567890ABCDEFGHIJ:4");
 
 				switch(listStatus)
 				{
