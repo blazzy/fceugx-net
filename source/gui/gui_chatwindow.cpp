@@ -482,8 +482,6 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	{
 		updateCB(this);
 	}
-
-	dirty = false;
 }
 
 void GuiChatWindow::Reset()
@@ -492,7 +490,6 @@ void GuiChatWindow::Reset()
 	windowInfo.selIndex = 0;
 	windowInfo.pageIndex = 0;
 	windowInfo.size = 0;
-	dirty = false;
 }
 
 bool GuiChatWindow::WriteLn(const char *msg)
@@ -637,22 +634,10 @@ bool GuiChatWindow::WriteLn(const char *msg)
 	}
 	*/
 
-	//dirty = true;		// hmm, isn't this what listChanged is for?
-
 	/*arrowUpBtn->SetClickable(true);
 	arrowDownBtn->SetClickable(true);
 	arrowUpBtn->SetTrigger(trigHeldA);
 	arrowDownBtn->SetTrigger(trigHeldA);*/
 
 	return true;
-}
-
-void GuiChatWindow::SetVisible(bool vis)
-{
-	visible = vis;
-
-	if(vis)
-	{
-		dirty = false;
-	}
 }

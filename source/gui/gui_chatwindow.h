@@ -30,7 +30,6 @@ class GuiChatWindow : public GuiWindow
 		void Update(GuiTrigger *t);
 		void Reset();
 		bool WriteLn(const char *msg);
-		void SetVisible(bool vis);
 
 		GuiImage *fileListBg[FILE_PAGESIZE];
 		GuiImageData *bgFileSelectionEntry;
@@ -72,8 +71,6 @@ class GuiChatWindow : public GuiWindow
 		Message scrollbackBuffer[CHAT_SCROLLBACK_SIZE];
 		GuiText *viewportText[FILE_PAGESIZE];
 	public: GuiButton *viewportButton[FILE_PAGESIZE];
-
-		bool dirty;
 };
 
 #endif
