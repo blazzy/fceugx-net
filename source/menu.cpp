@@ -1819,6 +1819,8 @@ static int MenuGameSelection()
 			chatBtn->ResetState();
 			disableButton(chatBtn);
 			enableButton(romsBtn);
+
+			chatWindow->ResetState();
 			chatWindow->SetVisible(true);
 
 			gameBrowser->SetEffect(EFFECT_SLIDE_LEFT | EFFECT_SLIDE_OUT, 45);
@@ -1828,8 +1830,6 @@ static int MenuGameSelection()
 			{
 				usleep(THREAD_SLEEP);
 			}
-
-			chatWindow->ResetState();
 
 			gameBrowser->SetVisible(false);
 			gameBrowser->SetState(STATE_DISABLED);
