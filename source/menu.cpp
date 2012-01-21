@@ -1219,7 +1219,7 @@ static void hideNetplayGuiComponents()
 	enableButton(hostBtn);
 	enableButton(joinBtn);
 
-	if(gameBrowser != NULL && chatWindow != NULL && readyBtn != NULL && chatBtn != NULL && romsBtn != NULL && chatWindow != NULL && playerList != NULL)
+	if(gameBrowser != NULL && chatWindow != NULL && readyBtn != NULL && chatBtn != NULL && romsBtn != NULL && playerList != NULL)
 	{
 		// Netplay's going away; set up ROM browser for single-player use
 		if(!gameBrowser->IsVisible())
@@ -1521,9 +1521,7 @@ static int MenuGameSelection()
 	btnLogo->SetPosition(-50, 24);
 	mainWindow->Append(&titleTxt);
 	mainWindow->Append(gameBrowser);
-	mainWindow->Append(chatWindow);
 	mainWindow->Append(&buttonWindow);
-	mainWindow->Append(playerList);
 
 	if(chatWindow != NULL && chatWindow->IsVisible())
 	{
@@ -1878,8 +1876,6 @@ static int MenuGameSelection()
 	mainWindow->Remove(&titleTxt);
 	mainWindow->Remove(&buttonWindow);
 	mainWindow->Remove(gameBrowser);
-	mainWindow->Remove(chatWindow);
-	mainWindow->Remove(playerList);
 
 	delete gameBrowser;
 	gameBrowser = NULL;
