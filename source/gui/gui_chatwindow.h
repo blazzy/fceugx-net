@@ -25,9 +25,6 @@ class GuiChatWindow : public GuiWindow
 		GuiChatWindow(int w, int h);
 		~GuiChatWindow();
 		int  GetState();
-		void SetState(int s, int c = -1);
-		void ResetState();
-		void SetFocus(int f);
 		void DrawTooltip();
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);

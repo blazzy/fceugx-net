@@ -177,21 +177,6 @@ GuiChatWindow::~GuiChatWindow()
 	}
 }
 
-void GuiChatWindow::SetFocus(int f)
-{
-	focus = f;
-
-	for(int i = 0; i < FILE_PAGESIZE; i++)
-	{
-		viewportButton[i]->ResetState();
-	}
-
-	if(f == 1)
-	{
-		viewportButton[selectedItem]->SetState(STATE_SELECTED);
-	}
-}
-
 int GuiChatWindow::GetState()
 {
 	for(int i = 0; i < FILE_PAGESIZE; i++)
@@ -204,45 +189,6 @@ int GuiChatWindow::GetState()
 	}
 
 	return state;
-}
-
-void GuiChatWindow::SetState(int s, int c)
-{
-	state = s;
-	stateChan = c;
-
-	for(int i = 0; i < FILE_PAGESIZE; i++)
-	{
-		if(viewportButton[i] != NULL)
-		{
-			viewportButton[i]->SetState(STATE_DISABLED);
-		}
-	}
-}
-
-void GuiChatWindow::ResetState()
-{
-	state = STATE_DEFAULT;
-	//stateChan = -1;
-	selectedItem = FILE_PAGESIZE - 1;
-
-	for(int i = 0; i < FILE_PAGESIZE; i++)
-	{
-		if(viewportButton[i] != NULL)
-		{
-			viewportButton[i]->ResetState();
-		}
-	}
-
-	if(arrowUpBtn != NULL)
-	{
-		arrowUpBtn->ResetState();
-	}
-
-	if(arrowDownBtn != NULL)
-	{
-		arrowDownBtn->ResetState();
-	}
 }
 
 void GuiChatWindow::TriggerUpdate()
