@@ -533,7 +533,7 @@ bool GuiChatWindow::WriteLn(const char *msg)
 		{
 			textDyn[linenum] = new wchar_t[textlen + 1];
 
-			if( textDyn[linenum] == NULL)
+			if(textDyn[linenum] == NULL)
 			{
 				return false; // TODO:  Rename and reuse player list's OUT_OF_MEMORY
 			}
