@@ -211,7 +211,7 @@ void GuiChatWindow::TriggerUpdate()
 	sprintf(c, "newIndex after: %d", newIndex);
 	//InfoPrompt(c);
 
-	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
+//	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	listChanged = true;
 }
 
@@ -491,7 +491,19 @@ void GuiChatWindow::Reset()
 	windowInfo.pageIndex = 0;
 	windowInfo.size = 0;
 }
+/*
+void GuiChatWindow::ResetState()
+{
+	state = STATE_DEFAULT;
 
+	u32 elemSize = _elements.size();
+	for (u32 i = 0; i < elemSize; ++i)
+	{
+		try { _elements.at(i)->ResetState(); }
+		catch (const std::exception& e) { }
+	}
+}
+*/
 bool GuiChatWindow::WriteLn(const char *msg)
 {
 	/*char c[30];
@@ -587,6 +599,7 @@ bool GuiChatWindow::WriteLn(const char *msg)
 
 	//int viewportIdx = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	//viewportButton[viewportIdx]->SetState(STATE_SELECTED);
+	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	TriggerUpdate();
 
 

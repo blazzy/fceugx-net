@@ -1543,25 +1543,88 @@ static int MenuGameSelection()
 	#endif
 
 	// populate initial directory listing
-	selectLoadedFile = 1;
-	OpenGameList();
+	if(gameBrowser->IsVisible())
+	{
+		selectLoadedFile = 1;
+		OpenGameList();
 
-	gameBrowser->ResetState();
-	gameBrowser->fileList[0]->SetState(STATE_SELECTED);
-	gameBrowser->TriggerUpdate();
+		gameBrowser->ResetState();
+		gameBrowser->fileList[0]->SetState(STATE_SELECTED);
+		gameBrowser->TriggerUpdate();
+	}
 
 	while(menu == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
-		if(selectLoadedFile == 2)
+		if(gameBrowser->IsVisible())
 		{
-			selectLoadedFile = 0;
-			mainWindow->ChangeFocus(gameBrowser);
-			gameBrowser->TriggerUpdate();
-		}
+			if(selectLoadedFile == 2)
+			{
+				selectLoadedFile = 0;
+				mainWindow->ChangeFocus(gameBrowser);
+				gameBrowser->TriggerUpdate();
+			}
 
-		if(chatWindow != NULL && chatWindow->IsVisible())
+			// update gameWindow based on arrow buttons
+			// set MENU_EXIT if A button pressed on a game
+			if(gameBrowser->IsVisible())
+			{
+				for(i=0; i < FILE_PAGESIZE; i++)
+				{
+					if(gameBrowser->fileList[i]->GetState() == STATE_CLICKED)
+					{
+						gameBrowser->fileList[i]->ResetState();
+
+						if( (executionMode == OFFLINE)
+						||  (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
+						||  (executionMode != OFFLINE && browserList[browser.selIndex].isdir) )
+						{
+							// check corresponding browser entry
+							if(browserList[browser.selIndex].isdir || IsSz())
+							{
+								if(IsSz())
+									res = BrowserLoadSz();
+								else
+									res = BrowserChangeFolder();
+
+								if(res)
+								{
+									gameBrowser->ResetState();
+									gameBrowser->fileList[0]->SetState(STATE_SELECTED);
+									gameBrowser->TriggerUpdate();
+								}
+								else
+								{
+									menu = MENU_GAMESELECTION;
+									break;
+								}
+							}
+							else
+							{
+								#ifdef HW_RVL
+								ShutoffRumble();
+								#endif
+								mainWindow->SetState(STATE_DISABLED);
+								if(BrowserLoadFile())
+									menu = MENU_EXIT;
+								//else
+									mainWindow->SetState(STATE_DEFAULT);
+							}
+						}
+						else if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
+						{
+							InfoPrompt("Everyone must click in as READY before launching a game");
+						}
+						else if(executionMode == NETPLAY_CLIENT)
+						{
+							InfoPrompt("Only the host can start games");
+						}
+					}
+				}
+			}
+		}
+		else if(chatWindow != NULL && chatWindow->IsVisible())
 		{
 			if(chatWindow->GetState() == STATE_CLICKED)
 			{
@@ -1580,67 +1643,11 @@ static int MenuGameSelection()
 					//chatWindow->viewportButton[9]->SetState(STATE_SELECTED);
 					//chatWindow->TriggerUpdate();
 				}
-				
-				mainWindow->ChangeFocus(chatWindow);
 			}
-		}
 
-		// update gameWindow based on arrow buttons
-		// set MENU_EXIT if A button pressed on a game
-		if(gameBrowser->IsVisible())
-		{
-			for(i=0; i < FILE_PAGESIZE; i++)
-			{
-				if(gameBrowser->fileList[i]->GetState() == STATE_CLICKED)
-				{
-					gameBrowser->fileList[i]->ResetState();
-
-					if( (executionMode == OFFLINE)
-					||  (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
-					||  (executionMode != OFFLINE && browserList[browser.selIndex].isdir) )
-					{
-						// check corresponding browser entry
-						if(browserList[browser.selIndex].isdir || IsSz())
-						{
-							if(IsSz())
-								res = BrowserLoadSz();
-							else
-								res = BrowserChangeFolder();
-
-							if(res)
-							{
-								gameBrowser->ResetState();
-								gameBrowser->fileList[0]->SetState(STATE_SELECTED);
-								gameBrowser->TriggerUpdate();
-							}
-							else
-							{
-								menu = MENU_GAMESELECTION;
-								break;
-							}
-						}
-						else
-						{
-							#ifdef HW_RVL
-							ShutoffRumble();
-							#endif
-							mainWindow->SetState(STATE_DISABLED);
-							if(BrowserLoadFile())
-								menu = MENU_EXIT;
-							//else
-								mainWindow->SetState(STATE_DEFAULT);
-						}
-					}
-					else if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
-					{
-						InfoPrompt("Everyone must click in as READY before launching a game");
-					}
-					else if(executionMode == NETPLAY_CLIENT)
-					{
-						InfoPrompt("Only the host can start games");
-					}
-				}
-			}
+			mainWindow->ChangeFocus(chatWindow);
+			//chatWindow->viewportButton[9]->SetState(STATE_SELECTED);
+			//chatWindow->TriggerUpdate();
 		}
 
 		if(playerList != NULL && playerList->GetState() == STATE_CLICKED)

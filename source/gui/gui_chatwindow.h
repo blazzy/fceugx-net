@@ -29,6 +29,7 @@ class GuiChatWindow : public GuiWindow
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);
 		void Reset();
+//		void ResetState();
 		bool WriteLn(const char *msg);
 
 		GuiImage *fileListBg[FILE_PAGESIZE];
