@@ -92,7 +92,6 @@ struct Client {
 			return 1;
 		}
 
-		fprintf(stderr, "send failed: %s (%i)\n", strerror(errno), errno);
 		disconnect();
 		return 0;
 	}
