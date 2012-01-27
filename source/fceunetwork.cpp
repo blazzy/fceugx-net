@@ -308,9 +308,10 @@ int FCEUD_ServerStart(const ServerConfig &config) {
 	if (net_setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(int)))
 		fprintf(stderr, "SO_REUSEADDR failed: %s\n", strerror(errno));
 
+	//This doesn't work. Is it even relevant on the wii?
 	//Disable nagle algorithm
-	if (net_setsockopt(server_socket, IPPROTO_TCP, TCP_NODELAY, &sockopt, sizeof(int)))
-		fprintf(stderr, "TCP_NODELAY failed: %s\n", strerror(errno));
+	//if (net_setsockopt(server_socket, IPPROTO_TCP, TCP_NODELAY, &sockopt, sizeof(int)))
+	//	printError("TCP_NODELAY failed: %s\n", strerror(errno));
 
 	//The socket should not block
 	int flags = net_fcntl(server_socket, F_GETFL, 0);
