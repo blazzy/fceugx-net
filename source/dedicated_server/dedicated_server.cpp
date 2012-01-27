@@ -70,7 +70,7 @@ struct Socket: FCEUD_ServerSocket {
 
 	int send(const uint8 *buffer, int length) {
 		int sent = ::send(socket, buffer, length, MSG_NOSIGNAL);
-		if (sent == length) {
+		if (sent != -1) {
 			return sent;
 		}
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -92,7 +92,7 @@ struct Socket: FCEUD_ServerSocket {
 		}
 
 		if (length == -1) {
-			if (errno == EAGAIN && errno == EWOULDBLOCK) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				return 0;
 			}
 
