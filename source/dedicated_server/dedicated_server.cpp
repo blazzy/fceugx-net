@@ -228,6 +228,13 @@ FCEUD_ServerSocket* FCEUD_ServerNewConnections() {
 	return new Socket(client_socket);
 }
 
+void FCEUD_ServerLog(const char *error, ...) {
+	va_list arg;
+	va_start(arg, error);
+		vfprintf(stderr, error, arg);
+	va_end(arg);
+}
+
 
 int main(int argc, char *argv[]) {
 	ServerConfig config;

@@ -411,3 +411,24 @@ FCEUD_ServerSocket* FCEUD_ServerNewConnections() {
 
 	return new Socket(client_socket);
 }
+
+extern GuiChatWindow * chatWindow;
+
+void FCEUD_ServerLog(const char *error, ...) {
+	if (chatWindow) {
+		va_list arg;
+
+		va_start(arg, error);
+			int length = vsnprintf(0, 0, error, arg);
+			char *str = new char[length + 1];
+		va_end(arg);
+
+		va_start(arg, error);
+			vsprintf(str, error, arg);
+		va_end(arg);
+
+		chatWindow->WriteLn(str);
+
+		delete [] str;
+	}
+}
