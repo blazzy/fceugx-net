@@ -357,6 +357,8 @@ struct FCEUD_ServerSocket
 
 	virtual bool connected() = 0;
 	virtual void close() = 0;
+
+	virtual char *error() = 0;
 };
 
 //Check for a new client connection. Return 0 if there are none.

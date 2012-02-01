@@ -64,8 +64,12 @@ uint64 FCEUD_ServerGetTicks() {
 
 struct Socket: FCEUD_ServerSocket {
 	int socket;
+	const static int error_max = 100;
+	char error_text[error_max];
 
-	Socket(): socket(-1) {}
+	Socket(): socket(-1) {
+	  error_text[0] = 0;
+	}
 	Socket(int socket_): socket(socket_) {}
 
 	int send(const uint8 *buffer, int length) {
@@ -113,6 +117,10 @@ struct Socket: FCEUD_ServerSocket {
 			::close(socket);
 			socket  = -1;
 		}
+	}
+
+	char * error() {
+		return error_text;
 	}
 };
 
