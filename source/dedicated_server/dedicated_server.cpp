@@ -81,7 +81,7 @@ struct Socket: FCEUD_ServerSocket {
 			return 0;
 		}
 
-		fprintf(stderr, "send failed: %s (%i)\n", strerror(errno), errno);
+		snprintf(error_text, error_max, "send: %s (%i)\n", strerror(errno), errno);
 		close();
 		return -1;
 	}
@@ -91,7 +91,7 @@ struct Socket: FCEUD_ServerSocket {
 
 		if (length == 0 && expected_length) {
 			close();
-			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			snprintf(error_text, error_max, "connection closed");
 			return -1;
 		}
 
@@ -101,7 +101,7 @@ struct Socket: FCEUD_ServerSocket {
 			}
 
 			close();
-			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			snprintf(error_text, error_max, strerror(errno));
 			return -1;
 		}
 
