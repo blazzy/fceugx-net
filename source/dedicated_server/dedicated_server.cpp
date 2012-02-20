@@ -64,17 +64,24 @@ uint64 FCEUD_ServerGetTicks() {
 
 struct Socket: FCEUD_ServerSocket {
 	int socket;
+	const static int error_max = 100;
+	char error_text[error_max];
 
-	Socket(): socket(-1) {}
+	Socket(): socket(-1) {
+	  error_text[0] = 0;
+	}
 	Socket(int socket_): socket(socket_) {}
 
 	int send(const uint8 *buffer, int length) {
 		int sent = ::send(socket, buffer, length, MSG_NOSIGNAL);
-		if (sent == length || errno == EAGAIN || errno == EWOULDBLOCK) {
+		if (sent != -1) {
 			return sent;
 		}
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			return 0;
+		}
 
-		fprintf(stderr, "send failed: %s (%i)\n", strerror(errno), errno);
+		snprintf(error_text, error_max, "send: %s (%i)\n", strerror(errno), errno);
 		close();
 		return -1;
 	}
@@ -84,17 +91,17 @@ struct Socket: FCEUD_ServerSocket {
 
 		if (length == 0 && expected_length) {
 			close();
-			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			snprintf(error_text, error_max, "connection closed");
 			return -1;
 		}
 
 		if (length == -1) {
-			if (errno == EAGAIN && errno == EWOULDBLOCK) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				return 0;
 			}
 
 			close();
-			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			snprintf(error_text, error_max, strerror(errno));
 			return -1;
 		}
 
@@ -110,6 +117,10 @@ struct Socket: FCEUD_ServerSocket {
 			::close(socket);
 			socket  = -1;
 		}
+	}
+
+	char * error() {
+		return error_text;
 	}
 };
 
@@ -223,6 +234,13 @@ FCEUD_ServerSocket* FCEUD_ServerNewConnections() {
 	fprintf(stderr, "Connection from %s\n", inet_ntoa(addr.sin_addr));
 
 	return new Socket(client_socket);
+}
+
+void FCEUD_ServerLog(const char *error, ...) {
+	va_list arg;
+	va_start(arg, error);
+		vfprintf(stderr, error, arg);
+	va_end(arg);
 }
 
 

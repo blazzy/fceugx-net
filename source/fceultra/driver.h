@@ -346,6 +346,8 @@ int FCEUD_ServerStart(const ServerConfig &config);
 //Return a microsecond tick count
 uint64 FCEUD_ServerGetTicks();
 
+void FCEUD_ServerLog(const char *error, ...);
+
 struct FCEUD_ServerSocket
 {
 	//Returns number of bytes sent or -1 on error
@@ -355,6 +357,8 @@ struct FCEUD_ServerSocket
 
 	virtual bool connected() = 0;
 	virtual void close() = 0;
+
+	virtual char *error() = 0;
 };
 
 //Check for a new client connection. Return 0 if there are none.

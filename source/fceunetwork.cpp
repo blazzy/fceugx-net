@@ -306,11 +306,12 @@ int FCEUD_ServerStart(const ServerConfig &config) {
 	int sockopt = 1;
 	//Allow socket address to be reused in case it wasn't cleaned up correctly
 	if (net_setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof(int)))
-		fprintf(stderr, "SO_REUSEADDR failed: %s\n", strerror(errno));
+		FCEUD_ServerLog("SO_REUSEADDR failed: %s\n", strerror(errno));
 
+	//This doesn't work. Is it even relevant on the wii?
 	//Disable nagle algorithm
-	if (net_setsockopt(server_socket, IPPROTO_TCP, TCP_NODELAY, &sockopt, sizeof(int)))
-		fprintf(stderr, "TCP_NODELAY failed: %s\n", strerror(errno));
+	//if (net_setsockopt(server_socket, IPPROTO_TCP, TCP_NODELAY, &sockopt, sizeof(int)))
+	//	FCEUD_ServerLog("TCP_NODELAY failed: %s\n", strerror(errno));
 
 	//The socket should not block
 	int flags = net_fcntl(server_socket, F_GETFL, 0);
@@ -322,17 +323,17 @@ int FCEUD_ServerStart(const ServerConfig &config) {
 	addr.sin_addr.s_addr = INADDR_ANY;
 	addr.sin_port        = htons(config.port);
 
-	fprintf(stderr, "Binding to port %d...\n", config.port);
+	FCEUD_ServerLog("Binding to port %d...\n", config.port);
 
 	if (net_bind(server_socket, (struct sockaddr *)&addr, sizeof(addr))) {
-		fprintf(stderr, "bind failed: %s\n", strerror(errno));
+		FCEUD_ServerLog("bind failed: %s\n", strerror(errno));
 		return 0;
 	}
 
-	fprintf(stderr, "Listening on socket...\n");
+	FCEUD_ServerLog("Listening on socket...\n");
 
 	if (net_listen(server_socket, 4)) {
-		fprintf(stderr, "listen failed: %s\n", strerror(errno));
+		FCEUD_ServerLog("listen failed: %s\n", strerror(errno));
 		return 0;
 	}
 
@@ -342,17 +343,24 @@ int FCEUD_ServerStart(const ServerConfig &config) {
 
 struct Socket: FCEUD_ServerSocket {
 	int socket;
+	const static int error_max = 100;
+	char error_text[error_max];
 
-	Socket(): socket(-1) {}
+	Socket(): socket(-1) {
+	  error_text[0] = 0;
+	}
 	Socket(int socket_): socket(socket_) {}
 
 	int send(const uint8 *buffer, int length) {
 		int sent = net_send(socket, buffer, length, 0);
-		if (sent == length || errno == EAGAIN || errno == EWOULDBLOCK) {
+		if (sent > -1) {
 			return sent;
 		}
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			return 0;
+		}
 
-		fprintf(stderr, "send failed: %s (%i)\n", strerror(errno), errno);
+		snprintf(error_text, error_max, "send: %s (%i)\n", strerror(errno), errno);
 		close();
 		return -1;
 	}
@@ -362,17 +370,17 @@ struct Socket: FCEUD_ServerSocket {
 
 		if (length == 0 && expected_length) {
 			close();
-			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			snprintf(error_text, error_max, "recv: %d\n", length);
 			return -1;
 		}
 
-		if (length == -1) {
-			if (errno == EAGAIN && errno == EWOULDBLOCK) {
+		if (length < 0) {
+			if (length == -EAGAIN) {
 				return 0;
 			}
 
 			close();
-			fprintf(stderr, "recv failed: %s\n", strerror(errno));
+			snprintf(error_text, error_max, "recv: %s %d\n", strerror(-length), -length);
 			return -1;
 		}
 
@@ -389,6 +397,10 @@ struct Socket: FCEUD_ServerSocket {
 			socket  = -1;
 		}
 	}
+
+	char *error() {
+		return error_text;
+	}
 };
 
 
@@ -397,16 +409,35 @@ FCEUD_ServerSocket* FCEUD_ServerNewConnections() {
 	socklen_t len = sizeof(addr);
 
 	int client_socket = net_accept(server_socket, (struct sockaddr *)&addr, &len);
-	if (client_socket == -1) {
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
-			fprintf(stderr, "accept failed: %s\n", strerror(errno));
+	if (client_socket < 0) {
 		return 0;
 	}
 
 	int flags = net_fcntl(client_socket, F_GETFL, 0);
 	net_fcntl(client_socket, F_SETFL, flags | IOS_O_NONBLOCK);
 
-	fprintf(stderr, "Connection from %s\n", inet_ntoa(addr.sin_addr));
+	FCEUD_ServerLog("Connection from %s\n", inet_ntoa(addr.sin_addr));
 
 	return new Socket(client_socket);
+}
+
+extern GuiChatWindow * chatWindow;
+
+void FCEUD_ServerLog(const char *error, ...) {
+	if (chatWindow) {
+		va_list arg;
+
+		va_start(arg, error);
+			int length = vsnprintf(0, 0, error, arg);
+			char *str = new char[length + 1];
+		va_end(arg);
+
+		va_start(arg, error);
+			vsprintf(str, error, arg);
+		va_end(arg);
+
+		chatWindow->WriteLn(str);
+
+		delete [] str;
+	}
 }

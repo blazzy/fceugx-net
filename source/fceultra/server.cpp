@@ -79,8 +79,7 @@ struct Client {
 			return 1;
 		}
 
-		fprintf(stderr, "send failed: send buffer full\n");
-		disconnect();
+		disconnect("send buffer full");
 		return 0;
 	}
 
@@ -92,13 +91,13 @@ struct Client {
 			return 1;
 		}
 
-		fprintf(stderr, "send failed: %s (%i)\n", strerror(errno), errno);
-		disconnect();
+		disconnect(socket->error());
 		return 0;
 	}
 
-	void disconnect() {
-		fprintf(stderr, "Client %d %s disconnecting\n", id, name);
+
+	void disconnect(const char *reason = "") {
+		FCEUD_ServerLog("Client %d %s disconnecting: %s \n", id, name, reason);
 		socket->close();
 		delete socket;
 		socket = 0;
@@ -259,14 +258,14 @@ struct Server {
 					client.name[len] = 0;
 
 					if (!unique_name(client)) {
-						fprintf(stderr, "Name %s already in use.\n", client.name);
+						FCEUD_ServerLog("Name %s already in use.\n", client.name);
 						client.set_default_name();
 					}
 				} else {
 					client.set_default_name();
 				}
 
-				fprintf(stderr, "Client %d joined as %s\n", client.id, client.name);
+				FCEUD_ServerLog("Client %d joined as %s\n", client.id, client.name);
 
 				{ //Announce new client's presence to everyone
 					uint8_t announce_buffer[client.serialize_len];
@@ -317,7 +316,7 @@ struct Server {
 				int length  = FCEU_de32lsb(client.in_buffer);
 				uint8_t cmd = client.in_buffer[4];
 				client.reset_buffer(cmd, length);
-				fprintf(stderr, "Command 0x%X received\n", cmd);
+				//FCEUD_ServerLog("Command 0x%X received\n", cmd);
 				return;
 			}
 
@@ -339,7 +338,7 @@ struct Server {
 						buffer[1] = i;
 						send_all(FCEUNPCMD_PICKUPCONTROLLER, buffer, 2);
 
-						fprintf(stderr, "Client %d %s taking controller %i \n", client.id, client.name, i);
+						FCEUD_ServerLog("Client %d %s taking controller %i \n", client.id, client.name, i);
 						break;
 					}
 				}
@@ -351,8 +350,7 @@ struct Server {
 				int controller = client.in_buffer[0];
 
 				if (controller > 3) {
-					fprintf(stderr, "Invalid controller id\n");
-					client.disconnect();
+					client.disconnect("Invalid controller id");
 					return;
 				}
 
@@ -364,7 +362,7 @@ struct Server {
 					buffer[1] = controller;
 					send_all(FCEUNPCMD_PICKUPCONTROLLER, buffer, 2);
 
-					fprintf(stderr, "Client %d %s taking controller %i \n", client.id, client.name, controller);
+					FCEUD_ServerLog("Client %d %s taking controller %i \n", client.id, client.name, controller);
 				}
 
 				client.reset_buffer(N_UPDATEDATA, 1);
@@ -387,7 +385,7 @@ struct Server {
 					buffer[0] = controller;
 					send_all(FCEUNPCMD_DROPCONTROLLER, buffer, 1);
 
-					fprintf(stderr, "Client %d %s dropping controller %i \n", client.id, client.name, controller);
+					FCEUD_ServerLog("Client %d %s dropping controller %i \n", client.id, client.name, controller);
 				}
 
 				client.reset_buffer(N_UPDATEDATA, 1);
@@ -411,8 +409,7 @@ struct Server {
 			}
 
 			default: {
-				fprintf(stderr, "Invalid command\n");
-				client.disconnect();
+				client.disconnect("Invalid command");
 				return;
 			}
 		}
