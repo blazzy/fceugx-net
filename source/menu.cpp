@@ -4609,7 +4609,11 @@ static int MenuSettingsNetwork()
 				port[0] = '\0';
 
 				OnScreenKeyboard(port, SIZE_NETPLAY_PORT - 1);
-				strcpy(GCSettings.netplayPort, strlen(port) > 0 ? port : DEFAULT_NETPLAY_PORT);
+
+				if(strlen(port) > 0)
+				{
+					strcpy(GCSettings.netplayPort, port);
+				}
 
 				break;
 
