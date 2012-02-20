@@ -1690,7 +1690,7 @@ static int MenuGameSelection()
 
 			if(strcmp("", GCSettings.netplayPort) == 0 || strcmp("", GCSettings.netplayNameX) == 0)
 			{
-				ErrorPrompt("To host, you must specify the following:  Port, Player Name (first slot)");
+				ErrorPrompt("To host, you must specify the following:  Port, Host Name");
 			}
 			else
 			{
