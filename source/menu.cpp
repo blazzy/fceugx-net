@@ -1882,6 +1882,8 @@ static int MenuGameSelection()
 	mainWindow->Remove(&titleTxt);
 	mainWindow->Remove(&buttonWindow);
 	mainWindow->Remove(gameBrowser);
+	mainWindow->Remove(chatWindow);
+	mainWindow->Remove(playerList);
 
 	delete gameBrowser;
 	gameBrowser = NULL;
