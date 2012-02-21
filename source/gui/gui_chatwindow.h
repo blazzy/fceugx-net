@@ -71,7 +71,7 @@ class GuiChatWindow : public GuiWindow
 		WindowInfo windowInfo;
 		Message scrollbackBuffer[CHAT_SCROLLBACK_SIZE];
 		GuiText *viewportText[FILE_PAGESIZE];
-	public: GuiButton *viewportButton[FILE_PAGESIZE];
+		GuiButton *viewportButton[FILE_PAGESIZE];
 };
 
 #endif

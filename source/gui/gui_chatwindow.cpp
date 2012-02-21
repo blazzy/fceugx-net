@@ -195,7 +195,7 @@ void GuiChatWindow::TriggerUpdate()
 {
 	int newIndex = windowInfo.selIndex - windowInfo.pageIndex;
 
-	char c[30];
+	char c[300];
 	sprintf(c, "newIndex before: %d", newIndex);
 	//InfoPrompt(c);
 
@@ -208,7 +208,8 @@ void GuiChatWindow::TriggerUpdate()
 		newIndex = 0;
 	}
 
-	sprintf(c, "newIndex after: %d", newIndex);
+	selectedItem = newIndex;
+	sprintf(c, "selIndex %d, pageIndex %d, newIndex after: %d", windowInfo.selIndex, windowInfo.pageIndex, newIndex);
 	//InfoPrompt(c);
 
 //	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
@@ -234,8 +235,9 @@ int i = 1,
 
 void GuiChatWindow::Update(GuiTrigger * t)
 {
-	char c[30];
-	sprintf(c, "chan %d", t->chan);
+	char c[300];
+	//sprintf(c, "chan %d", t->chan);
+	sprintf(c, "%d|%d|%d", selectedItem, windowInfo.selIndex, windowInfo.pageIndex );
 	writeReadyBtn(c);
 
 	/*
@@ -270,7 +272,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	if( (listChanged || (scrollbarBoxBtn->GetState() == STATE_HELD
 		&& scrollbarBoxBtn->GetStateChan() == t->chan
 		&& t->wpad->ir.valid))
-	&& windowInfo.numEntries > FILE_PAGESIZE)
+		&& windowInfo.numEntries > FILE_PAGESIZE)
 	{
 		scrollbarBoxBtn->SetPosition(0,0);
 		positionWiimote = t->wpad->ir.y - 60 - scrollbarBoxBtn->GetTop();
@@ -599,7 +601,7 @@ bool GuiChatWindow::WriteLn(const char *msg)
 
 	//int viewportIdx = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	//viewportButton[viewportIdx]->SetState(STATE_SELECTED);
-	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
+	//selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	TriggerUpdate();
 
 
