@@ -1568,58 +1568,55 @@ static int MenuGameSelection()
 
 			// update gameWindow based on arrow buttons
 			// set MENU_EXIT if A button pressed on a game
-			if(gameBrowser->IsVisible())
+			for(i=0; i < FILE_PAGESIZE; i++)
 			{
-				for(i=0; i < FILE_PAGESIZE; i++)
+				if(gameBrowser->fileList[i]->GetState() == STATE_CLICKED)
 				{
-					if(gameBrowser->fileList[i]->GetState() == STATE_CLICKED)
+					gameBrowser->fileList[i]->ResetState();
+
+					if( (executionMode == OFFLINE)
+					||  (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
+					||  (executionMode != OFFLINE && browserList[browser.selIndex].isdir) )
 					{
-						gameBrowser->fileList[i]->ResetState();
-
-						if( (executionMode == OFFLINE)
-						||  (executionMode == NETPLAY_HOST && playerList->IsEveryoneReady())
-						||  (executionMode != OFFLINE && browserList[browser.selIndex].isdir) )
+						// check corresponding browser entry
+						if(browserList[browser.selIndex].isdir || IsSz())
 						{
-							// check corresponding browser entry
-							if(browserList[browser.selIndex].isdir || IsSz())
-							{
-								if(IsSz())
-									res = BrowserLoadSz();
-								else
-									res = BrowserChangeFolder();
+							if(IsSz())
+								res = BrowserLoadSz();
+							else
+								res = BrowserChangeFolder();
 
-								if(res)
-								{
-									gameBrowser->ResetState();
-									gameBrowser->fileList[0]->SetState(STATE_SELECTED);
-									gameBrowser->TriggerUpdate();
-								}
-								else
-								{
-									menu = MENU_GAMESELECTION;
-									break;
-								}
+							if(res)
+							{
+								gameBrowser->ResetState();
+								gameBrowser->fileList[0]->SetState(STATE_SELECTED);
+								gameBrowser->TriggerUpdate();
 							}
 							else
 							{
-								#ifdef HW_RVL
-								ShutoffRumble();
-								#endif
-								mainWindow->SetState(STATE_DISABLED);
-								if(BrowserLoadFile())
-									menu = MENU_EXIT;
-								//else
-									mainWindow->SetState(STATE_DEFAULT);
+								menu = MENU_GAMESELECTION;
+								break;
 							}
 						}
-						else if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
+						else
 						{
-							InfoPrompt("Everyone must click in as READY before launching a game");
+							#ifdef HW_RVL
+							ShutoffRumble();
+							#endif
+							mainWindow->SetState(STATE_DISABLED);
+							if(BrowserLoadFile())
+								menu = MENU_EXIT;
+							//else
+								mainWindow->SetState(STATE_DEFAULT);
 						}
-						else if(executionMode == NETPLAY_CLIENT)
-						{
-							InfoPrompt("Only the host can start games");
-						}
+					}
+					else if(executionMode == NETPLAY_HOST && !playerList->IsEveryoneReady())
+					{
+						InfoPrompt("Everyone must click in as READY before launching a game");
+					}
+					else if(executionMode == NETPLAY_CLIENT)
+					{
+						InfoPrompt("Only the host can start games");
 					}
 				}
 			}
