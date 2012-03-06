@@ -75,7 +75,7 @@
 static void disableButton(GuiButton*, bool);
 static void enableButton(GuiButton *button, bool visible);
 static void newNetplayWindows();
-static void pleaseWaitMsg();
+static void connectionWaitMsg();
 static void hideNetplayGuiComponents();
 static void showNetplayGuiComponents();
 
@@ -99,8 +99,8 @@ GuiSound  *btnSoundOver   = NULL;
 static GuiImageData * pointer[5];
 #endif
 
-// Maps a Wii player number to an index on GuiPlayerlist:
-int playerPointerMap[4];
+// Maps a Wiimote number to an index on GuiPlayerlist
+int playerCursorMap[4];
 
 static GuiTrigger * trigA = NULL;
 static GuiTrigger * trig2 = NULL;
@@ -136,7 +136,7 @@ static int progressDone = 0;
 static int progressTotal = 0;
 
 static void playerListEventHandler(void *ptr);
-static void updatePlayerPointerMap(uint from, int to);
+static void updatePlayerCursorMap(uint from, int to);
 
 static void playerListEventHandler(void *ptr)
 {
@@ -153,44 +153,44 @@ static void playerListEventHandler(void *ptr)
 
 	if(idx >= 0)
 	{
-		updatePlayerPointerMap(0, list->IsPlayerReady(idx) ? idx : 4);
+		updatePlayerCursorMap(0, list->IsPlayerReady(idx) ? idx : 4);
 	}
 	else
 	{
-		updatePlayerPointerMap(0, -1);
+		updatePlayerCursorMap(0, -1);
 	}
 
 	idx = list->GetPlayerNumber(GCSettings.netplayNameY);
 
 	if(idx >= 0)
 	{
-		updatePlayerPointerMap(1, list->IsPlayerReady(idx) ? idx : 4);
+		updatePlayerCursorMap(1, list->IsPlayerReady(idx) ? idx : 4);
 	}
 	else
 	{
-		updatePlayerPointerMap(1, -1);
+		updatePlayerCursorMap(1, -1);
 	}
 
 	idx = list->GetPlayerNumber(GCSettings.netplayNameZ);
 
 	if(idx >= 0)
 	{
-		updatePlayerPointerMap(2, list->IsPlayerReady(idx) ? idx : 4);
+		updatePlayerCursorMap(2, list->IsPlayerReady(idx) ? idx : 4);
 	}
 	else
 	{
-		updatePlayerPointerMap(2, -1);
+		updatePlayerCursorMap(2, -1);
 	}
 
 	// In netplay, the max number of players on one console is 3, so player 4 is never active.
-	updatePlayerPointerMap(3, -1);
+	updatePlayerCursorMap(3, -1);
 }
 
-static void updatePlayerPointerMap(uint from, int to)
+static void updatePlayerCursorMap(uint from, int to)
 {
 	if(from >= 0 && from < 4 && to <= 4)
 	{
-		playerPointerMap[from] = to;
+		playerCursorMap[from] = to;
 	}
 }
 
@@ -404,7 +404,7 @@ UpdateGUI (void *arg)
 		{
 			if(userInput[i].wpad->ir.valid)
 			{
-				int cursorId = playerPointerMap[i];
+				int cursorId = playerCursorMap[i];
 
 				if(cursorId >= 0)
 				{
@@ -420,10 +420,10 @@ UpdateGUI (void *arg)
 		Menu_Render();
 
 		// Only process the input of controllers linked to players
-		if(playerPointerMap[3] >= 0) { mainWindow->Update(&userInput[3]); }
-		if(playerPointerMap[2] >= 0) { mainWindow->Update(&userInput[2]); }
-		if(playerPointerMap[1] >= 0) { mainWindow->Update(&userInput[1]); }
-		if(playerPointerMap[0] >= 0) { mainWindow->Update(&userInput[0]); }
+		if(playerCursorMap[3] >= 0) { mainWindow->Update(&userInput[3]); }
+		if(playerCursorMap[2] >= 0) { mainWindow->Update(&userInput[2]); }
+		if(playerCursorMap[1] >= 0) { mainWindow->Update(&userInput[1]); }
+		if(playerCursorMap[0] >= 0) { mainWindow->Update(&userInput[0]); }
 
 		#ifdef HW_RVL
 		if(updateFound)
@@ -1048,7 +1048,7 @@ static void WindowCredits(void * ptr)
 		do {
 			if(userInput[i].wpad->ir.valid)
 			{
-				int cursorId = playerPointerMap[i];
+				int cursorId = playerCursorMap[i];
 
 				if(cursorId >= 0)
 				{
@@ -1065,10 +1065,10 @@ static void WindowCredits(void * ptr)
 
 		// Only process the input of controllers linked to a player number
 
-		if( (playerPointerMap[0] >= 0 && (userInput[0].wpad->btns_d || userInput[0].pad.btns_d))
-		||  (playerPointerMap[1] >= 0 && (userInput[1].wpad->btns_d || userInput[1].pad.btns_d))
-		||  (playerPointerMap[2] >= 0 && (userInput[2].wpad->btns_d || userInput[2].pad.btns_d))
-		||  (playerPointerMap[3] >= 0 && (userInput[3].wpad->btns_d || userInput[3].pad.btns_d)) )
+		if( (playerCursorMap[0] >= 0 && (userInput[0].wpad->btns_d || userInput[0].pad.btns_d))
+		||  (playerCursorMap[1] >= 0 && (userInput[1].wpad->btns_d || userInput[1].pad.btns_d))
+		||  (playerCursorMap[2] >= 0 && (userInput[2].wpad->btns_d || userInput[2].pad.btns_d))
+		||  (playerCursorMap[3] >= 0 && (userInput[3].wpad->btns_d || userInput[3].pad.btns_d)) )
 		{
 			exit = true;
 		}
@@ -1148,7 +1148,7 @@ static void newNetplayWindows()
 	playerList->SetVisible(false);
 }
 
-static void pleaseWaitMsg()
+static void connectionWaitMsg()
 {
 	HaltGui();
 	ShowAction("Opening connection");
@@ -1284,7 +1284,7 @@ static void hideNetplayGuiComponents()
 
 	for(int i = 0; i < 4; i++)
 	{
-		playerPointerMap[i] = i;
+		playerCursorMap[i] = i;
 	}
 }
 
@@ -1685,7 +1685,7 @@ static int MenuGameSelection()
 			{
 				bool connected = false;
 
-				pleaseWaitMsg();
+				connectionWaitMsg();
 
 				if((connected = true/*whateverServerInitFunction()*/) == false)
 				{
@@ -1694,7 +1694,7 @@ static int MenuGameSelection()
 
 					while(ErrorPromptRetry("Could not open a connection"))
 					{
-						pleaseWaitMsg();
+						connectionWaitMsg();
 
 						if((connected = true/*whateverServerInitFunction()*/) == true)
 						{
@@ -1771,7 +1771,7 @@ static int MenuGameSelection()
 			{
 				bool connected = false;
 
-				pleaseWaitMsg();
+				connectionWaitMsg();
 
 				if((connected = FCEUD_NetworkConnect()) == false)
 				{
@@ -1779,7 +1779,7 @@ static int MenuGameSelection()
 
 					while(ErrorPromptRetry("Could not connect"))
 					{
-						pleaseWaitMsg();
+						connectionWaitMsg();
 
 						if((connected = FCEUD_NetworkConnect()) == true)
 						{
@@ -4720,10 +4720,10 @@ MainMenu (int menu)
 	{
 		init = true;
 		#ifdef HW_RVL
-		playerPointerMap[0] = 0;
-		playerPointerMap[1] = 1;
-		playerPointerMap[2] = 2;
-		playerPointerMap[3] = 3;
+		playerCursorMap[0] = 0;
+		playerCursorMap[1] = 1;
+		playerCursorMap[2] = 2;
+		playerCursorMap[3] = 3;
 
 		pointer[0] = new GuiImageData(player1_point_png);
 		pointer[1] = new GuiImageData(player2_point_png);
