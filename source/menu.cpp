@@ -1639,6 +1639,13 @@ static int MenuGameSelection()
 			//chatWindow->TriggerUpdate();
 		}
 
+		// The host can kick a player from the server.
+		// TODO:  Server will send an updated player list minus this player.
+		// TODO:  Client will need to display a message (not here), notifying him/her of being kicked.
+		//        This will not be done if the kicked player is on the same machine as the host.
+		//
+		// The controller will automatically be deactivated on the client side by
+		// an update trigger set on the player list (this part should already be working).
 		if(playerList != NULL && playerList->GetState() == STATE_CLICKED)
 		{
 			const int idx = playerList->GetClickedIdx();
@@ -1646,16 +1653,20 @@ static int MenuGameSelection()
 
 			playerList->ResetState();
 
-			if(name != NULL)
+			// Don't allow the host to kick himself.  The host might not be Player 1, so check the name rather than the index.
+
+			if(executionMode == NETPLAY_HOST && name != NULL && strcmp(name, GCSettings.netplayNameX) != 0)
 			{
-				InfoPrompt(name);
-				free(name);
+				char msg[64];
+				sprintf(msg, "Kick %s from the server?", name);
+
+				if(WindowPrompt("Kick player", msg, "OK", "Cancel"))
+				{
+					//FCEUD_DisconnectPlayer(name);
+				}
 			}
-			else
-			{
-				// Apparently unable to make this happen
-				InfoPrompt("List clicked, but it wasn't a name");
-			}
+
+			free(name);
 		}
 		else if(settingsBtn.GetState() == STATE_CLICKED)
 		{
@@ -1715,7 +1726,7 @@ static int MenuGameSelection()
 
 				// This fakes a response coming from the server.  The string will come from a method that receives
 				// the data over a socket.  That method will make the call to BuildPlayerList().
-				int listStatus = playerList->BuildPlayerList("gandalf             :0|merry               :2|pippin              :3|1234567890ABCDEFGHIJ:4");
+				int listStatus = playerList->BuildPlayerList("gandalf             :1|merry               :2|pippin              :3|1234567890ABCDEFGHIJ:4");
 
 				switch(listStatus)
 				{
