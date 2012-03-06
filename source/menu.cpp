@@ -1525,17 +1525,6 @@ static int MenuGameSelection()
 	mainWindow->Append(&buttonWindow);
 	mainWindow->Append(playerList);
 
-	if(chatWindow != NULL && chatWindow->IsVisible())
-	{
-		gameBrowser->SetVisible(false);
-		gameBrowser->SetState(STATE_DISABLED);
-
-		/*chatWindow->ResetState();
-		chatWindow->viewportButton[0]->SetState(STATE_SELECTED);
-		chatWindow->TriggerUpdate();
-		mainWindow->ChangeFocus(chatWindow);*/
-	}
-
 	ResumeGui();
 
 	#ifdef HW_RVL
@@ -1543,14 +1532,17 @@ static int MenuGameSelection()
 	#endif
 
 	// populate initial directory listing
-	if(gameBrowser->IsVisible())
-	{
-		selectLoadedFile = 1;
-		OpenGameList();
+	selectLoadedFile = 1;
+	OpenGameList();
 
-		gameBrowser->ResetState();
-		gameBrowser->fileList[0]->SetState(STATE_SELECTED);
-		gameBrowser->TriggerUpdate();
+	gameBrowser->ResetState();
+	gameBrowser->fileList[0]->SetState(STATE_SELECTED);
+	gameBrowser->TriggerUpdate();
+
+	if(chatWindow != NULL && chatWindow->IsVisible())
+	{
+		gameBrowser->SetVisible(false);
+		gameBrowser->SetState(STATE_DISABLED);
 	}
 
 	while(menu == MENU_NONE)
