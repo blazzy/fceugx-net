@@ -37,23 +37,25 @@ struct Player
 class GuiPlayerList : public GuiWindow
 {
 	public:
-		GuiPlayerList(int w, int h);
+		GuiPlayerList(const int w, const int h);
 		~GuiPlayerList();
 		int  GetState();
 		void ResetState();
-		void SetFocus(int f);
+		void SetFocus(const int f);
 		void TriggerUpdate();
 		void Update(GuiTrigger *t);
 
 		uint8 GetPlayerCount();
 		int  BuildPlayerList(const char *playerInfo);
-		int  AddPlayer(Player player);
+		int  AddPlayer(const Player player);
 		void Clear();
 		int  GetClickedIdx();
-		char *GetPlayerName(uint idx);    // Returns a copy of the player name - you must free() this when you're done with it.
-		int  GetPlayerNumber(char *playerName);
-		bool IsPlayerReady(int playerNum);
-		bool IsPlayerReady(char *playerName);
+		char *GetPlayerName(const uint idx);    // Returns a copy of the player name - you must free() this when you're done with it.
+		int  GetPlayerNumber(const char *playerName);
+		bool IsInteractive();
+		void SetInteractive(const bool isInteractive);
+		bool IsPlayerReady(const int playerNum);
+		bool IsPlayerReady(const char *playerName);
 		bool IsEveryoneReady();
 
 	private:
@@ -87,6 +89,7 @@ class GuiPlayerList : public GuiWindow
 		int selectedItem;
 		int currIdx;
 		bool listChanged;
+		bool interactive;
 };
 
 #endif /* _GUI_PLAYERLIST_H_ */

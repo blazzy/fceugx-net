@@ -1145,6 +1145,7 @@ static void newNetplayWindows()
 	playerList->SetUpdateCallback(playerListEventHandler);
 	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
 	playerList->SetPosition(-8, 98);
+	playerList->SetInteractive(executionMode == NETPLAY_HOST);
 	playerList->SetVisible(false);
 }
 
@@ -1655,7 +1656,7 @@ static int MenuGameSelection()
 
 			// Don't allow the host to kick himself.  The host might not be Player 1, so check the name rather than the index.
 
-			if(executionMode == NETPLAY_HOST && name != NULL && strcmp(name, GCSettings.netplayNameX) != 0)
+			if(name != NULL && strcmp(name, GCSettings.netplayNameX) != 0)
 			{
 				char msg[64];
 				sprintf(msg, "Kick %s from the server?", name);

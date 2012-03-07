@@ -29,7 +29,7 @@
 #include "../fceultra/utils/xstring.h"      // str_strip()
 
 
-GuiPlayerList::GuiPlayerList(int w, int h)
+GuiPlayerList::GuiPlayerList(const int w, const int h)
 {
 	//DEBUG_Init(GDBSTUB_DEVICE_USB, 1);  // USB Gecko
 	//_break();							// USB Gecko
@@ -41,6 +41,7 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	selectable = true;
 	listChanged = false; // Don't trigger a list update unless something changes (add/delete/ready/unready).  Setting this to true will prevent conrollers from ever being registered.
 	focus = 0; // allow focus
+	interactive = true;
 
 	trigA = new GuiTrigger;
 	trigA->SetSimpleTrigger(-1, WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A, PAD_BUTTON_A);
@@ -97,12 +98,6 @@ GuiPlayerList::GuiPlayerList(int w, int h)
 	Append(imgMainWindow);
 	Append(titleTxt);
 	Append(txtAllPlayersReady);
-
-	// Attempt to make the window itself, not just the buttons, clickable.  Doesn't seem to give a damn.
-	imgMainWindow->SetSelectable(true);
-	imgMainWindow->SetClickable(true);
-	imgMainWindow->SetTrigger(trigA);
-	imgMainWindow->SetTrigger(trig2);
 }
 
 GuiPlayerList::~GuiPlayerList()
@@ -160,18 +155,12 @@ int GuiPlayerList::GetState()
 {
 	// Please hold the particle physics jokes.
 
-	if(imgMainWindow->GetState() == STATE_CLICKED)    // Haven't managed to make this clickable yet, but maybe one day
+	for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
 	{
-		state = STATE_CLICKED;
-	}
-	else
-	{
-		for(int i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
+		if(rowButton[i] != NULL && rowButton[i]->GetState() == STATE_CLICKED)
 		{
-			if(rowButton[i] != NULL && rowButton[i]->GetState() == STATE_CLICKED)
-			{
-				state = STATE_CLICKED;
-			}
+			state = STATE_CLICKED;
+			break;
 		}
 	}
 
@@ -195,7 +184,7 @@ void GuiPlayerList::ResetState()
 	}
 }
 
-void GuiPlayerList::SetFocus(int f)
+void GuiPlayerList::SetFocus(const int f)
 {
 	focus = f;
 
@@ -318,7 +307,7 @@ int GuiPlayerList::BuildPlayerList(const char *playerInfo)
 	return trailingStatus;
 }
 
-int GuiPlayerList::AddPlayer(Player player)
+int GuiPlayerList::AddPlayer(const Player player)
 {
 	uint8 newIdx = GetPlayerCount();
 
@@ -348,7 +337,6 @@ int GuiPlayerList::AddPlayer(Player player)
 
 		rowButton[newIdx]->SetParent(this);
 		rowButton[newIdx]->SetLabel(rowText[newIdx]);
-		rowButton[newIdx]->SetImageOver(imgRowSelected[newIdx]);
 		rowButton[newIdx]->SetPosition(2, (imgRowSelected[newIdx]->GetHeight() * newIdx) + 50);
 		rowButton[newIdx]->SetTrigger(trigA);
 		rowButton[newIdx]->SetTrigger(trig2);
@@ -358,6 +346,10 @@ int GuiPlayerList::AddPlayer(Player player)
 		{
 			rowButton[newIdx]->SetIcon(imgPlayerReady[player.controller - 1]);
 		}
+
+		rowButton[newIdx]->SetClickable(interactive);
+		rowButton[newIdx]->SetSelectable(interactive);
+		rowButton[newIdx]->SetImageOver(interactive ? imgRowSelected[newIdx] : NULL);
 
 		Append(rowButton[newIdx]);
 
@@ -420,7 +412,7 @@ int GuiPlayerList::GetClickedIdx()
 	return idx;
 }
 
-char *GuiPlayerList::GetPlayerName(uint idx)
+char *GuiPlayerList::GetPlayerName(const uint idx)
 {
 	if(idx < MAX_PLAYER_LIST_SIZE)
 	{
@@ -433,7 +425,7 @@ char *GuiPlayerList::GetPlayerName(uint idx)
 	return NULL;
 }
 
-int GuiPlayerList::GetPlayerNumber(char *playerName)
+int GuiPlayerList::GetPlayerNumber(const char *playerName)
 {
 	int idx = -1;
 
@@ -463,8 +455,28 @@ int GuiPlayerList::GetPlayerNumber(char *playerName)
 	return idx;
 }
 
+bool GuiPlayerList::IsInteractive()
+{
+	return interactive;
+}
+
+void GuiPlayerList::SetInteractive(const bool allowInteract)
+{
+	interactive = allowInteract;
+
+	for(uint i = 0; i < MAX_PLAYER_LIST_SIZE; i++)
+	{
+		if(rowButton[i] != NULL)
+		{
+			rowButton[i]->SetClickable(allowInteract);
+			rowButton[i]->SetSelectable(allowInteract);
+			rowButton[i]->SetImageOver(allowInteract ? imgRowSelected[i] : NULL);
+		}
+	}
+}
+
 // Note:  playerNum is 0-indexed
-bool GuiPlayerList::IsPlayerReady(int playerNum)
+bool GuiPlayerList::IsPlayerReady(const int playerNum)
 {
 	bool ready = true;
 
@@ -477,7 +489,7 @@ bool GuiPlayerList::IsPlayerReady(int playerNum)
 	return ready;
 }
 
-bool GuiPlayerList::IsPlayerReady(char *playerName)
+bool GuiPlayerList::IsPlayerReady(const char *playerName)
 {
 	return IsPlayerReady(GetPlayerNumber(playerName));
 }
