@@ -428,6 +428,7 @@ char *GuiPlayerList::GetPlayerName(const uint idx)
 int GuiPlayerList::GetPlayerNumber(const char *playerName)
 {
 	int idx = -1;
+	char *textCopy = NULL;
 
 	if(playerName != NULL)
 	{
@@ -435,22 +436,21 @@ int GuiPlayerList::GetPlayerNumber(const char *playerName)
 		{
 			if(rowText[i] != NULL)
 			{
-				char *textCopy = rowText[i]->ToString();
+				textCopy = rowText[i]->ToString();
 
 				if(textCopy != NULL)
 				{
 					if(strcmp(playerName, textCopy) == 0)
 					{
 						idx = i;
-						free(textCopy);
 						break;
 					}
-
-					free(textCopy);
 				}
 			}
 		}
 	}
+
+	free(textCopy);
 
 	return idx;
 }

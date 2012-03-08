@@ -1163,16 +1163,8 @@ static void showNetplayGuiComponents()
 
 	if(mainWindow != NULL)
 	{
-		if(playerList != NULL)
-		{
-			mainWindow->Append(playerList);
-		}
-
-		if(chatWindow != NULL)
-		{
-			mainWindow->Append(chatWindow);
-			//mainWindow->ChangeFocus(chatWindow);
-		}
+		mainWindow->Append(playerList);
+		mainWindow->Append(chatWindow);
 	}
 
 	ResumeGui();
