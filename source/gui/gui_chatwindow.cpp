@@ -19,6 +19,7 @@
 #include "wchar.h"        // wcslen()
 #include <cstdlib>   // wcstombs()
 
+void writeReadyBtn(char*);
 GuiChatWindow::GuiChatWindow(int w, int h)
 {
 	width = w;
@@ -43,6 +44,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 
 	bgFileSelection = new GuiImageData(bg_game_selection_png);
 	bgFileSelectionImg = new GuiImage(bgFileSelection);
+	bgFileSelectionImg->SetParent(this);
 	bgFileSelectionImg->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
 
 	scrollbar = new GuiImageData(scrollbar_png);
@@ -69,6 +71,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	scrollbarBoxOverImg = new GuiImage(scrollbarBoxOver);
 
 	arrowUpBtn = new GuiButton(arrowUpImg->GetWidth(), arrowUpImg->GetHeight());
+	arrowUpBtn->SetParent(this);
 	arrowUpBtn->SetImage(arrowUpImg);
 	arrowUpBtn->SetImageOver(arrowUpOverImg);
 	arrowUpBtn->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -80,6 +83,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	arrowUpBtn->SetSoundClick(btnSoundClick);
 
 	arrowDownBtn = new GuiButton(arrowDownImg->GetWidth(), arrowDownImg->GetHeight());
+	arrowDownBtn->SetParent(this);
 	arrowDownBtn->SetImage(arrowDownImg);
 	arrowDownBtn->SetImageOver(arrowDownOverImg);
 	arrowDownBtn->SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
@@ -91,6 +95,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	arrowDownBtn->SetSoundClick(btnSoundClick);
 
 	scrollbarBoxBtn = new GuiButton(scrollbarBoxImg->GetWidth(), scrollbarBoxImg->GetHeight());
+	scrollbarBoxBtn->SetParent(this);
 	scrollbarBoxBtn->SetImage(scrollbarBoxImg);
 	scrollbarBoxBtn->SetImageOver(scrollbarBoxOverImg);
 	scrollbarBoxBtn->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -208,12 +213,15 @@ void GuiChatWindow::TriggerUpdate()
 		newIndex = 0;
 	}
 
-	selectedItem = newIndex;
+	//selectedItem = newIndex;
 	sprintf(c, "selIndex %d, pageIndex %d, newIndex after: %d", windowInfo.selIndex, windowInfo.pageIndex, newIndex);
 	//InfoPrompt(c);
 
-//	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
+	//selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	listChanged = true;
+
+	sprintf(c, "%d", selectedItem);
+	writeReadyBtn(c);
 }
 
 void GuiChatWindow::DrawTooltip()
@@ -237,8 +245,8 @@ void GuiChatWindow::Update(GuiTrigger * t)
 {
 	char c[300];
 	//sprintf(c, "chan %d", t->chan);
-	sprintf(c, "%d|%d|%d", selectedItem, windowInfo.selIndex, windowInfo.pageIndex );
-	writeReadyBtn(c);
+	//sprintf(c, "%d|%d|%d", selectedItem, windowInfo.selIndex, windowInfo.pageIndex );
+	//writeReadyBtn(c);
 
 	/*
 	if(i != -1)
@@ -334,7 +342,6 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	if(!focus)
 	{
 		//writeReadyBtn("notFocus");
-		// goto?!
 		goto endNavigation; // skip navigation
 		listChanged = false;
 	}
@@ -493,19 +500,7 @@ void GuiChatWindow::Reset()
 	windowInfo.pageIndex = 0;
 	windowInfo.size = 0;
 }
-/*
-void GuiChatWindow::ResetState()
-{
-	state = STATE_DEFAULT;
 
-	u32 elemSize = _elements.size();
-	for (u32 i = 0; i < elemSize; ++i)
-	{
-		try { _elements.at(i)->ResetState(); }
-		catch (const std::exception& e) { }
-	}
-}
-*/
 bool GuiChatWindow::WriteLn(const char *msg)
 {
 	/*char c[30];
@@ -519,7 +514,7 @@ bool GuiChatWindow::WriteLn(const char *msg)
 
 	if(windowInfo.size >= CHAT_SCROLLBACK_SIZE)
 	{
-		ErrorPrompt("Out of memory: too many files!");
+		ErrorPrompt("Out of memory: too many message lines!");
 		return false; // out of space
 	}
 
@@ -601,7 +596,7 @@ bool GuiChatWindow::WriteLn(const char *msg)
 
 	//int viewportIdx = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	//viewportButton[viewportIdx]->SetState(STATE_SELECTED);
-	//selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
+	selectedItem = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	TriggerUpdate();
 
 
