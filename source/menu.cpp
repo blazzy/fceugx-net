@@ -1138,9 +1138,6 @@ static void newNetplayWindows()
 	chatWindow->WriteLn("[Player1] When the pie was opened,");
 	chatWindow->WriteLn("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
 	chatWindow->WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
-	//mainWindow->ChangeFocus(chatWindow);
-	//chatWindow->SetSelectedItem(0);
-	//chatWindow->TriggerUpdate();
 
 	playerList->SetUpdateCallback(playerListEventHandler);
 	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -1622,14 +1619,10 @@ static int MenuGameSelection()
 				if(strlen(buf))
 				{
 					chatWindow->WriteLn(buf);
-					//chatWindow->viewportButton[9]->SetState(STATE_SELECTED);
-					//chatWindow->TriggerUpdate();
 				}
 			}
 
 			mainWindow->ChangeFocus(chatWindow);
-			//chatWindow->viewportButton[9]->SetState(STATE_SELECTED);
-			//chatWindow->TriggerUpdate();
 		}
 
 		// The host can kick a player from the server.
