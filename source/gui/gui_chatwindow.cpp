@@ -124,6 +124,7 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 	}
 
 	windowInfo.selIndex = 0;
+	windowInfo.numEntries = 20;
 }
 
 /**
@@ -255,7 +256,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	if(scrollbarBoxBtn->GetState() == STATE_HELD &&
 		scrollbarBoxBtn->GetStateChan() == t->chan &&
 		t->wpad->ir.valid &&
-		browser.numEntries > FILE_PAGESIZE
+		windowInfo.numEntries > FILE_PAGESIZE
 		)
 	{
 		scrollbarBoxBtn->SetPosition(0,0);
@@ -266,15 +267,15 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		else if(positionWiimote > scrollbarBoxBtn->GetMaxY())
 			positionWiimote = scrollbarBoxBtn->GetMaxY();
 
-		browser.pageIndex = (positionWiimote * browser.numEntries)/156.0f - selectedItem;
+		browser.pageIndex = (positionWiimote * windowInfo.numEntries)/156.0f - selectedItem;
 
 		if(browser.pageIndex <= 0)
 		{
 			browser.pageIndex = 0;
 		}
-		else if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
+		else if(browser.pageIndex+FILE_PAGESIZE >= windowInfo.numEntries)
 		{
-			browser.pageIndex = browser.numEntries-FILE_PAGESIZE;
+			browser.pageIndex = windowInfo.numEntries-FILE_PAGESIZE;
 		}
 		listChanged = true;
 		focus = false;
@@ -302,11 +303,11 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	if(t->Right())
 	{
-		if(browser.pageIndex < browser.numEntries && browser.numEntries > FILE_PAGESIZE)
+		if(browser.pageIndex < windowInfo.numEntries && windowInfo.numEntries > FILE_PAGESIZE)
 		{
 			browser.pageIndex += FILE_PAGESIZE;
-			if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
-				browser.pageIndex = browser.numEntries-FILE_PAGESIZE;
+			if(browser.pageIndex+FILE_PAGESIZE >= windowInfo.numEntries)
+				browser.pageIndex = windowInfo.numEntries-FILE_PAGESIZE;
 			listChanged = true;
 		}
 	}
@@ -322,7 +323,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	}
 	else if(t->Down())
 	{
-		if(browser.pageIndex + selectedItem + 1 < browser.numEntries)
+		if(browser.pageIndex + selectedItem + 1 < windowInfo.numEntries)
 		{
 			if(selectedItem == FILE_PAGESIZE-1)
 			{
@@ -356,9 +357,9 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	for(int i=0; i<FILE_PAGESIZE; ++i)
 	{
-		if(listChanged || numEntries != browser.numEntries)
+		if(listChanged || numEntries != windowInfo.numEntries)
 		{
-			if(browser.pageIndex+i < browser.numEntries)
+			if(browser.pageIndex+i < windowInfo.numEntries)
 			{
 				if(fileList[i]->GetState() == STATE_DISABLED)
 					fileList[i]->SetState(STATE_DEFAULT);
@@ -434,25 +435,25 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		position = positionWiimote; // follow wiimote cursor
 		scrollbarBoxBtn->SetPosition(0,position+36);
 	}
-	else if(listChanged || numEntries != browser.numEntries)
+	else if(listChanged || numEntries != windowInfo.numEntries)
 	{
 		if(float((browser.pageIndex<<1))/(float(FILE_PAGESIZE)) < 1.0)
 		{
 			position = 0;
 		}
-		else if(browser.pageIndex+FILE_PAGESIZE >= browser.numEntries)
+		else if(browser.pageIndex+FILE_PAGESIZE >= windowInfo.numEntries)
 		{
 			position = 156;
 		}
 		else
 		{
-			position = 156 * (browser.pageIndex + FILE_PAGESIZE/2) / (float)browser.numEntries;
+			position = 156 * (browser.pageIndex + FILE_PAGESIZE/2) / (float)windowInfo.numEntries;
 		}
 		scrollbarBoxBtn->SetPosition(0,position+36);
 	}
 
 	listChanged = false;
-	numEntries = browser.numEntries;
+	numEntries = windowInfo.numEntries;
 
 	if(updateCB)
 		updateCB(this);
@@ -488,7 +489,7 @@ bool GuiChatWindow::WriteLn(const char *msg)
 		return false;
 	}
 
-	if(browser.numEntries >= CHAT_SCROLLBACK_SIZE)
+	if(windowInfo.numEntries >= CHAT_SCROLLBACK_SIZE)
 	{
 		ErrorPrompt("Out of memory: too many message lines!");
 		return false; // out of space
@@ -561,11 +562,11 @@ bool GuiChatWindow::WriteLn(const char *msg)
 
 	for(uint i = 0; i < textDynNum; i++)
 	{
-		wcstombs(browserList[browser.numEntries].displayname, textDyn[i], 200);  // 200 is safely larger than textDyn[i]'s length
-		browser.numEntries++;
+		wcstombs(browserList[windowInfo.numEntries].displayname, textDyn[i], 200);  // 200 is safely larger than textDyn[i]'s length
+		windowInfo.numEntries++;
 	}
 
-	//int viewportIdx = browser.numEntries < FILE_PAGESIZE ? browser.numEntries : FILE_PAGESIZE - 1;
+	//int viewportIdx = windowInfo.numEntries < FILE_PAGESIZE ? windowInfo.numEntries : FILE_PAGESIZE - 1;
 	//viewportButton[viewportIdx]->SetState(STATE_SELECTED);
 browser.pageIndex = 0;
 	TriggerUpdate();
@@ -599,7 +600,7 @@ browser.pageIndex = 0;
 
 
 
-//	if(browser.pageIndex + selectedItem + 1 < browser.numEntries)
+//	if(browser.pageIndex + selectedItem + 1 < windowInfo.numEntries)
 //	{
 //		if(selectedItem == FILE_PAGESIZE-1)
 //		{
