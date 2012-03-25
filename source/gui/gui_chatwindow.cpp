@@ -18,7 +18,6 @@ GuiChatWindow::GuiChatWindow(int w, int h)
 {
 	width = w;
 	height = h;
-	numEntries = 0;
 	selectedItem = 0;
 	selectable = true;
 	listChanged = true; // trigger an initial list update
@@ -357,7 +356,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 
 	for(int i=0; i<FILE_PAGESIZE; ++i)
 	{
-		if(listChanged || numEntries != windowInfo.numEntries)
+		if(listChanged)
 		{
 			if(browser.pageIndex+i < windowInfo.numEntries)
 			{
@@ -435,7 +434,7 @@ void GuiChatWindow::Update(GuiTrigger * t)
 		position = positionWiimote; // follow wiimote cursor
 		scrollbarBoxBtn->SetPosition(0,position+36);
 	}
-	else if(listChanged || numEntries != windowInfo.numEntries)
+	else if(listChanged)
 	{
 		if(float((browser.pageIndex<<1))/(float(FILE_PAGESIZE)) < 1.0)
 		{
@@ -453,7 +452,6 @@ void GuiChatWindow::Update(GuiTrigger * t)
 	}
 
 	listChanged = false;
-	numEntries = windowInfo.numEntries;
 
 	if(updateCB)
 		updateCB(this);

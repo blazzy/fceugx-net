@@ -13,6 +13,7 @@ struct WindowInfo
 	int selIndex; // currently selected index
 	int pageIndex; // starting index of page display (scrollbackBuffer[x] currently displayed in viewport[0])
 	int size; // # of messages in scrollbackBuffer
+	int selectedItem;
 };
 
 struct Message
@@ -75,7 +76,6 @@ class GuiChatWindow : public GuiElement
 		GuiTrigger * trigHeldA;
 
 		int selectedItem;
-		int numEntries;
 		bool listChanged;
 
 		WindowInfo windowInfo;
