@@ -32,7 +32,7 @@
  *
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
- * kloverde    03/25/2012  New class
+ * kloverde    11/29/2011  New class (a heavily modified GuiFileBrowser)
  */
 
 #ifndef _GUI_PLAYERLIST_H_

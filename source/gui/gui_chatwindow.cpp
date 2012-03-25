@@ -1,12 +1,19 @@
-/****************************************************************************
+/*
  * libwiigui
  *
- * Tantric 2009
+ * Tantric 2009, Kurtis LoVerde 2011
  *
- * gui_filebrowser.cpp
+ * gui_chatwindow.cpp
  *
- * GUI class definitions
- ***************************************************************************/
+ * Description:
+ *
+ *
+ * History:
+ *
+ * Name           Date     Description
+ * ----------  mm/dd/yyyy  --------------------------------------------------
+ * kloverde    12/24/2011  New class (based on GuiFileBrowser)
+ */
 
 #include "gui_chatwindow.h"
 #include "filelist.h"

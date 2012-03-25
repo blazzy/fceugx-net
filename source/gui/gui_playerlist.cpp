@@ -1,10 +1,12 @@
-/****************************************************************************
- * FCE Ultra GX
- * Nintendo Wii/Gamecube Port
+/*
+ * libwiigui
+ *
+ * Tantric 2009, Kurtis LoVerde 2011
  *
  * gui_playerlist.cpp
  *
- * Description:  Lists connected players in netplay
+ * Description:  Lists connected players in netplay.  Based on Tantric's
+ *               GuiFileBrowser (heavily modified).
  *
  * TODO:
  *     2.  Delete ToggleReady() once we're networked.
@@ -13,8 +15,8 @@
  *
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
- * midnak      11/29/2011  New file (gutted GuiFileBrowser)
- ****************************************************************************/
+ * kloverde    11/29/2011  New class (a heavily modified GuiFileBrowser)
+ */
 
 //#include <debug.h>        // USB Gecko
 
