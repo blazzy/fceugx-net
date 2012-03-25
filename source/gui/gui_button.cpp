@@ -14,7 +14,7 @@
  * midnak      12/01/2011  Added GuiImage::GetIcon
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_button.h"
 /**
  * Constructor for the GuiButton class.
  */

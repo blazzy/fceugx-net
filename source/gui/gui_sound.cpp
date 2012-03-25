@@ -8,7 +8,7 @@
  * GUI class definitions
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_sound.h"
 
 /**
  * Constructor for the GuiSound class.

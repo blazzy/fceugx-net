@@ -15,7 +15,7 @@
  * midnak      12/02/2011  Added ToString()
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_text.h"
 #include "../utils/gettext.h"
 
 static GXColor presetColor = (GXColor){255, 255, 255, 255};

@@ -8,7 +8,8 @@
  * GUI class definitions
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_optionbrowser.h"
+#include "filelist.h"
 
 /**
  * Constructor for the GuiOptionBrowser class.
@@ -74,7 +75,7 @@ GuiOptionBrowser::GuiOptionBrowser(int w, int h, OptionList * l)
 	arrowDownBtn->SetSoundOver(btnSoundOver);
 	arrowDownBtn->SetSoundClick(btnSoundClick);
 
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 	{
 		optionTxt[i] = new GuiText(NULL, 20, (GXColor){0, 0, 0, 0xff});
 		optionTxt[i]->SetAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
@@ -128,7 +129,7 @@ GuiOptionBrowser::~GuiOptionBrowser()
 	delete btnSoundOver;
 	delete btnSoundClick;
 
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 	{
 		delete optionTxt[i];
 		delete optionVal[i];
@@ -139,13 +140,13 @@ GuiOptionBrowser::~GuiOptionBrowser()
 
 void GuiOptionBrowser::SetCol1Position(int x)
 {
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 		optionTxt[i]->SetPosition(x,0);
 }
 
 void GuiOptionBrowser::SetCol2Position(int x)
 {
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 		optionVal[i]->SetPosition(x,0);
 }
 
@@ -153,7 +154,7 @@ void GuiOptionBrowser::SetFocus(int f)
 {
 	focus = f;
 
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 		optionBtn[i]->ResetState();
 
 	if(f == 1)
@@ -168,7 +169,7 @@ void GuiOptionBrowser::ResetState()
 		stateChan = -1;
 	}
 
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 	{
 		optionBtn[i]->ResetState();
 	}
@@ -177,7 +178,7 @@ void GuiOptionBrowser::ResetState()
 int GuiOptionBrowser::GetClickedOption()
 {
 	int found = -1;
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 	{
 		if(optionBtn[i]->GetState() == STATE_CLICKED)
 		{
@@ -220,7 +221,7 @@ void GuiOptionBrowser::Draw()
 
 	int next = listOffset;
 
-	for(int i=0; i<PAGESIZE; ++i)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; ++i)
 	{
 		if(next >= 0)
 		{
@@ -247,7 +248,7 @@ void GuiOptionBrowser::ResetText()
 {
 	int next = listOffset;
 
-	for(int i=0; i<PAGESIZE; i++)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; i++)
 	{
 		if(next >= 0)
 		{
@@ -274,7 +275,7 @@ void GuiOptionBrowser::Update(GuiTrigger * t)
 	if(listChanged)
 	{
 		listChanged = false;
-		for(int i=0; i<PAGESIZE; ++i)
+		for(int i=0; i<OPTION_BROWSER_PAGESIZE; ++i)
 		{
 			if(next >= 0)
 			{
@@ -297,7 +298,7 @@ void GuiOptionBrowser::Update(GuiTrigger * t)
 		}
 	}
 
-	for(int i=0; i<PAGESIZE; ++i)
+	for(int i=0; i<OPTION_BROWSER_PAGESIZE; ++i)
 	{
 		if(i != selectedItem && optionBtn[i]->GetState() == STATE_SELECTED)
 			optionBtn[i]->ResetState();
@@ -326,7 +327,7 @@ void GuiOptionBrowser::Update(GuiTrigger * t)
 
 		if(next >= 0)
 		{
-			if(selectedItem == PAGESIZE-1)
+			if(selectedItem == OPTION_BROWSER_PAGESIZE-1)
 			{
 				// move list down by 1
 				listOffset = this->FindMenuItem(listOffset, 1);

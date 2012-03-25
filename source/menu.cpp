@@ -34,6 +34,7 @@
  *                         away from the main screen.
  * midnak      12/02/2011  GUI and server use same player name length
  ****************************************************************************/
+
 #include <debug.h>  // USB Gecko
 
 #include <gccore.h>
@@ -65,10 +66,24 @@
 #include "fceuload.h"
 #include "filelist.h"
 #include "cheatmgr.h"
-#include "gui/gui.h"
 #include "utils/gettext.h"
 #include "fceunetwork.h"
 #include "fceultra/netplay.h"
+
+#include "gui/gui_button.h"
+#include "gui/gui_chatwindow.h"
+#include "gui/gui_element.h"
+#include "gui/gui_filebrowser.h"
+#include "gui/gui_image.h"
+#include "gui/gui_imagedata.h"
+#include "gui/gui_keyboard.h"
+#include "gui/gui_optionbrowser.h"
+#include "gui/gui_playerlist.h"
+#include "gui/gui_savebrowser.h"
+#include "gui/gui_sound.h"
+#include "gui/gui_text.h"
+#include "gui/gui_trigger.h"
+#include "gui/gui_window.h"
 
 #define THREAD_SLEEP 100
 
@@ -1573,14 +1588,6 @@ static int MenuGameSelection()
 			{
 				if(gameBrowser->fileList[i]->GetState() == STATE_CLICKED)
 				{
-					{
-						char c[300];
-						//sprintf(c, "numEntries %d | pageIndex %d", browser.numEntries, browser.pageIndex);
-						OnScreenKeyboard(c, MAX_CHAT_MSG_LEN);
-						//InfoPrompt(c);
-						continue;
-					}
-
 					gameBrowser->fileList[i]->ResetState();
 
 					if( (executionMode == OFFLINE)
@@ -1637,12 +1644,12 @@ static int MenuGameSelection()
 
 			if(chatWindow->IsKeyboardHotspotClicked())
 			{
-				/*{
+				{
 					char c[300];
 					sprintf(c, "numEntries %d | pageIndex %d", chatWindow->windowInfo.numEntries, chatWindow->windowInfo.pageIndex);
 
 					InfoPrompt(c);
-				}*/
+				}
 
 				chatWindow->ResetState();
 

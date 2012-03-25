@@ -29,8 +29,10 @@
 
 #include "fceugx.h"
 #include "fceultra/utils/endian.h"
-#include "gui/gui_playerlist.h"
 #include "fceultra/server.h"
+
+#include "gui/gui_chatwindow.h"
+#include "gui/gui_playerlist.h"
 
 extern GuiPlayerList *playerList;
 

@@ -22,7 +22,7 @@
 #include "filebrowser.h"
 #include "button_mapping.h"
 #include "fceuload.h"
-#include "gui/gui.h"
+#include "gui/gui_trigger.h"
 
 int rumbleRequest[4] = {0,0,0,0};
 GuiTrigger userInput[4];

@@ -7,11 +7,6 @@
  * Description:  Lists connected players in netplay
  *
  * TODO:
- *     1.  Players can only be moused over/clicked once - after that, they
- *         become disabled.  Might be the update() method.  Don't know if
- *         we even need that functionality, but I could see a purpose arising in
- *         the future.  At least get it working, then maybe disable it with
- *         a setter.
  *     2.  Delete ToggleReady() once we're networked.
  *
  * History:
@@ -23,8 +18,10 @@
 
 //#include <debug.h>        // USB Gecko
 
-#include "fceunetwork.h"
 #include "gui_playerlist.h"
+
+#include "filelist.h"     // global sound files
+#include "fceunetwork.h"
 #include "menu.h"         // Error prompts
 #include "../fceultra/utils/xstring.h"      // str_strip()
 
@@ -313,8 +310,8 @@ int GuiPlayerList::AddPlayer(const Player player)
 
 	if(newIdx < MAX_PLAYER_LIST_SIZE)
 	{
-		char truncName[MAX_PLAYER_NAME_LEN+1];
-		snprintf(truncName, MAX_PLAYER_NAME_LEN+1, "%s", player.name);
+		char truncName[NETPLAY_MAX_NAME_LEN];
+		snprintf(truncName, NETPLAY_MAX_NAME_LEN - 1, "%s", player.name);
 
 		bool alloc = (rowText[newIdx] = new GuiText(truncName, 25, player.controller ? colorReady[player.controller-1] : *colorNotReady)) &&
 					 (imgRowSelected[newIdx] = new GuiImage(imgDataSelectionEntry)) &&

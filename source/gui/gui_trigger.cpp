@@ -8,9 +8,11 @@
  * GUI class definitions
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_trigger.h"
+
 #include <ogc/lwp_watchdog.h>
 #include <gctypes.h>
+#include "preferences.h"    // GCSettings extern
 
 static u64 prev[4];
 static u64 now[4];

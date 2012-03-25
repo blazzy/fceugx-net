@@ -14,7 +14,7 @@
  * midnak      11/25/2011  Added documentation of GetDisplayText()
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_keyboard.h"
 
 static char tmptxt[MAX_KEYBOARD_DISPLAY];
 

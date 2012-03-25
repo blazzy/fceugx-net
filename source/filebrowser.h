@@ -21,6 +21,8 @@
 #define MAX_BROWSER_SIZE	3000
 #endif
 
+#define FILE_PAGESIZE       10
+
 typedef struct
 {
 	char dir[MAXPATHLEN + 1]; // directory path of browserList

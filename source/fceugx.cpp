@@ -39,7 +39,6 @@
 #include "gcvideo.h"
 #include "pad.h"
 #include "filelist.h"
-#include "gui/gui.h"
 #include "utils/FreeTypeGX.h"
 
 #include "fceultra/types.h"

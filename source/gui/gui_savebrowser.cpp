@@ -8,8 +8,9 @@
  * GUI class definitions
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_savebrowser.h"
 #include "filebrowser.h"
+#include "filelist.h"    // global images
 
 /**
  * Constructor for the GuiSaveBrowser class.

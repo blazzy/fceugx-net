@@ -10,13 +10,24 @@
  *
  * Name           Date     Description
  * ----------  mm/dd/yyyy  --------------------------------------------------
- * midnak      12/13/2011  New file (moved out of gui.h)
+ * midnak      12/13/2011  New file
  ****************************************************************************/
-
-#include "gui.h"
 
 #ifndef _GUI_PLAYERLIST_H_
 #define _GUI_PLAYERLIST_H_
+
+#include "gui_window.h"
+#include "gui_button.h"
+#include "gui_text.h"
+#include "gui_imagedata.h"
+#include "gui_image.h"
+#include "gui_sound.h"
+#include "gui_trigger.h"
+
+#include "fceultra/types.h"   // uint8
+#include "fceultra/netplay.h" // player name length
+
+#define MAX_PLAYER_LIST_SIZE 4
 
 #define PLAYER_LIST_SUCCESS            0
 #define PLAYER_LIST_ERR_NO_DATA       -1

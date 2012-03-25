@@ -25,7 +25,8 @@
 #include "gcaudio.h"
 #include "menu.h"
 #include "pad.h"
-#include "gui/gui.h"
+#include "utils/pngu.h"
+#include "fileop.h"
 
 int FDSTimer = 0;
 u32 FrameTimer = 0;

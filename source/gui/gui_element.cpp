@@ -8,7 +8,7 @@
  * GUI class definitions
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_element.h"
 
 /**
  * Constructor for the Object class.

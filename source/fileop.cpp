@@ -25,6 +25,7 @@
 #include <ogc/dvd.h>
 #include <iso9660.h>
 #include <fat.h>
+#include <math.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"
@@ -33,7 +34,6 @@
 #include "gcunzip.h"
 #include "menu.h"
 #include "filebrowser.h"
-#include "gui/gui.h"
 
 #define THREAD_SLEEP 100
 

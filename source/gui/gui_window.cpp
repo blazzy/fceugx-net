@@ -8,7 +8,8 @@
  * GUI class definitions
  ***************************************************************************/
 
-#include "gui.h"
+#include "gui_window.h"
+#include "stdlib.h"      // abs()
 
 GuiWindow::GuiWindow()
 {
