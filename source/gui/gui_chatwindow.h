@@ -1,17 +1,18 @@
-#include "gui.h"
-
 #ifndef _GUI_CHATWINDOW_
 #define _GUI_CHATWINDOW_
 
-#define MAX_CHAT_MSG_LEN      255
-#define CHAT_SCROLLBACK_SIZE  1000
+#define MAX_CHAT_MSG_LEN 255
+#define CHAT_SCROLLBACK_SIZE 1000
+
+#include "gui.h"
+#include "menu.h"
 
 struct WindowInfo
 {
-	int  numEntries;  // # of entries in viewport
-	int  selIndex;    // currently selected index
-	int  pageIndex;   // starting index of page display (scrollbackBuffer[x] currently displayed in viewport[0])
-	int  size;        // # of messages in scrollbackBuffer
+	int numEntries; // # of entries in viewport
+	int selIndex; // currently selected index
+	int pageIndex; // starting index of page display (scrollbackBuffer[x] currently displayed in viewport[0])
+	int size; // # of messages in scrollbackBuffer
 };
 
 struct Message
@@ -19,50 +20,59 @@ struct Message
 	char value[MAX_CHAT_MSG_LEN + 1];
 };
 
-class GuiChatWindow : public GuiWindow
+class GuiChatWindow : public GuiElement
 {
 	public:
 		GuiChatWindow(int w, int h);
 		~GuiChatWindow();
-		int  GetState();
+		void ResetState();
+		void SetFocus(int f);
+		void Draw();
 		void DrawTooltip();
 		void TriggerUpdate();
-		void Update(GuiTrigger *t);
-		void Reset();
-//		void ResetState();
+		void Update(GuiTrigger * t);
+		GuiButton * fileList[FILE_PAGESIZE];
+
+		bool IsKeyboardHotspotClicked();
 		bool WriteLn(const char *msg);
+	protected:
+		GuiText * fileListText[FILE_PAGESIZE];
+		GuiImage * fileListBg[FILE_PAGESIZE];
+		GuiImage * fileListIcon[FILE_PAGESIZE];
 
-		GuiImage *fileListBg[FILE_PAGESIZE];
-		GuiImageData *bgFileSelectionEntry;
-	private:
-		GuiButton *arrowUpBtn;
-		GuiButton *arrowDownBtn;
-		GuiButton *scrollbarBoxBtn;
+		GuiButton * arrowUpBtn;
+		GuiButton * arrowDownBtn;
+		GuiButton * scrollbarBoxBtn;
 
-		GuiImage *bgFileSelectionImg;
-		GuiImage *scrollbarImg;
-		GuiImage *arrowDownImg;
-		GuiImage *arrowDownOverImg;
-		GuiImage *arrowUpImg;
-		GuiImage *arrowUpOverImg;
-		GuiImage *scrollbarBoxImg;
-		GuiImage *scrollbarBoxOverImg;
+		GuiImage * bgFileSelectionImg;
+		GuiImage * scrollbarImg;
+		GuiImage * arrowDownImg;
+		GuiImage * arrowDownOverImg;
+		GuiImage * arrowUpImg;
+		GuiImage * arrowUpOverImg;
+		GuiImage * scrollbarBoxImg;
+		GuiImage * scrollbarBoxOverImg;
 
-		GuiImageData *bgFileSelection;
-		GuiImageData *scrollbar;
-		GuiImageData *arrowDown;
-		GuiImageData *arrowDownOver;
-		GuiImageData *arrowUp;
-		GuiImageData *arrowUpOver;
-		GuiImageData *scrollbarBox;
-		GuiImageData *scrollbarBoxOver;
+		GuiImageData * bgFileSelection;
+		GuiImageData * bgFileSelectionEntry;
+		GuiImageData * iconFolder;
+		GuiImageData * iconSD;
+		GuiImageData * iconUSB;
+		GuiImageData * iconDVD;
+		GuiImageData * iconSMB;
+		GuiImageData * scrollbar;
+		GuiImageData * arrowDown;
+		GuiImageData * arrowDownOver;
+		GuiImageData * arrowUp;
+		GuiImageData * arrowUpOver;
+		GuiImageData * scrollbarBox;
+		GuiImageData * scrollbarBoxOver;
 
-		GuiSound *btnSoundOver;
-		GuiSound *btnSoundClick;
-
-		GuiTrigger *trigA;
-		GuiTrigger *trig2;
-		GuiTrigger *trigHeldA;
+		GuiSound * btnSoundOver;
+		GuiSound * btnSoundClick;
+		GuiTrigger * trigA;
+		GuiTrigger * trig2;
+		GuiTrigger * trigHeldA;
 
 		int selectedItem;
 		int numEntries;
@@ -70,8 +80,6 @@ class GuiChatWindow : public GuiWindow
 
 		WindowInfo windowInfo;
 		Message scrollbackBuffer[CHAT_SCROLLBACK_SIZE];
-		GuiText *viewportText[FILE_PAGESIZE];
-		GuiButton *viewportButton[FILE_PAGESIZE];
 };
 
 #endif

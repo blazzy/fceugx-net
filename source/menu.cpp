@@ -1122,22 +1122,30 @@ static void newNetplayWindows()
 	}
 
 	chatWindow->SetPosition(50, 98);
-	chatWindow->Reset();
 	chatWindow->SetVisible(false);
 
-	chatWindow->WriteLn("[Player1] What packets through yonder socket breaks?  It is the east, and FCEUGX-net is the sun.");
-	chatWindow->WriteLn("[Player3] Arise, fair sun, and kill the envious FCEUX,");
-	chatWindow->WriteLn("[Player1] Who is already sick and pale with grief,");
-	chatWindow->WriteLn("[Player1] That thou her netplay art far more fair than she:");
-	chatWindow->WriteLn("[Player4] Be not her netplay, since she is envious");
-	chatWindow->WriteLn("[Player4] Okay, you know what?  I have no idea what the hell I'm saying.");
-	chatWindow->WriteLn("[Player2] Sing a song of sixpence");
-	chatWindow->WriteLn("[Player1] A pocket full of rye");
-	chatWindow->WriteLn("[Player3] Four and twenty blackbirds");
-	chatWindow->WriteLn("[Player4] Baked in a pie");
-	chatWindow->WriteLn("[Player1] When the pie was opened,");
-	chatWindow->WriteLn("[Player2] The person about to eat it said \"What the @*%! is this?  Is this supposed to be some kind of sick joke?  I work hard all day ruling over this kingdom.  All I want is to be able to come home at the end of a hard day's work, eat and sit on my throne, but instead I've got to put up with THIS bull$#!%.\"");
-	chatWindow->WriteLn("[Player4] Wasn't that a stupid thing to set before the king?");
+	chatWindow->WriteLn("And quick as they could, they turned on their tails");
+	chatWindow->WriteLn("Down in the meadow in a little bitty pool Swam three little fishies and a mama fishie, too \"Swim\" said the mama fishie, \"Swim if you can\"");
+	chatWindow->WriteLn("And they swam and they swam all over the dam");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("\"Stop\" said the mama fishie, \"or you will get lost\"");
+	chatWindow->WriteLn("The three little fishies didn't wanna be bossed");
+	chatWindow->WriteLn("The three little fishies went off on a spree");
+	chatWindow->WriteLn("And they swam and they swam right out to sea");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("Boop boop dit-tem dat-tem what-tem Chu!");
+	chatWindow->WriteLn("\"Whee!\" yelled the little fishies, \"Here's a lot of fun\"");
+	chatWindow->WriteLn("\"We'll swim in the sea 'till the day is done\"");
+	chatWindow->WriteLn("They swam and they swam, and it was a lark");
+	chatWindow->WriteLn("'Till all of a sudden they saw a shark!");
+	chatWindow->WriteLn("\"Help!\" cried the little fishies, \"Gee! look at the whales!\"");
+	chatWindow->WriteLn("And back to the pool in the meadow they swam");
+	chatWindow->WriteLn("And they swam and they swam back over the dam");
 
 	playerList->SetUpdateCallback(playerListEventHandler);
 	playerList->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -1535,9 +1543,20 @@ static int MenuGameSelection()
 		gameBrowser->SetState(STATE_DISABLED);
 	}
 
+	bool nowDisplay = false;
+
 	while(menu == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
+
+		if(nowDisplay)
+		{
+			if(chatWindow->IsFocused())
+			{
+				InfoPrompt("focused");
+				nowDisplay = false;
+			}
+		}
 
 		if(gameBrowser->IsVisible())
 		{
@@ -1554,6 +1573,14 @@ static int MenuGameSelection()
 			{
 				if(gameBrowser->fileList[i]->GetState() == STATE_CLICKED)
 				{
+					{
+						char c[300];
+						//sprintf(c, "numEntries %d | pageIndex %d", browser.numEntries, browser.pageIndex);
+						OnScreenKeyboard(c, MAX_CHAT_MSG_LEN);
+						//InfoPrompt(c);
+						continue;
+					}
+
 					gameBrowser->fileList[i]->ResetState();
 
 					if( (executionMode == OFFLINE)
@@ -1605,24 +1632,36 @@ static int MenuGameSelection()
 		}
 		else if(chatWindow != NULL && chatWindow->IsVisible())
 		{
-			if(chatWindow->GetState() == STATE_CLICKED)
+			//mainWindow->ChangeFocus(chatWindow);
+			//chatWindow->TriggerUpdate();
+
+			if(chatWindow->IsKeyboardHotspotClicked())
 			{
+				/*{
+					char c[300];
+					sprintf(c, "numEntries %d | pageIndex %d", chatWindow->windowInfo.numEntries, chatWindow->windowInfo.pageIndex);
+
+					InfoPrompt(c);
+				}*/
+
 				chatWindow->ResetState();
 
 				char buf[MAX_CHAT_MSG_LEN + 1];
 				buf[0] = '\0';
 
 				OnScreenKeyboard(buf, MAX_CHAT_MSG_LEN);
-
-				chatWindow->ResetState();
+				nowDisplay = !nowDisplay;
 
 				if(strlen(buf))
 				{
 					chatWindow->WriteLn(buf);
 				}
+
+				//chatWindow->ResetState();
 			}
 
 			mainWindow->ChangeFocus(chatWindow);
+			chatWindow->TriggerUpdate();
 		}
 
 		// The host can kick a player from the server.
