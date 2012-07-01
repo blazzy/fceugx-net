@@ -1687,18 +1687,25 @@ static int MenuGameSelection()
 
 			// Don't allow the host to kick himself.  The host might not be Player 1, so check the name rather than the index.
 
-			if(name != NULL && strcmp(name, GCSettings.netplayNameX) != 0)
+			if( name != NULL )
 			{
-				char msg[64];
-				sprintf(msg, "Kick %s from the server?", name);
-
-				if(WindowPrompt("Kick player", msg, "OK", "Cancel"))
+				if( strcmp(name, GCSettings.netplayNameX) != 0 )
 				{
-					//FCEUD_DisconnectPlayer(name);
-				}
-			}
+					char msg[64];
+					sprintf( msg, "Kick %s from the server?", name );
 
-			free(name);
+					if( WindowPrompt("Kick player", msg, "OK", "Cancel") )
+					{
+						//FCEUD_DisconnectPlayer(name);
+					}
+				}
+				else
+				{
+					InfoPrompt( "You can't kick yourself" );
+				}
+
+				free(name);
+			}
 		}
 		else if(settingsBtn.GetState() == STATE_CLICKED)
 		{
