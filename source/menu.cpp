@@ -1183,8 +1183,8 @@ static void showNetplayGuiComponents()
 
 	if(mainWindow != NULL)
 	{
-		mainWindow->Append(playerList);
 		mainWindow->Append(chatWindow);
+		mainWindow->Append(playerList);
 	}
 
 	ResumeGui();
